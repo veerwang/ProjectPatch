@@ -1,0 +1,116 @@
+From eb1ce9518e10592f519c79143c7624adc6896a79 Mon Sep 17 00:00:00 2001
+From: kevin <kevin.wang2004@hotmail.com>
+Date: Sun, 5 Jan 2014 18:08:00 +0800
+Subject: [PATCH] =?UTF-8?q?=E4=BF=AE=E6=AD=A3=E4=B8=A4=E4=B8=AA=E5=B0=8F?=
+ =?UTF-8?q?=E7=9A=84bug=E5=9C=A8x86=E5=B9=B3=E5=8F=B0=E4=B8=8B=EF=BC=8C?=
+ =?UTF-8?q?=E6=98=BE=E7=A4=BA=E5=BE=88=E6=AD=A3=E5=B8=B8=E3=80=82?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ src/EVA11/DZKPanel.cpp |  1 -
+ src/EVA11/Parawin.cpp  |  3 +++
+ src/EVA11/main.cpp     | 29 ++---------------------------
+ 3 files changed, 5 insertions(+), 28 deletions(-)
+
+diff --git a/src/EVA11/DZKPanel.cpp b/src/EVA11/DZKPanel.cpp
+index 2d27058..47e8100 100644
+--- a/src/EVA11/DZKPanel.cpp
++++ b/src/EVA11/DZKPanel.cpp
+@@ -368,7 +368,6 @@ int DZKPanel::Loop_Panel(Graphic& g)
+ 		return 0;
+ 	m_DataProcess->Data_Process();
+ 	m_DataProcess->Get_Data(m_RawBuf);
+-
+ 	int x,y;
+ 	int result;
+ 	for ( int i=0;i<2;i++ )
+diff --git a/src/EVA11/Parawin.cpp b/src/EVA11/Parawin.cpp
+index 6a7b3d1..e5dee8a 100644
+--- a/src/EVA11/Parawin.cpp
++++ b/src/EVA11/Parawin.cpp
+@@ -458,6 +458,9 @@ void Parawin::DrawBottomFocus(Graphic& g,int index)
+ 			}
+ 			break;
+ 	}				/* -----  end switch  ----- */
++#ifdef X86
++	g.Update_Rect(0,0,640,480);
++#endif
+ }
+ 
+ /* 
+diff --git a/src/EVA11/main.cpp b/src/EVA11/main.cpp
+index 8fb3345..7962c70 100644
+--- a/src/EVA11/main.cpp
++++ b/src/EVA11/main.cpp
+@@ -137,34 +137,19 @@ MAINLOOP:
+ 	Loadwin *loadw = new Loadwin(*g,Loadwin::LT_LOAD);
+ 	int result = loadw->Loopwindow(*g);
+ 	delete loadw;
+-#ifdef ARM
+-	loadw = nullptr;
+-#endif
+-#ifdef X86 
+ 	loadw = NULL; 
+-#endif
+ 	if 	( result == Basewin::CO_OK || result == Basewin::CO_LOADEXIT )
+ 	{
+ 		Mainwin *mwin = new Mainwin;
+ 		mwin->Loopwindow(*g);
+ 		delete mwin;
+-#ifdef ARM
+-		mwin = nullptr;
+-#endif
+-#ifdef X86 
+ 		mwin = NULL;
+-#endif
+ 		goto MAINLOOP;
+ 	}
+ 
+ 	initfacade->Standard_ET_System_Destroy();
+ 	delete initfacade;
+-#ifdef ARM
+-	initfacade = nullptr;
+-#endif
+-#ifdef X86 
+ 	initfacade = NULL;
+-#endif
+ 	log->Write_Log("EVA11 System Exit....");
+ }
+ 
+@@ -188,21 +173,10 @@ Standard_Network_TCP()
+ 	TCPMainwin* tcpwin = new TCPMainwin;
+ 	tcpwin->Loopwindow(*g);
+ 	delete tcpwin;
+-#ifdef ARM
+-	tcpwin = nullptr;
+-#endif
+-#ifdef X86 
+ 	tcpwin = NULL;
+-#endif
+ 	initfacade->Standard_TCP_System_Destroy();
+ 	delete initfacade;
+-
+-#ifdef ARM
+-	initfacade = nullptr;
+-#endif
+-#ifdef X86 
+ 	initfacade = NULL;
+-#endif
+ }
+ 
+ /* 
+@@ -403,7 +377,8 @@ main ( int argc, char *argv[] )
+ 		TimeTickThread *pthread = new TimeTickThread;
+ 		ZThread::Thread t(pthread);
+ 		Standard_ET_Fun();
+-		while( !pthread->Get_EndFlag() ) {;}
++		while( !pthread->Get_EndFlag() )
++			usleep(500);				// need some time to excute other thread
+ 	}
+ 	else if ( command == ShellCommand::SHELLCOMMAND_TCPNETWORK )
+ 	{
+-- 
+1.8.3.3.755.g001b097
+
