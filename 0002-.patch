@@ -1,0 +1,357 @@
+From 1b97a9310c6987bb3f1f6314b081c5d8779db6db Mon Sep 17 00:00:00 2001
+From: kevin <kevin.wang2004@hotmail.com>
+Date: Mon, 20 Jan 2014 08:53:12 +0800
+Subject: [PATCH 2/3] =?UTF-8?q?=E5=B0=8F=E4=BF=AE=E6=AD=A3=E4=B8=8B?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ src/EVA11/base/ASMS/Asm_Fun_Sets.s | 123 -------------------------------------
+ src/EVA11/base/Asm_Fun_Sets.s      | 123 +++++++++++++++++++++++++++++++++++++
+ src/EVA11/base/Battery.cpp         |   1 -
+ src/EVA11/base/Makefile            |  16 ++---
+ 4 files changed, 127 insertions(+), 136 deletions(-)
+ delete mode 100644 src/EVA11/base/ASMS/Asm_Fun_Sets.s
+ create mode 100644 src/EVA11/base/Asm_Fun_Sets.s
+
+diff --git a/src/EVA11/base/ASMS/Asm_Fun_Sets.s b/src/EVA11/base/ASMS/Asm_Fun_Sets.s
+deleted file mode 100644
+index e1b847e..0000000
+--- a/src/EVA11/base/ASMS/Asm_Fun_Sets.s
++++ /dev/null
+@@ -1,123 +0,0 @@
+-@
+-@	the file only for test ARM assemble language
+-@
+-@      ARM Register:
+-@      R0~R3  : a1~a4
+-@      R4~R11 : v1~v8    R11:fp
+-@      R12    : ip
+-@      R13    : sp
+-@      R14    : lr 
+-@      R15    : pc
+-@
+-@
+-@
+-@
+-	.arch armv4t
+-	.fpu softvfp
+-	.text
+-
+-
+-	.align	2
+-	.global	Asm_Add
+-	.type	Asm_Add, %function
+-	@
+-	@ int Asm_Add(int,int)
+-	@
+-Asm_Add:
+-	mov	ip, sp
+-	@ fp:R11     ip:R12      sp:R13       lr:R14      pc:R15
+-	stmfd	sp!, {fp, ip, lr, pc}
+-	@ stmfd: forward down 
+-	@ sp = sp - 4 * 4
+-	@ 
+-	@ pc			   high meory
+-	@ lr 
+-	@ ip 
+-	@ fp  <-----  sp           low memory
+-	@
+-	@sub	fp, ip, #4
+-	@sub	sp, sp, #8
+-
+-	add	r0, r0, r1
+-	@ 载入一个大数的伪代码
+-	ldr	r1, =0xFFFFFFFF
+-	add	r0, r0, r1
+-
+-	@sub	sp, ip, #16
+-	ldmfd	sp, {fp, sp, lr}
+-	bx	lr
+-	.size	Asm_Add, .-Asm_Add
+-
+-
+-	.align	2
+-	.global	Asm_Mul
+-	.type	Asm_Mul, %function
+-	@
+-	@ int Asm_Mul(int,int)
+-	@
+-Asm_Mul:
+-	mov	ip, sp
+-	@ fp:R11     ip:R12      sp:R13       lr:R14      pc:R15
+-	stmfd	sp!, {fp, ip, lr, pc}
+-
+-	mul	r2, r0, r1
+-	mov     r0, r2
+-
+-	ldmfd	sp, {fp, sp, lr}
+-	bx	lr
+-	.size	Asm_Mul, .-Asm_Mul
+-
+-
+-	.align	2
+-	.global	Asm_Point
+-	.type	Asm_Point, %function
+-	@
+-	@ int Asm_Point(int*)
+-	@
+-Asm_Point:
+-	mov	ip, sp
+-	@ fp:R11     ip:R12      sp:R13       lr:R14      pc:R15
+-	stmfd	sp!, {fp, ip, lr, pc}
+-	sub	fp, ip, #4
+-	sub	sp, sp, #8
+-
+-	ldr	r2, .L1_PTR
+-	ldr	r1, [r2,#0]
+-	str     r1, [r0,#0]
+-
+-	sub	sp, fp, #12
+-	ldmfd	sp, {fp, sp, lr}
+-	bx	lr
+-	.size	Asm_Point, .-Asm_Point
+-
+-	.align	2
+-.L1_PTR:
+-	.word	ScrPtr
+-
+-
+-	.align	2
+-	.global	Asm_Init
+-	.type	Asm_Init, %function
+-	@
+-	@ void Asm_Init(void)
+-	@
+-Asm_Init:
+-	mov	ip, sp
+-	@ fp:R11     ip:R12      sp:R13       lr:R14      pc:R15
+-	stmfd	sp!, {fp, ip, lr, pc}
+-	sub	fp, ip, #4
+-	sub	sp, sp, #8
+-
+-	ldr	r0, .L1_PTR
+-	mov     r1, #101
+-	str	r1, [r0,#0]
+-
+-	sub	sp, fp, #12
+-	ldmfd	sp, {fp, sp, lr}
+-	bx	lr
+-	.size	Asm_Init, .-Asm_Init
+-
+-
+-	.ident	"GCC: (crosstool-NG-1.7.2) 4.3.2"
+-	.comm	ScrPtr,4,4
+-	.section	.note.GNU-stack,"",%progbits
+diff --git a/src/EVA11/base/Asm_Fun_Sets.s b/src/EVA11/base/Asm_Fun_Sets.s
+new file mode 100644
+index 0000000..e1b847e
+--- /dev/null
++++ b/src/EVA11/base/Asm_Fun_Sets.s
+@@ -0,0 +1,123 @@
++@
++@	the file only for test ARM assemble language
++@
++@      ARM Register:
++@      R0~R3  : a1~a4
++@      R4~R11 : v1~v8    R11:fp
++@      R12    : ip
++@      R13    : sp
++@      R14    : lr 
++@      R15    : pc
++@
++@
++@
++@
++	.arch armv4t
++	.fpu softvfp
++	.text
++
++
++	.align	2
++	.global	Asm_Add
++	.type	Asm_Add, %function
++	@
++	@ int Asm_Add(int,int)
++	@
++Asm_Add:
++	mov	ip, sp
++	@ fp:R11     ip:R12      sp:R13       lr:R14      pc:R15
++	stmfd	sp!, {fp, ip, lr, pc}
++	@ stmfd: forward down 
++	@ sp = sp - 4 * 4
++	@ 
++	@ pc			   high meory
++	@ lr 
++	@ ip 
++	@ fp  <-----  sp           low memory
++	@
++	@sub	fp, ip, #4
++	@sub	sp, sp, #8
++
++	add	r0, r0, r1
++	@ 载入一个大数的伪代码
++	ldr	r1, =0xFFFFFFFF
++	add	r0, r0, r1
++
++	@sub	sp, ip, #16
++	ldmfd	sp, {fp, sp, lr}
++	bx	lr
++	.size	Asm_Add, .-Asm_Add
++
++
++	.align	2
++	.global	Asm_Mul
++	.type	Asm_Mul, %function
++	@
++	@ int Asm_Mul(int,int)
++	@
++Asm_Mul:
++	mov	ip, sp
++	@ fp:R11     ip:R12      sp:R13       lr:R14      pc:R15
++	stmfd	sp!, {fp, ip, lr, pc}
++
++	mul	r2, r0, r1
++	mov     r0, r2
++
++	ldmfd	sp, {fp, sp, lr}
++	bx	lr
++	.size	Asm_Mul, .-Asm_Mul
++
++
++	.align	2
++	.global	Asm_Point
++	.type	Asm_Point, %function
++	@
++	@ int Asm_Point(int*)
++	@
++Asm_Point:
++	mov	ip, sp
++	@ fp:R11     ip:R12      sp:R13       lr:R14      pc:R15
++	stmfd	sp!, {fp, ip, lr, pc}
++	sub	fp, ip, #4
++	sub	sp, sp, #8
++
++	ldr	r2, .L1_PTR
++	ldr	r1, [r2,#0]
++	str     r1, [r0,#0]
++
++	sub	sp, fp, #12
++	ldmfd	sp, {fp, sp, lr}
++	bx	lr
++	.size	Asm_Point, .-Asm_Point
++
++	.align	2
++.L1_PTR:
++	.word	ScrPtr
++
++
++	.align	2
++	.global	Asm_Init
++	.type	Asm_Init, %function
++	@
++	@ void Asm_Init(void)
++	@
++Asm_Init:
++	mov	ip, sp
++	@ fp:R11     ip:R12      sp:R13       lr:R14      pc:R15
++	stmfd	sp!, {fp, ip, lr, pc}
++	sub	fp, ip, #4
++	sub	sp, sp, #8
++
++	ldr	r0, .L1_PTR
++	mov     r1, #101
++	str	r1, [r0,#0]
++
++	sub	sp, fp, #12
++	ldmfd	sp, {fp, sp, lr}
++	bx	lr
++	.size	Asm_Init, .-Asm_Init
++
++
++	.ident	"GCC: (crosstool-NG-1.7.2) 4.3.2"
++	.comm	ScrPtr,4,4
++	.section	.note.GNU-stack,"",%progbits
+diff --git a/src/EVA11/base/Battery.cpp b/src/EVA11/base/Battery.cpp
+index 416d5ee..6d4304b 100644
+--- a/src/EVA11/base/Battery.cpp
++++ b/src/EVA11/base/Battery.cpp
+@@ -213,7 +213,6 @@ int  Battery::Get_Battary_Value()
+ 	unsigned short adc_value;	
+ 
+ 	size_t re = read(m_ADC_fd,&adc_value,2);
+-	re = re;
+ 
+ 	m_Last_Adc = ( ( ( adc_value - m_Last_Adc ) << 3 ) >> 8 ) + m_Last_Adc;
+ 
+diff --git a/src/EVA11/base/Makefile b/src/EVA11/base/Makefile
+index 941a2fb..dc522cb 100644
+--- a/src/EVA11/base/Makefile
++++ b/src/EVA11/base/Makefile
+@@ -12,7 +12,7 @@
+ #LOOPDIR:=$(shell find * -maxdepth 0 -path 'OBJS' -o -path 'DEPS' -prune -o -name '*' -type d -print)
+ #SRCS+=$(wildcard $($(foreach DIR,$(LOOPDIR),$(DIR))/*.cpp))
+ 
+-include MKlib.mk 
++include MKlib.mk
+ 
+ ifeq ($(CMOD),dynamic)
+ DYNAMICLIBS=$(THIRDLIB) $(LIBS)
+@@ -22,8 +22,6 @@ DYNAMICLIBS:=$(LIBS)
+ STATICLIBS=$(THIRDLIB) resource
+ endif
+ 
+-TXTASMS	:=ASMS
+-
+ TXTOBJS	:=OBJS
+ TXTDEPS	:=DEPS
+ OBJS_DIR:=./$(TXTOBJS)/
+@@ -33,7 +31,7 @@ SRCS=
+ SRCS+=$(wildcard *.cpp *.c)
+ 
+ ifeq ($(COMPILE),arm9)
+-SRCS+=$(wildcard $(TXTASMS)/*.s)
++SRCS+=$(wildcard *.s)
+ endif
+ 
+ OBJS:=$(SRCS:=.o)
+@@ -71,7 +69,7 @@ $(DEPS_DIR)%.c.dep: %.c | depsdir
+ 	sed 's,\(.*\)\.o[ :]*,$(TXTOBJS)/\1.c.o:,g' < $@.tmp > $@; \
+ 	$(RM) $@.tmp
+ 
+-$(DEPS_DIR)$(TXTASMS)/%.s.dep: $(TXTASMS)/%.s | depsasmdir
++$(DEPS_DIR)%.s.dep: %.s | depsdir
+ 	@set -e; \
+ 	$(RM) -rf $@.tmp; \
+ 	echo $^: $^ > $@.tmp; \
+@@ -81,9 +79,6 @@ $(DEPS_DIR)$(TXTASMS)/%.s.dep: $(TXTASMS)/%.s | depsasmdir
+ depsdir:
+ 	@mkdir -p $(DEPS_DIR)
+ 
+-depsasmdir:
+-	@mkdir -p $(DEPS_DIR)$(TXTASMS)
+-
+ -include $(DEPS)
+ 
+ $(EXEC): $(OBJS)
+@@ -95,15 +90,12 @@ $(OBJS_DIR)%.c.o: %.c | objsdir
+ $(OBJS_DIR)%.cpp.o: %.cpp | objsdir
+ 	$(CPP) $(CPP_COMPILE_FLAG) $(DFLAG) $(COMPILE_FLAG) $(SEARCH_INCPATH) -c $< -o $@
+ 
+-$(OBJS_DIR)$(TXTASMS)%.s.o: $(TXTASMS)/%.s | objsasmsdir
++$(OBJS_DIR)%.s.o: %.s | objsdir
+ 	$(AS) $< -o $@
+ 
+ objsdir:
+ 	@mkdir -p $(OBJS_DIR)
+ 
+-objsasmsdir:
+-	@mkdir -p $(OBJS_DIR)$(TXTASMS)
+-
+ .PHONY: clean
+ clean:
+ 	$(RM) -rf $(OBJS_DIR) $(DEPS_DIR) $(EXEC)
+-- 
+1.8.5.1
+

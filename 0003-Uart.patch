@@ -1,0 +1,1958 @@
+From 61a7c44380bf61d00baa513ad762feaabdc8d7a0 Mon Sep 17 00:00:00 2001
+From: kevin <kevin.wang2004@hotmail.com>
+Date: Mon, 20 Jan 2014 15:57:33 +0800
+Subject: [PATCH 3/3] =?UTF-8?q?=E6=B7=BB=E5=8A=A0=E4=B8=80=E4=B8=AAUart?=
+ =?UTF-8?q?=E7=9B=AE=E5=BD=95?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ Makefile                     |   2 +-
+ src/EVA11/base/Makefile      |  24 +-
+ src/EVA11/base/Uart.cpp      | 102 --------
+ src/EVA11/base/Uart.h        |  39 ---
+ src/EVA11/base/Uart/Makefile |  87 +++++++
+ src/EVA11/base/Uart/Uart.cpp | 102 ++++++++
+ src/EVA11/base/Uart/Uart.h   |  39 +++
+ src/EVA11/base/Uart/cssl.c   | 564 +++++++++++++++++++++++++++++++++++++++++++
+ src/EVA11/base/Uart/cssl.h   | 128 ++++++++++
+ src/EVA11/base/cssl.c        | 564 -------------------------------------------
+ src/EVA11/base/cssl.h        | 128 ----------
+ src/EVA11/base/main.cpp      |   7 +-
+ 12 files changed, 944 insertions(+), 842 deletions(-)
+ delete mode 100644 src/EVA11/base/Uart.cpp
+ delete mode 100644 src/EVA11/base/Uart.h
+ create mode 100644 src/EVA11/base/Uart/Makefile
+ create mode 100644 src/EVA11/base/Uart/Uart.cpp
+ create mode 100644 src/EVA11/base/Uart/Uart.h
+ create mode 100644 src/EVA11/base/Uart/cssl.c
+ create mode 100644 src/EVA11/base/Uart/cssl.h
+ delete mode 100644 src/EVA11/base/cssl.c
+ delete mode 100644 src/EVA11/base/cssl.h
+
+diff --git a/Makefile b/Makefile
+index 67c2be4..97bd867 100644
+--- a/Makefile
++++ b/Makefile
+@@ -93,7 +93,7 @@ export C_COMPILE_FLAG \
+ export FLAG 	    := -Wall
+ 
+ ###########################################################
+-MAKEFLAG 	    := -j2
++MAKEFLAG 	    := -j1
+ 
+ .PHONY : all
+ all:
+diff --git a/src/EVA11/base/Makefile b/src/EVA11/base/Makefile
+index dc522cb..22825ce 100644
+--- a/src/EVA11/base/Makefile
++++ b/src/EVA11/base/Makefile
+@@ -10,15 +10,17 @@
+ #
+ ###########################################################
+ #LOOPDIR:=$(shell find * -maxdepth 0 -path 'OBJS' -o -path 'DEPS' -prune -o -name '*' -type d -print)
+-#SRCS+=$(wildcard $($(foreach DIR,$(LOOPDIR),$(DIR))/*.cpp))
++#SRCS+=$(wildcard $(foreach DIR,$(LOOPDIR),$(DIR))/*.cpp)
+ 
+ include MKlib.mk
+ 
++SUBDIRS :=$(shell find * -maxdepth 0 -path 'OBJS' -o -path 'DEPS' -prune -o -name '*' -type d -print)
++
+ ifeq ($(CMOD),dynamic)
+ DYNAMICLIBS=$(THIRDLIB) $(LIBS)
+ STATICLIBS=resource
+ else
+-DYNAMICLIBS:=$(LIBS) 
++DYNAMICLIBS:=$(LIBS)
+ STATICLIBS=$(THIRDLIB) resource
+ endif
+ 
+@@ -40,6 +42,9 @@ DEPS:=$(SRCS:=.dep)
+ OBJS:=$(addprefix $(OBJS_DIR),$(OBJS))
+ DEPS:=$(addprefix $(DEPS_DIR),$(DEPS))
+ 
++SUBOBJS=
++SUBOBJS+=$(foreach DIR,$(SUBDIRS),$(wildcard $(DIR)/OBJS/*.o))
++
+ ifeq ($(DEBUG),yes)
+ COMPILE_FLAG = -g2
+ else
+@@ -52,8 +57,13 @@ endif
+ 
+ endif
+ 
+-all: $(DEPS) $(EXEC)
+-	@echo "build EVA11 ..."
++all: SUBSYSTEM $(DEPS) $(EXEC)
++	@echo "Finish EVA11 Project build" 
++
++SUBSYSTEM:
++	@for dir in $(SUBDIRS); \
++		do $(MAKE) $(MAKECMDGOALS) -C $$dir || exit 1; \
++	done
+ 
+ $(DEPS_DIR)%.cpp.dep: %.cpp | depsdir
+ 	@set -e; \
+@@ -81,7 +91,7 @@ depsdir:
+ 
+ -include $(DEPS)
+ 
+-$(EXEC): $(OBJS)
++$(EXEC):$(OBJS) $(SUBOBJS)
+ 	$(CPP) $(FLAG) -o $@ $^ -Wl,-Bdynamic $(addprefix -l,$(DYNAMICLIBS)) -Wl,-Bstatic $(addprefix -l,$(STATICLIBS)) $(SEARCH_LIBPATH) -Wl,-Bdynamic
+ 
+ $(OBJS_DIR)%.c.o: %.c | objsdir
+@@ -97,5 +107,5 @@ objsdir:
+ 	@mkdir -p $(OBJS_DIR)
+ 
+ .PHONY: clean
+-clean:
+-	$(RM) -rf $(OBJS_DIR) $(DEPS_DIR) $(EXEC)
++clean: SUBSYSTEM
++	$(RM) -rf $(OBJS_DIR) $(DEPS_DIR) $(EXEC);
+diff --git a/src/EVA11/base/Uart.cpp b/src/EVA11/base/Uart.cpp
+deleted file mode 100644
+index b758105..0000000
+--- a/src/EVA11/base/Uart.cpp
++++ /dev/null
+@@ -1,102 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  Uart.cpp
+- *
+- *    Description:  implementation of Uart class
+- *
+- *        Version:  1.0
+- *        Created:  2012年11月07日 13时43分30秒
+- *       Revision:  none
+- *       Compiler:  gcc
+- *
+- *         Author:  YOUR NAME (), 
+- *   Organization:  
+- *
+- * =====================================================================================
+- */
+-
+-#include 	<list>
+-#include 	<cstdlib>
+-#include 	<cstdio>
+-
+-#include 	"Uart.h"
+-
+-std::list<uint8_t>		m_Buf;
+-
+-static void callback(int id,
+-	             uint8_t *buf,
+-		     int length)
+-{
+-	for ( int i=0;i<length;i++ )
+-	{
+-		m_Buf.push_back(buf[i]);
+-	}
+-}
+-
+-Uart::Uart ()
+-{
+-}
+-
+-Uart::~Uart ()
+-{
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Init_Uart
+- *  Description:  Init the Uart class 
+- * =====================================================================================
+- */
+-bool Uart::Init_Uart()
+-{
+-	cssl_start();
+-	m_Serial = cssl_open("/dev/ttySAC0",callback,0,19200,8,0,1);
+-	if ( !m_Serial )
+-	{
+-		printf("%s\n",cssl_geterrormsg());
+-		cssl_stop();
+-		return false;
+-	}
+-	else
+-		printf ( "OK\n" );
+-	m_Buf.clear();
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Destroy_Uart
+- *  Description:  Destroy the Uart class 
+- * =====================================================================================
+- */
+-void Uart::Destory_Uart()
+-{
+-	cssl_close(m_Serial);
+-	cssl_stop();
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Send_Data
+- *  Description:  Send the Data into 
+- * =====================================================================================
+- */
+-void Uart::Send_Data(uint8_t *data,int length)
+-{
+-	cssl_putdata(m_Serial,data,length);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Get_Data
+- *  Description:  Get the Data from module 
+- * =====================================================================================
+- */
+-void Uart::Get_Data(uint8_t *data,int length)
+-{
+-	for ( int i=0;i<length;i++ )
+-	{
+-		data[i] = m_Buf.front();
+-		m_Buf.pop_front();
+-	}
+-}
+diff --git a/src/EVA11/base/Uart.h b/src/EVA11/base/Uart.h
+deleted file mode 100644
+index 3a04afb..0000000
+--- a/src/EVA11/base/Uart.h
++++ /dev/null
+@@ -1,39 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  Uart.h
+- *
+- *    Description:  Manage the UART port class
+- *
+- *        Version:  1.0
+- *        Created:  2012年11月07日 13时42分23秒
+- *       Revision:  none
+- *       Compiler:  gcc
+- *
+- *         Author:  YOUR NAME (), 
+- *   Organization:  
+- *
+- * =====================================================================================
+- */
+-
+-#ifndef  _UART_INC
+-#define  _UART_INC
+-
+-#include 	"cssl.h"
+-class Uart
+-{
+-	public:
+-		Uart ();                             /* constructor */
+-		~Uart ();                            /* destructor */
+-		bool Init_Uart();
+-		void Destory_Uart();
+-		void Send_Data(uint8_t *data,int length);
+-		void Get_Data(uint8_t *data,int length);
+-
+-	protected:
+-
+-	private:
+-		cssl_t 				*m_Serial;
+-};
+-
+-#endif   /* ----- #ifndef _UART_INC  ----- */
+diff --git a/src/EVA11/base/Uart/Makefile b/src/EVA11/base/Uart/Makefile
+new file mode 100644
+index 0000000..5301f05
+--- /dev/null
++++ b/src/EVA11/base/Uart/Makefile
+@@ -0,0 +1,87 @@
++##########################################################
++#
++#                    The EVA11 project Makefile
++#
++# Author:    kevin.wang
++# Company:   Eddysun     xiamen
++# Date:      2012.12.13
++# Comment:   Try to re-structure the Project Makefile
++#            
++#
++###########################################################
++
++TXTOBJS	:=OBJS
++TXTDEPS	:=DEPS
++OBJS_DIR:=./$(TXTOBJS)/
++DEPS_DIR:=./$(TXTDEPS)/
++
++SRCS=
++SRCS+=$(wildcard *.cpp *.c)
++
++ifeq ($(COMPILE),arm9)
++SRCS+=$(wildcard *.s)
++endif
++
++OBJS:=$(SRCS:=.o)
++DEPS:=$(SRCS:=.dep)
++
++OBJS:=$(addprefix $(OBJS_DIR),$(OBJS))
++DEPS:=$(addprefix $(DEPS_DIR),$(DEPS))
++
++ifeq ($(DEBUG),yes)
++COMPILE_FLAG = -g2
++else
++
++ifeq ($(COMPILE),arm9)
++COMPILE_FLAG = -O2 -march=armv4t
++else 
++COMPILE_FLAG = -O2
++endif
++
++endif
++
++all: $(DEPS) $(EXEC)
++
++$(DEPS_DIR)%.cpp.dep: %.cpp | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	gcc -E -MM $^ > $@.tmp; \
++	sed 's,\(.*\)\.o[ :]*,$(TXTOBJS)/\1.cpp.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++$(DEPS_DIR)%.c.dep: %.c | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	gcc -E -MM $^ > $@.tmp; \
++	sed 's,\(.*\)\.o[ :]*,$(TXTOBJS)/\1.c.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++$(DEPS_DIR)%.s.dep: %.s | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	echo $^: $^ > $@.tmp; \
++	sed 's,\(.*\)\.s: *,$(TXTOBJS)/\1.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++depsdir:
++	@mkdir -p $(DEPS_DIR)
++
++-include $(DEPS)
++
++$(EXEC): $(OBJS)
++
++$(OBJS_DIR)%.c.o: %.c | objsdir
++	$(CC) $(C_COMPILE_FLAG) $(DFLAG) $(COMPILE_FLAG) $(SEARCH_INCPATH) -c $< -o $@
++
++$(OBJS_DIR)%.cpp.o: %.cpp | objsdir
++	$(CPP) $(CPP_COMPILE_FLAG) $(DFLAG) $(COMPILE_FLAG) $(SEARCH_INCPATH) -c $< -o $@
++
++$(OBJS_DIR)%.s.o: %.s | objsdir
++	$(AS) $< -o $@
++
++objsdir:
++	@mkdir -p $(OBJS_DIR)
++
++.PHONY: clean
++clean:
++	$(RM) -rf $(OBJS_DIR) $(DEPS_DIR)
+diff --git a/src/EVA11/base/Uart/Uart.cpp b/src/EVA11/base/Uart/Uart.cpp
+new file mode 100644
+index 0000000..b758105
+--- /dev/null
++++ b/src/EVA11/base/Uart/Uart.cpp
+@@ -0,0 +1,102 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  Uart.cpp
++ *
++ *    Description:  implementation of Uart class
++ *
++ *        Version:  1.0
++ *        Created:  2012年11月07日 13时43分30秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  YOUR NAME (), 
++ *   Organization:  
++ *
++ * =====================================================================================
++ */
++
++#include 	<list>
++#include 	<cstdlib>
++#include 	<cstdio>
++
++#include 	"Uart.h"
++
++std::list<uint8_t>		m_Buf;
++
++static void callback(int id,
++	             uint8_t *buf,
++		     int length)
++{
++	for ( int i=0;i<length;i++ )
++	{
++		m_Buf.push_back(buf[i]);
++	}
++}
++
++Uart::Uart ()
++{
++}
++
++Uart::~Uart ()
++{
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Init_Uart
++ *  Description:  Init the Uart class 
++ * =====================================================================================
++ */
++bool Uart::Init_Uart()
++{
++	cssl_start();
++	m_Serial = cssl_open("/dev/ttySAC0",callback,0,19200,8,0,1);
++	if ( !m_Serial )
++	{
++		printf("%s\n",cssl_geterrormsg());
++		cssl_stop();
++		return false;
++	}
++	else
++		printf ( "OK\n" );
++	m_Buf.clear();
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Destroy_Uart
++ *  Description:  Destroy the Uart class 
++ * =====================================================================================
++ */
++void Uart::Destory_Uart()
++{
++	cssl_close(m_Serial);
++	cssl_stop();
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Send_Data
++ *  Description:  Send the Data into 
++ * =====================================================================================
++ */
++void Uart::Send_Data(uint8_t *data,int length)
++{
++	cssl_putdata(m_Serial,data,length);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Get_Data
++ *  Description:  Get the Data from module 
++ * =====================================================================================
++ */
++void Uart::Get_Data(uint8_t *data,int length)
++{
++	for ( int i=0;i<length;i++ )
++	{
++		data[i] = m_Buf.front();
++		m_Buf.pop_front();
++	}
++}
+diff --git a/src/EVA11/base/Uart/Uart.h b/src/EVA11/base/Uart/Uart.h
+new file mode 100644
+index 0000000..3a04afb
+--- /dev/null
++++ b/src/EVA11/base/Uart/Uart.h
+@@ -0,0 +1,39 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  Uart.h
++ *
++ *    Description:  Manage the UART port class
++ *
++ *        Version:  1.0
++ *        Created:  2012年11月07日 13时42分23秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  YOUR NAME (), 
++ *   Organization:  
++ *
++ * =====================================================================================
++ */
++
++#ifndef  _UART_INC
++#define  _UART_INC
++
++#include 	"cssl.h"
++class Uart
++{
++	public:
++		Uart ();                             /* constructor */
++		~Uart ();                            /* destructor */
++		bool Init_Uart();
++		void Destory_Uart();
++		void Send_Data(uint8_t *data,int length);
++		void Get_Data(uint8_t *data,int length);
++
++	protected:
++
++	private:
++		cssl_t 				*m_Serial;
++};
++
++#endif   /* ----- #ifndef _UART_INC  ----- */
+diff --git a/src/EVA11/base/Uart/cssl.c b/src/EVA11/base/Uart/cssl.c
+new file mode 100644
+index 0000000..a287d0a
+--- /dev/null
++++ b/src/EVA11/base/Uart/cssl.c
+@@ -0,0 +1,564 @@
++/* Copyright 2003 Marcin Siennicki <m.siennicki@cloos.pl>
++ * see COPYING file for details */
++#define _GNU_SOURCE
++
++#include <stdio.h>
++
++#include <string.h>
++#include <termios.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <stdlib.h>
++#include <signal.h>
++#include <unistd.h>
++
++#include "cssl.h"
++
++/*
++ * Static variables and constants
++ */
++
++/* signal number for serial i/o read */
++static int CSSL_SIGNAL=0;
++
++/* boolean that say if we have started cssl */
++static int cssl_started=0;
++
++/* sigactions */
++static struct sigaction sa;
++static struct sigaction oldsa;
++
++/* head of the cssl_t list */
++static cssl_t *head=0;
++
++/* error messages table */
++static const char *cssl_errors[]= {
++    "cssl: OK",
++    "cssl: there's no free signal",
++    "cssl: not started",
++    "cssl: null pointer",
++    "cssl: oops",
++    "cssl: out of memory",
++    "cssl: cannot open file"
++};
++
++/* status of last cssl function */ 
++static cssl_error_t cssl_error=CSSL_OK;
++
++/* prototype of signal handler */
++static void cssl_handler(int signo, siginfo_t *info, void *ignored);
++
++
++/**************************************
++ * Public functions
++ **************************************/
++
++/*-------------------------------------
++ * Error handling
++ */
++
++/* gets the last operation status message */
++const char *cssl_geterrormsg()
++{
++    return cssl_errors[cssl_error];
++}
++
++
++/* gets the last error code */
++int cssl_geterror()
++{
++    return cssl_error;
++}
++
++/*-------------------------------------
++ * Startig/stoping cssl
++ */
++
++/* starts cssl */
++void cssl_start()
++{
++    int sig;
++
++    if (cssl_started) {
++	return;
++    }
++
++    /* Here we scan for unused real time signal */
++    sig=SIGRTMIN;
++
++    do {
++	
++	/* get old sigaction */
++	sigaction(sig,0,&oldsa);
++	
++	/* if signal's handler is empty */
++	if (oldsa.sa_handler == 0) 
++	{
++	    /* set the signal handler, and others */
++	    CSSL_SIGNAL=sig;
++	    sa.sa_sigaction = cssl_handler;
++	    sa.sa_flags = SA_SIGINFO;
++	    sa.sa_restorer = NULL;
++	    sigemptyset(&sa.sa_mask);
++	    sigaction(CSSL_SIGNAL,&sa,0);
++
++	    /* OK, the cssl is started */
++	    cssl_started=1;
++	    cssl_error=CSSL_OK;
++	    return;
++	} else {
++	    /* signal handler was not empty, 
++	       restore original */
++	    sigaction(CSSL_SIGNAL,&oldsa,0);
++	}
++	sig++;
++    } while(sig<=SIGRTMAX);
++    
++
++    /* Sorry, there's no free signal */
++    cssl_error=CSSL_ERROR_NOSIGNAL;
++    
++}
++
++/* stops the cssl */
++void cssl_stop()
++{
++    /* if not started we do nothing */
++    if (!cssl_started)
++	return;
++
++    /* we close all ports, and free the list */
++    while (head)
++	cssl_close(head);
++
++    /* then we remove the signal handler */
++    sigaction(CSSL_SIGNAL,&oldsa,NULL);
++
++    /* And at least : */
++    cssl_started=0;
++    cssl_error=CSSL_OK;
++}
++
++/*-------------------------------------
++ * Basic port operation - open/close
++ */
++
++
++/* opens the port */
++cssl_t *cssl_open(const char *fname,
++		  cssl_callback_t callback,
++		  int id,
++		  int baud,
++		  int bits,
++		  int parity,
++		  int stop)
++{
++    cssl_t *serial;
++
++    if (!cssl_started) {
++	cssl_error=CSSL_ERROR_NOTSTARTED;
++	return NULL;
++    }
++    
++    /* create new cssl_t structure */
++    serial=calloc(1,sizeof(cssl_t));
++
++    /* oops, no memory */
++    if (!serial) {
++	cssl_error=CSSL_ERROR_MEMORY;
++	return 0;
++    }
++
++    /* opening the file */
++    if(callback) {
++	/* user wants event driven reading */
++	serial->fd=open(fname,O_RDWR|O_NOCTTY|O_NONBLOCK);
++	fcntl(serial->fd,F_SETSIG,CSSL_SIGNAL);
++	fcntl(serial->fd,F_SETOWN,getpid());
++	fcntl(serial->fd,F_SETFL,O_ASYNC|O_NONBLOCK);
++    } else {
++	/* the read/write operations will be bloking */
++	serial->fd=open(fname,O_RDWR|O_NOCTTY);
++    }
++
++    /* oops, cannot open */
++    if (serial->fd == -1) {
++	cssl_error=CSSL_ERROR_OPEN;
++	free(serial);
++	return NULL;
++    }
++
++    /* we remember old termios */
++    tcgetattr(serial->fd,&(serial->oldtio));
++    
++    /* now we set new values */
++    cssl_setup(serial,baud,parity,bits,stop);
++
++    /* and id */
++    serial->id=id;
++
++    /* then set the callback */
++    serial->callback=callback;
++    
++    /* we add the serial to our list */
++    serial->next=head;
++    head=serial;
++	
++    cssl_error=CSSL_OK;
++
++    return serial;
++}
++
++
++/* closes file, removes serial from the list and frees it */
++void cssl_close(cssl_t *serial)
++{
++    cssl_t *cur;
++    
++    if (!cssl_started) {
++	cssl_error=CSSL_ERROR_NOTSTARTED;
++	return;
++    }
++    
++    if (!serial) {
++	cssl_error=CSSL_ERROR_NULLPOINTER;
++	return;
++    }
++    
++    /* first we flush the port */
++    tcflush(serial->fd,TCOFLUSH); 
++    tcflush(serial->fd,TCIFLUSH); 
++    
++    /* then we restore old settings */
++    tcsetattr(serial->fd,TCSANOW,&(serial->oldtio));
++    
++    /* and close the file */
++    close(serial->fd);
++    
++    /* now we can remove the serial from the list */
++
++    if (head==serial) {
++	head=serial->next;
++	free(serial);
++	cssl_error=CSSL_OK;
++	return;
++    }
++
++    for (cur=head;cur;cur=cur->next) {
++	if (cur->next==serial) {
++	    cur->next=serial->next;
++	    free(serial);
++	    cssl_error=CSSL_OK;
++	    return;
++	}
++    }
++
++    /* we should never reach there,
++       it means, that serial was not found in the list */
++    cssl_error=CSSL_ERROR_OOPS;
++}
++
++/*-------------------------------------
++ * Port setup
++ */
++
++/* sets up the port parameters */
++void cssl_setup(cssl_t *serial,
++		   int baud,
++		   int bits,
++		   int parity,
++		   int stop)
++{
++    tcflag_t baudrate;
++    tcflag_t databits;
++    tcflag_t stopbits;
++    tcflag_t checkparity;
++
++    if (!cssl_started) {
++	cssl_error=CSSL_ERROR_NOTSTARTED;
++	return;
++    }
++    
++    if (!serial) {
++	cssl_error=CSSL_ERROR_NULLPOINTER;
++	return;
++    }    
++
++    /* get the propr baudrate */
++    switch (baud) {
++    case 75:
++	baudrate=B75;
++	break;
++    case 110:
++	baudrate=B110;
++	break;
++    case 150:
++	baudrate=B150;
++	break;
++    case 300:
++	baudrate=B300;
++	break;
++    case 600:
++	baudrate=B600;
++	break;
++    case 1200:
++	baudrate=B1200;
++	break;
++    case 2400:
++	baudrate=B2400;
++	break;
++    case 4800:
++	baudrate=B4800;
++	break;
++    case 9600:
++	baudrate=B9600;
++	break;
++    case 19200:
++	baudrate=B19200;
++	break;
++    case 38400:
++	baudrate=B38400;
++	break;
++    case 57600:
++	baudrate=B57600;
++	break;
++    case 115200:
++	baudrate=B115200;
++	break;
++    default:
++	baudrate=B9600;
++    }
++
++    /* databits */
++    switch (bits) {
++    case 7:
++	databits=CS7;
++	break;
++    case 8:
++	databits=CS8;
++	break;
++    default:
++	databits=CS8;
++    }
++    
++    /* parity, */
++    switch (parity) {
++    case 0:
++	checkparity=0;
++	break;
++    case 1:   //odd
++	checkparity=PARENB|PARODD;
++	break;
++    case 2:
++	checkparity=PARENB;
++	break;
++    default:
++	checkparity=0;
++    }
++    
++    /* and stop bits */
++    switch (stop) {
++    case 1:
++	stopbits=0;
++	break;
++    case 2:
++	stopbits=CSTOPB;
++	break;
++    default:
++	stopbits=0;
++    }
++    
++    /* now we setup the values in port's termios */
++    serial->tio.c_cflag=baudrate|databits|checkparity|stopbits|CLOCAL|CREAD;
++    serial->tio.c_iflag=IGNPAR;
++    serial->tio.c_oflag=0;
++    serial->tio.c_lflag=0;
++    serial->tio.c_cc[VMIN]=1;
++    serial->tio.c_cc[VTIME]=0;
++
++    /* we flush the port */
++    tcflush(serial->fd,TCOFLUSH);
++    tcflush(serial->fd,TCIFLUSH);
++    
++    /* we send new config to the port */
++    tcsetattr(serial->fd,TCSANOW,&(serial->tio));
++
++    cssl_error=CSSL_OK;
++}
++
++void cssl_setflowcontrol(cssl_t *serial,
++			 int rtscts,
++			 int xonxoff)
++{
++    if (!cssl_started) {
++	cssl_error=CSSL_ERROR_NOTSTARTED;
++	return;
++    }
++    
++    if (!serial) {
++	cssl_error=CSSL_ERROR_NULLPOINTER;
++	return;
++    }    
++
++    /* We setup rts/cts (hardware) flow control */
++    if (rtscts) {
++	serial->tio.c_cflag |= CRTSCTS;
++    } else {
++	serial->tio.c_cflag &= ~CRTSCTS;
++    }
++    
++    /* We setup xon/xoff (soft) flow control */
++    if (xonxoff) {
++	serial->tio.c_iflag |= (IXON|IXOFF);
++    } else {
++	serial->tio.c_iflag &= ~(IXON|IXOFF);
++    }
++    
++    tcsetattr(serial->fd,TCSANOW,&(serial->tio));
++
++    cssl_error=CSSL_OK;
++}
++
++/* Blocking mode: sets the timeout in 
++   hundreds of miliseconds */
++void cssl_settimeout(cssl_t *serial, int timeout)
++{
++    if (!cssl_started) {
++	cssl_error=CSSL_ERROR_NOTSTARTED;
++	return;
++    }
++    
++    if (!serial) {
++	cssl_error=CSSL_ERROR_NULLPOINTER;
++	return;
++    }    
++
++    serial->tio.c_cc[VTIME]=timeout;
++    
++    tcsetattr(serial->fd,TCSANOW,&(serial->tio));
++
++    cssl_error=CSSL_OK;
++}
++
++/*-------------------------------------
++ * Serial communication
++ */
++
++/* sending a char */
++void cssl_putchar(cssl_t *serial,
++		     char c)
++{
++    if (!cssl_started) 
++    {
++	cssl_error=CSSL_ERROR_NOTSTARTED;
++	return;
++    }
++    
++    if (!serial) 
++    {
++	cssl_error=CSSL_ERROR_NULLPOINTER;
++	return;
++    }
++
++    int result = write(serial->fd,&c,1);
++}
++
++/* sending a null-terminated string */
++void cssl_putstring(cssl_t *serial,
++		     char *str)
++{
++    if (!cssl_started) {
++	cssl_error=CSSL_ERROR_NOTSTARTED;
++	return;
++    }
++    
++    if (!serial) {
++	cssl_error=CSSL_ERROR_NULLPOINTER;
++	return;
++    }
++
++    int result = write(serial->fd,str,strlen(str));
++}
++
++/* sending a data of known size */
++void cssl_putdata(cssl_t *serial,
++		  uint8_t *data,
++		  int datalen)
++{
++    if (!cssl_started) {
++	cssl_error=CSSL_ERROR_NOTSTARTED;
++	return;
++    }
++    
++    if (!serial) {
++	cssl_error=CSSL_ERROR_NULLPOINTER;
++	return;
++    }    
++
++    int result = write(serial->fd,data,datalen);
++}
++
++void cssl_drain(cssl_t *serial)
++{
++    if (!cssl_started) {
++	cssl_error=CSSL_ERROR_NOTSTARTED;
++	return;
++    }
++    
++    if (!serial) {
++	cssl_error=CSSL_ERROR_NULLPOINTER;
++	return;
++    }    
++
++    tcdrain(serial->fd);
++}
++
++/* blocking mode: reading a char */
++int cssl_getchar(cssl_t *serial)
++{
++    uint8_t c;
++    int result = read(serial->fd,&c,sizeof(c));
++    if (result<=0)
++	return -1;
++    
++    return c;
++}
++
++/* blocking mode: reading a data buffer */
++int cssl_getdata(cssl_t *serial,
++		 uint8_t *buffer,
++		 int size)
++{
++    return read(serial->fd,buffer,size);
++}
++
++/*------------------------------------------*/
++
++/* The most important: signal handler */
++void cssl_handler(int signo, siginfo_t *info, void *ignored)
++{
++    cssl_t *cur;
++    int n;
++
++    /* is this signal which says about
++       incoming of the data? */
++    if (info->si_code==POLL_IN) {
++
++	/* Yes, we got some data */
++	for(cur=head;cur;cur=cur->next) {
++
++	    /* Let's find proper cssl_t */
++	    if (cur->fd==info->si_fd) {
++
++		/* Got it */
++		n=read(cur->fd,cur->buffer,255);
++
++		/* Execute callback */
++		if ((n>0)&&(cur->callback))
++		    cur->callback(cur->id,cur->buffer,n);
++		return;
++	    }
++	}
++    }
++}
+diff --git a/src/EVA11/base/Uart/cssl.h b/src/EVA11/base/Uart/cssl.h
+new file mode 100644
+index 0000000..823aab5
+--- /dev/null
++++ b/src/EVA11/base/Uart/cssl.h
+@@ -0,0 +1,128 @@
++/* Copyright 2003 Marcin Siennicki <m.siennicki@cloos.pl>
++ * see COPYING file for details */
++
++#ifndef __CSSL_H__
++#define __CSSL_H__
++
++#ifdef __cplusplus
++extern "C"
++{
++#endif
++
++#include <stdint.h>
++#include <signal.h>
++#include <termios.h>
++
++typedef void (*cssl_callback_t)(int id,  /* id passed to callback */
++				uint8_t *buffer, /* data received */
++				int len); /* length of data in bytes */
++
++typedef struct __cssl_t {
++
++    uint8_t buffer[255];      /* input buffer */
++
++    int fd;                   /* tty file descriptor */
++
++    struct termios tio;       /* termios structure for the port */
++    struct termios oldtio;    /* old termios structure */
++
++    cssl_callback_t callback; /* callback function */
++
++    int id;                   /* id which would be passed to callback */
++
++    struct __cssl_t *next;
++
++} cssl_t;
++
++typedef enum {
++    CSSL_OK,                 /* everything is all right */
++    CSSL_ERROR_NOSIGNAL,     /* there's no free signal */
++    CSSL_ERROR_NOTSTARTED,   /* you should first start cssl */
++    CSSL_ERROR_NULLPOINTER,  /* you gave a null pointer to the function */
++    CSSL_ERROR_OOPS,         /* internal error, something's erong */
++    CSSL_ERROR_MEMORY,       /* there's no memory for cssl_t structure */
++    CSSL_ERROR_OPEN          /* file doesnt exist or you aren't good user */
++} cssl_error_t;
++
++/* get the error message */
++const char *cssl_geterrormsg();
++
++/* get the error code */
++int cssl_geterror();
++
++/* start the cssl */
++void cssl_start();
++
++/* finish all jobs, clear memory, etc. */
++void cssl_stop();
++
++/* alloc new cssl_t struct and open the port */
++cssl_t *cssl_open(const char *fname, /* pathname of port file,
++				      * for example "/dev/ttyS0" */
++		  cssl_callback_t callback, /* callback function
++					     * If you dont want
++					     * event driven reading - set
++					     * it to NULL */
++		  int id,     /* your own id for the port, it can help
++			       * to identify the port in callback f.*/
++		  int baud,   /* baudrate, integer, for example 19200 */
++		  int bits,   /* data bits: 7 or 8 */
++		  int parity, /* parity: 0 - none, 1-odd, 2-even */
++		  int stop);  /* stop bits: 1 or 2 */
++
++/* closes the port, and frees its cssl_t struct */
++void cssl_close(cssl_t *serial);
++
++/* setups the port, look at cssl_open */
++void cssl_setup(cssl_t *serial,
++		   int baud,
++		   int bits,
++		   int parity,
++		   int stop);
++
++void cssl_setflowcontrol(cssl_t *serial,
++			 int rtscts,   /* Boolean: 
++					* 0 - no rts/cts control,
++					* 1 - rts/cts control 
++					*/
++			 int xonxoff); /* Boolean: 
++					* 0 - no xon/xoff, 
++					* 1 - xon/xoff 
++					*/
++
++/* sends a char via serial port */
++void cssl_putchar(cssl_t *serial,
++		     char c);
++
++/* sends a null terminated string */
++void cssl_putstring(cssl_t *serial,
++		       char *str);
++
++/* sends a data of known size */
++void cssl_putdata(cssl_t *serial,
++		  uint8_t *data, /* data */
++		  int datalen);  /* length of data */
++
++/* waits until all data has been transmited */
++
++void cssl_drain(cssl_t *serial);
++
++/*====================================== 
++ * Blocking mode 
++ */
++
++/* Sets port timeout (deciseconds) in blocking mode */
++void cssl_settimeout(cssl_t *serial, int timeout);
++
++/* reads a char in blocking mode */
++int cssl_getchar(cssl_t *serial);
++
++/* reads a data to a buffer in blocking mode*/
++int cssl_getdata(cssl_t *serial,
++		 uint8_t *buffer,  /* buffer for data */
++		 int size);        /* buffer size */
++
++#ifdef __cplusplus
++}
++#endif
++#endif /* __CSSL_H__ */
+diff --git a/src/EVA11/base/cssl.c b/src/EVA11/base/cssl.c
+deleted file mode 100644
+index a287d0a..0000000
+--- a/src/EVA11/base/cssl.c
++++ /dev/null
+@@ -1,564 +0,0 @@
+-/* Copyright 2003 Marcin Siennicki <m.siennicki@cloos.pl>
+- * see COPYING file for details */
+-#define _GNU_SOURCE
+-
+-#include <stdio.h>
+-
+-#include <string.h>
+-#include <termios.h>
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <fcntl.h>
+-#include <stdlib.h>
+-#include <signal.h>
+-#include <unistd.h>
+-
+-#include "cssl.h"
+-
+-/*
+- * Static variables and constants
+- */
+-
+-/* signal number for serial i/o read */
+-static int CSSL_SIGNAL=0;
+-
+-/* boolean that say if we have started cssl */
+-static int cssl_started=0;
+-
+-/* sigactions */
+-static struct sigaction sa;
+-static struct sigaction oldsa;
+-
+-/* head of the cssl_t list */
+-static cssl_t *head=0;
+-
+-/* error messages table */
+-static const char *cssl_errors[]= {
+-    "cssl: OK",
+-    "cssl: there's no free signal",
+-    "cssl: not started",
+-    "cssl: null pointer",
+-    "cssl: oops",
+-    "cssl: out of memory",
+-    "cssl: cannot open file"
+-};
+-
+-/* status of last cssl function */ 
+-static cssl_error_t cssl_error=CSSL_OK;
+-
+-/* prototype of signal handler */
+-static void cssl_handler(int signo, siginfo_t *info, void *ignored);
+-
+-
+-/**************************************
+- * Public functions
+- **************************************/
+-
+-/*-------------------------------------
+- * Error handling
+- */
+-
+-/* gets the last operation status message */
+-const char *cssl_geterrormsg()
+-{
+-    return cssl_errors[cssl_error];
+-}
+-
+-
+-/* gets the last error code */
+-int cssl_geterror()
+-{
+-    return cssl_error;
+-}
+-
+-/*-------------------------------------
+- * Startig/stoping cssl
+- */
+-
+-/* starts cssl */
+-void cssl_start()
+-{
+-    int sig;
+-
+-    if (cssl_started) {
+-	return;
+-    }
+-
+-    /* Here we scan for unused real time signal */
+-    sig=SIGRTMIN;
+-
+-    do {
+-	
+-	/* get old sigaction */
+-	sigaction(sig,0,&oldsa);
+-	
+-	/* if signal's handler is empty */
+-	if (oldsa.sa_handler == 0) 
+-	{
+-	    /* set the signal handler, and others */
+-	    CSSL_SIGNAL=sig;
+-	    sa.sa_sigaction = cssl_handler;
+-	    sa.sa_flags = SA_SIGINFO;
+-	    sa.sa_restorer = NULL;
+-	    sigemptyset(&sa.sa_mask);
+-	    sigaction(CSSL_SIGNAL,&sa,0);
+-
+-	    /* OK, the cssl is started */
+-	    cssl_started=1;
+-	    cssl_error=CSSL_OK;
+-	    return;
+-	} else {
+-	    /* signal handler was not empty, 
+-	       restore original */
+-	    sigaction(CSSL_SIGNAL,&oldsa,0);
+-	}
+-	sig++;
+-    } while(sig<=SIGRTMAX);
+-    
+-
+-    /* Sorry, there's no free signal */
+-    cssl_error=CSSL_ERROR_NOSIGNAL;
+-    
+-}
+-
+-/* stops the cssl */
+-void cssl_stop()
+-{
+-    /* if not started we do nothing */
+-    if (!cssl_started)
+-	return;
+-
+-    /* we close all ports, and free the list */
+-    while (head)
+-	cssl_close(head);
+-
+-    /* then we remove the signal handler */
+-    sigaction(CSSL_SIGNAL,&oldsa,NULL);
+-
+-    /* And at least : */
+-    cssl_started=0;
+-    cssl_error=CSSL_OK;
+-}
+-
+-/*-------------------------------------
+- * Basic port operation - open/close
+- */
+-
+-
+-/* opens the port */
+-cssl_t *cssl_open(const char *fname,
+-		  cssl_callback_t callback,
+-		  int id,
+-		  int baud,
+-		  int bits,
+-		  int parity,
+-		  int stop)
+-{
+-    cssl_t *serial;
+-
+-    if (!cssl_started) {
+-	cssl_error=CSSL_ERROR_NOTSTARTED;
+-	return NULL;
+-    }
+-    
+-    /* create new cssl_t structure */
+-    serial=calloc(1,sizeof(cssl_t));
+-
+-    /* oops, no memory */
+-    if (!serial) {
+-	cssl_error=CSSL_ERROR_MEMORY;
+-	return 0;
+-    }
+-
+-    /* opening the file */
+-    if(callback) {
+-	/* user wants event driven reading */
+-	serial->fd=open(fname,O_RDWR|O_NOCTTY|O_NONBLOCK);
+-	fcntl(serial->fd,F_SETSIG,CSSL_SIGNAL);
+-	fcntl(serial->fd,F_SETOWN,getpid());
+-	fcntl(serial->fd,F_SETFL,O_ASYNC|O_NONBLOCK);
+-    } else {
+-	/* the read/write operations will be bloking */
+-	serial->fd=open(fname,O_RDWR|O_NOCTTY);
+-    }
+-
+-    /* oops, cannot open */
+-    if (serial->fd == -1) {
+-	cssl_error=CSSL_ERROR_OPEN;
+-	free(serial);
+-	return NULL;
+-    }
+-
+-    /* we remember old termios */
+-    tcgetattr(serial->fd,&(serial->oldtio));
+-    
+-    /* now we set new values */
+-    cssl_setup(serial,baud,parity,bits,stop);
+-
+-    /* and id */
+-    serial->id=id;
+-
+-    /* then set the callback */
+-    serial->callback=callback;
+-    
+-    /* we add the serial to our list */
+-    serial->next=head;
+-    head=serial;
+-	
+-    cssl_error=CSSL_OK;
+-
+-    return serial;
+-}
+-
+-
+-/* closes file, removes serial from the list and frees it */
+-void cssl_close(cssl_t *serial)
+-{
+-    cssl_t *cur;
+-    
+-    if (!cssl_started) {
+-	cssl_error=CSSL_ERROR_NOTSTARTED;
+-	return;
+-    }
+-    
+-    if (!serial) {
+-	cssl_error=CSSL_ERROR_NULLPOINTER;
+-	return;
+-    }
+-    
+-    /* first we flush the port */
+-    tcflush(serial->fd,TCOFLUSH); 
+-    tcflush(serial->fd,TCIFLUSH); 
+-    
+-    /* then we restore old settings */
+-    tcsetattr(serial->fd,TCSANOW,&(serial->oldtio));
+-    
+-    /* and close the file */
+-    close(serial->fd);
+-    
+-    /* now we can remove the serial from the list */
+-
+-    if (head==serial) {
+-	head=serial->next;
+-	free(serial);
+-	cssl_error=CSSL_OK;
+-	return;
+-    }
+-
+-    for (cur=head;cur;cur=cur->next) {
+-	if (cur->next==serial) {
+-	    cur->next=serial->next;
+-	    free(serial);
+-	    cssl_error=CSSL_OK;
+-	    return;
+-	}
+-    }
+-
+-    /* we should never reach there,
+-       it means, that serial was not found in the list */
+-    cssl_error=CSSL_ERROR_OOPS;
+-}
+-
+-/*-------------------------------------
+- * Port setup
+- */
+-
+-/* sets up the port parameters */
+-void cssl_setup(cssl_t *serial,
+-		   int baud,
+-		   int bits,
+-		   int parity,
+-		   int stop)
+-{
+-    tcflag_t baudrate;
+-    tcflag_t databits;
+-    tcflag_t stopbits;
+-    tcflag_t checkparity;
+-
+-    if (!cssl_started) {
+-	cssl_error=CSSL_ERROR_NOTSTARTED;
+-	return;
+-    }
+-    
+-    if (!serial) {
+-	cssl_error=CSSL_ERROR_NULLPOINTER;
+-	return;
+-    }    
+-
+-    /* get the propr baudrate */
+-    switch (baud) {
+-    case 75:
+-	baudrate=B75;
+-	break;
+-    case 110:
+-	baudrate=B110;
+-	break;
+-    case 150:
+-	baudrate=B150;
+-	break;
+-    case 300:
+-	baudrate=B300;
+-	break;
+-    case 600:
+-	baudrate=B600;
+-	break;
+-    case 1200:
+-	baudrate=B1200;
+-	break;
+-    case 2400:
+-	baudrate=B2400;
+-	break;
+-    case 4800:
+-	baudrate=B4800;
+-	break;
+-    case 9600:
+-	baudrate=B9600;
+-	break;
+-    case 19200:
+-	baudrate=B19200;
+-	break;
+-    case 38400:
+-	baudrate=B38400;
+-	break;
+-    case 57600:
+-	baudrate=B57600;
+-	break;
+-    case 115200:
+-	baudrate=B115200;
+-	break;
+-    default:
+-	baudrate=B9600;
+-    }
+-
+-    /* databits */
+-    switch (bits) {
+-    case 7:
+-	databits=CS7;
+-	break;
+-    case 8:
+-	databits=CS8;
+-	break;
+-    default:
+-	databits=CS8;
+-    }
+-    
+-    /* parity, */
+-    switch (parity) {
+-    case 0:
+-	checkparity=0;
+-	break;
+-    case 1:   //odd
+-	checkparity=PARENB|PARODD;
+-	break;
+-    case 2:
+-	checkparity=PARENB;
+-	break;
+-    default:
+-	checkparity=0;
+-    }
+-    
+-    /* and stop bits */
+-    switch (stop) {
+-    case 1:
+-	stopbits=0;
+-	break;
+-    case 2:
+-	stopbits=CSTOPB;
+-	break;
+-    default:
+-	stopbits=0;
+-    }
+-    
+-    /* now we setup the values in port's termios */
+-    serial->tio.c_cflag=baudrate|databits|checkparity|stopbits|CLOCAL|CREAD;
+-    serial->tio.c_iflag=IGNPAR;
+-    serial->tio.c_oflag=0;
+-    serial->tio.c_lflag=0;
+-    serial->tio.c_cc[VMIN]=1;
+-    serial->tio.c_cc[VTIME]=0;
+-
+-    /* we flush the port */
+-    tcflush(serial->fd,TCOFLUSH);
+-    tcflush(serial->fd,TCIFLUSH);
+-    
+-    /* we send new config to the port */
+-    tcsetattr(serial->fd,TCSANOW,&(serial->tio));
+-
+-    cssl_error=CSSL_OK;
+-}
+-
+-void cssl_setflowcontrol(cssl_t *serial,
+-			 int rtscts,
+-			 int xonxoff)
+-{
+-    if (!cssl_started) {
+-	cssl_error=CSSL_ERROR_NOTSTARTED;
+-	return;
+-    }
+-    
+-    if (!serial) {
+-	cssl_error=CSSL_ERROR_NULLPOINTER;
+-	return;
+-    }    
+-
+-    /* We setup rts/cts (hardware) flow control */
+-    if (rtscts) {
+-	serial->tio.c_cflag |= CRTSCTS;
+-    } else {
+-	serial->tio.c_cflag &= ~CRTSCTS;
+-    }
+-    
+-    /* We setup xon/xoff (soft) flow control */
+-    if (xonxoff) {
+-	serial->tio.c_iflag |= (IXON|IXOFF);
+-    } else {
+-	serial->tio.c_iflag &= ~(IXON|IXOFF);
+-    }
+-    
+-    tcsetattr(serial->fd,TCSANOW,&(serial->tio));
+-
+-    cssl_error=CSSL_OK;
+-}
+-
+-/* Blocking mode: sets the timeout in 
+-   hundreds of miliseconds */
+-void cssl_settimeout(cssl_t *serial, int timeout)
+-{
+-    if (!cssl_started) {
+-	cssl_error=CSSL_ERROR_NOTSTARTED;
+-	return;
+-    }
+-    
+-    if (!serial) {
+-	cssl_error=CSSL_ERROR_NULLPOINTER;
+-	return;
+-    }    
+-
+-    serial->tio.c_cc[VTIME]=timeout;
+-    
+-    tcsetattr(serial->fd,TCSANOW,&(serial->tio));
+-
+-    cssl_error=CSSL_OK;
+-}
+-
+-/*-------------------------------------
+- * Serial communication
+- */
+-
+-/* sending a char */
+-void cssl_putchar(cssl_t *serial,
+-		     char c)
+-{
+-    if (!cssl_started) 
+-    {
+-	cssl_error=CSSL_ERROR_NOTSTARTED;
+-	return;
+-    }
+-    
+-    if (!serial) 
+-    {
+-	cssl_error=CSSL_ERROR_NULLPOINTER;
+-	return;
+-    }
+-
+-    int result = write(serial->fd,&c,1);
+-}
+-
+-/* sending a null-terminated string */
+-void cssl_putstring(cssl_t *serial,
+-		     char *str)
+-{
+-    if (!cssl_started) {
+-	cssl_error=CSSL_ERROR_NOTSTARTED;
+-	return;
+-    }
+-    
+-    if (!serial) {
+-	cssl_error=CSSL_ERROR_NULLPOINTER;
+-	return;
+-    }
+-
+-    int result = write(serial->fd,str,strlen(str));
+-}
+-
+-/* sending a data of known size */
+-void cssl_putdata(cssl_t *serial,
+-		  uint8_t *data,
+-		  int datalen)
+-{
+-    if (!cssl_started) {
+-	cssl_error=CSSL_ERROR_NOTSTARTED;
+-	return;
+-    }
+-    
+-    if (!serial) {
+-	cssl_error=CSSL_ERROR_NULLPOINTER;
+-	return;
+-    }    
+-
+-    int result = write(serial->fd,data,datalen);
+-}
+-
+-void cssl_drain(cssl_t *serial)
+-{
+-    if (!cssl_started) {
+-	cssl_error=CSSL_ERROR_NOTSTARTED;
+-	return;
+-    }
+-    
+-    if (!serial) {
+-	cssl_error=CSSL_ERROR_NULLPOINTER;
+-	return;
+-    }    
+-
+-    tcdrain(serial->fd);
+-}
+-
+-/* blocking mode: reading a char */
+-int cssl_getchar(cssl_t *serial)
+-{
+-    uint8_t c;
+-    int result = read(serial->fd,&c,sizeof(c));
+-    if (result<=0)
+-	return -1;
+-    
+-    return c;
+-}
+-
+-/* blocking mode: reading a data buffer */
+-int cssl_getdata(cssl_t *serial,
+-		 uint8_t *buffer,
+-		 int size)
+-{
+-    return read(serial->fd,buffer,size);
+-}
+-
+-/*------------------------------------------*/
+-
+-/* The most important: signal handler */
+-void cssl_handler(int signo, siginfo_t *info, void *ignored)
+-{
+-    cssl_t *cur;
+-    int n;
+-
+-    /* is this signal which says about
+-       incoming of the data? */
+-    if (info->si_code==POLL_IN) {
+-
+-	/* Yes, we got some data */
+-	for(cur=head;cur;cur=cur->next) {
+-
+-	    /* Let's find proper cssl_t */
+-	    if (cur->fd==info->si_fd) {
+-
+-		/* Got it */
+-		n=read(cur->fd,cur->buffer,255);
+-
+-		/* Execute callback */
+-		if ((n>0)&&(cur->callback))
+-		    cur->callback(cur->id,cur->buffer,n);
+-		return;
+-	    }
+-	}
+-    }
+-}
+diff --git a/src/EVA11/base/cssl.h b/src/EVA11/base/cssl.h
+deleted file mode 100644
+index 823aab5..0000000
+--- a/src/EVA11/base/cssl.h
++++ /dev/null
+@@ -1,128 +0,0 @@
+-/* Copyright 2003 Marcin Siennicki <m.siennicki@cloos.pl>
+- * see COPYING file for details */
+-
+-#ifndef __CSSL_H__
+-#define __CSSL_H__
+-
+-#ifdef __cplusplus
+-extern "C"
+-{
+-#endif
+-
+-#include <stdint.h>
+-#include <signal.h>
+-#include <termios.h>
+-
+-typedef void (*cssl_callback_t)(int id,  /* id passed to callback */
+-				uint8_t *buffer, /* data received */
+-				int len); /* length of data in bytes */
+-
+-typedef struct __cssl_t {
+-
+-    uint8_t buffer[255];      /* input buffer */
+-
+-    int fd;                   /* tty file descriptor */
+-
+-    struct termios tio;       /* termios structure for the port */
+-    struct termios oldtio;    /* old termios structure */
+-
+-    cssl_callback_t callback; /* callback function */
+-
+-    int id;                   /* id which would be passed to callback */
+-
+-    struct __cssl_t *next;
+-
+-} cssl_t;
+-
+-typedef enum {
+-    CSSL_OK,                 /* everything is all right */
+-    CSSL_ERROR_NOSIGNAL,     /* there's no free signal */
+-    CSSL_ERROR_NOTSTARTED,   /* you should first start cssl */
+-    CSSL_ERROR_NULLPOINTER,  /* you gave a null pointer to the function */
+-    CSSL_ERROR_OOPS,         /* internal error, something's erong */
+-    CSSL_ERROR_MEMORY,       /* there's no memory for cssl_t structure */
+-    CSSL_ERROR_OPEN          /* file doesnt exist or you aren't good user */
+-} cssl_error_t;
+-
+-/* get the error message */
+-const char *cssl_geterrormsg();
+-
+-/* get the error code */
+-int cssl_geterror();
+-
+-/* start the cssl */
+-void cssl_start();
+-
+-/* finish all jobs, clear memory, etc. */
+-void cssl_stop();
+-
+-/* alloc new cssl_t struct and open the port */
+-cssl_t *cssl_open(const char *fname, /* pathname of port file,
+-				      * for example "/dev/ttyS0" */
+-		  cssl_callback_t callback, /* callback function
+-					     * If you dont want
+-					     * event driven reading - set
+-					     * it to NULL */
+-		  int id,     /* your own id for the port, it can help
+-			       * to identify the port in callback f.*/
+-		  int baud,   /* baudrate, integer, for example 19200 */
+-		  int bits,   /* data bits: 7 or 8 */
+-		  int parity, /* parity: 0 - none, 1-odd, 2-even */
+-		  int stop);  /* stop bits: 1 or 2 */
+-
+-/* closes the port, and frees its cssl_t struct */
+-void cssl_close(cssl_t *serial);
+-
+-/* setups the port, look at cssl_open */
+-void cssl_setup(cssl_t *serial,
+-		   int baud,
+-		   int bits,
+-		   int parity,
+-		   int stop);
+-
+-void cssl_setflowcontrol(cssl_t *serial,
+-			 int rtscts,   /* Boolean: 
+-					* 0 - no rts/cts control,
+-					* 1 - rts/cts control 
+-					*/
+-			 int xonxoff); /* Boolean: 
+-					* 0 - no xon/xoff, 
+-					* 1 - xon/xoff 
+-					*/
+-
+-/* sends a char via serial port */
+-void cssl_putchar(cssl_t *serial,
+-		     char c);
+-
+-/* sends a null terminated string */
+-void cssl_putstring(cssl_t *serial,
+-		       char *str);
+-
+-/* sends a data of known size */
+-void cssl_putdata(cssl_t *serial,
+-		  uint8_t *data, /* data */
+-		  int datalen);  /* length of data */
+-
+-/* waits until all data has been transmited */
+-
+-void cssl_drain(cssl_t *serial);
+-
+-/*====================================== 
+- * Blocking mode 
+- */
+-
+-/* Sets port timeout (deciseconds) in blocking mode */
+-void cssl_settimeout(cssl_t *serial, int timeout);
+-
+-/* reads a char in blocking mode */
+-int cssl_getchar(cssl_t *serial);
+-
+-/* reads a data to a buffer in blocking mode*/
+-int cssl_getdata(cssl_t *serial,
+-		 uint8_t *buffer,  /* buffer for data */
+-		 int size);        /* buffer size */
+-
+-#ifdef __cplusplus
+-}
+-#endif
+-#endif /* __CSSL_H__ */
+diff --git a/src/EVA11/base/main.cpp b/src/EVA11/base/main.cpp
+index a9a6442..c0f19f8 100644
+--- a/src/EVA11/base/main.cpp
++++ b/src/EVA11/base/main.cpp
+@@ -21,6 +21,9 @@
+ #include 	<cstdlib>
+ #include 	<cstdio>
+ #include	<iostream>	
++#include 	<stdint.h>
++#include 	<signal.h>
++#include 	<termios.h>
+ 
+ #include 	<gsl/gsl_integration.h>
+ 
+@@ -42,10 +45,11 @@
+ #include 	<SDL/SDL_rotozoom.h>
+ #include 	<SDL/SDL_image.h>
+ 
+-#include 	"Uart.h"
+ #include 	"Gif.h"
+ #include 	"Resource.h"
+ 
++#include 	"Test/Test.h"
++
+ #include 	<boost/timer.hpp>
+ //#include 	<random.h>
+ //#include 	<sort.h>
+@@ -357,6 +361,7 @@ void Signal_Interrupt(int n,siginfo_t *psiginfo,void *myact)
+ 	int
+ main ( int argc, char *argv[] )
+ {
++	Test test;
+ 	struct sigaction act;  
+ 	sigemptyset(&act.sa_mask);     				/* * 清空阻塞信号 **/  
+ 	act.sa_flags = SA_SIGINFO;     				/* * 设置SA_SIGINFO 表示传递附加信息到触发函数 **/  
+-- 
+1.8.5.1
+
