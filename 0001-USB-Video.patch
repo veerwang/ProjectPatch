@@ -1,0 +1,3413 @@
+From 99ce8efbadf05af3f2b7c10ea330ec50811bb8cf Mon Sep 17 00:00:00 2001
+From: kevin <kevin.wang2004@hotmail.com>
+Date: Thu, 23 Jan 2014 10:16:24 +0800
+Subject: [PATCH] =?UTF-8?q?=E8=BF=9B=E8=A1=8CUSB=E8=B0=83=E6=95=B4,?=
+ =?UTF-8?q?=E4=BB=A5=E5=8F=8AVideo=E7=9A=84=E7=9B=AE=E5=BD=95=E8=B0=83?=
+ =?UTF-8?q?=E6=95=B4?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ src/EVA11/base/IView.cpp         |   13 +-
+ src/EVA11/base/MKlib.mk          |    6 +-
+ src/EVA11/base/USB.cpp           |  117 -----
+ src/EVA11/base/USB.h             |   41 --
+ src/EVA11/base/USB/.USB.cpp.swp  |  Bin 0 -> 12288 bytes
+ src/EVA11/base/USB/Makefile      |   87 ++++
+ src/EVA11/base/USB/USB.cpp       |  117 +++++
+ src/EVA11/base/USB/USB.h         |   41 ++
+ src/EVA11/base/Video.cpp         | 1038 --------------------------------------
+ src/EVA11/base/Video.h           |   98 ----
+ src/EVA11/base/Video/Makefile    |   87 ++++
+ src/EVA11/base/Video/Video.cpp   | 1038 ++++++++++++++++++++++++++++++++++++++
+ src/EVA11/base/Video/Video.h     |   98 ++++
+ src/EVA11/base/Video/VideoHead.h |  205 ++++++++
+ src/EVA11/base/VideoHead.h       |  205 --------
+ src/EVA11/base/VideoPanel.cpp    |    2 +-
+ src/EVA11/base/ZKPanel.cpp       |    3 +
+ 17 files changed, 1692 insertions(+), 1504 deletions(-)
+ delete mode 100644 src/EVA11/base/USB.cpp
+ delete mode 100644 src/EVA11/base/USB.h
+ create mode 100644 src/EVA11/base/USB/.USB.cpp.swp
+ create mode 100644 src/EVA11/base/USB/Makefile
+ create mode 100644 src/EVA11/base/USB/USB.cpp
+ create mode 100644 src/EVA11/base/USB/USB.h
+ delete mode 100644 src/EVA11/base/Video.cpp
+ delete mode 100644 src/EVA11/base/Video.h
+ create mode 100644 src/EVA11/base/Video/Makefile
+ create mode 100644 src/EVA11/base/Video/Video.cpp
+ create mode 100644 src/EVA11/base/Video/Video.h
+ create mode 100644 src/EVA11/base/Video/VideoHead.h
+ delete mode 100644 src/EVA11/base/VideoHead.h
+
+diff --git a/src/EVA11/base/IView.cpp b/src/EVA11/base/IView.cpp
+index bf9e38b..6159576 100644
+--- a/src/EVA11/base/IView.cpp
++++ b/src/EVA11/base/IView.cpp
+@@ -167,6 +167,9 @@ int IView::Key_F1_Fun(Graphic& g)
+ 
+ 	Show_Help_System(g,x,y+50);
+ 
++#ifdef X86
++	g.Update_Rect(0,0,640,480);
++#endif
+ 	while( key!= KEY_ENTER && key!= KEY_ESC && key!= KEY_F1 )
+ 	{
+ 		key = lo->Get_Key();
+@@ -184,11 +187,16 @@ int IView::Key_F1_Fun(Graphic& g)
+ 		s = str(boost::format("%02d:%02d:%02d")%hour%min%second);
+ 		runtime->Set_Text(s.c_str());
+ 		runtime->Drawme(g,true);
+-
++#ifdef X86
++		g.Update_Rect(0,0,640,480);
++#endif
+ 		alg->MDelay(70);	
+ 	}
+ 	button->Set_Focus(true);
+ 	button->Drawme(g);
++#ifdef X86
++	g.Update_Rect(0,0,640,480);
++#endif
+ 	alg->MDelay(100);
+ 	delete button;
+ 	button = NULL;
+@@ -199,6 +207,9 @@ int IView::Key_F1_Fun(Graphic& g)
+ 	g.Restore_Disp_Area(0,0,639,479,mem);
+ 	delete[] mem;
+ 	mem = NULL;
++#ifdef X86
++	g.Update_Rect(0,0,640,480);
++#endif
+ }
+ 
+ int IView::Key_Enter_Fun(Graphic& g){;}
+diff --git a/src/EVA11/base/MKlib.mk b/src/EVA11/base/MKlib.mk
+index f68153a..459c3e7 100644
+--- a/src/EVA11/base/MKlib.mk
++++ b/src/EVA11/base/MKlib.mk
+@@ -39,9 +39,9 @@ LIBINC_BOOST    = yes
+ LIBINC_ZTHREAD  = yes
+ LIBINC_DIRECTFB = yes
+ 
+-THIRDLIB =
+-SEARCH_LIBPATH =
+-SEARCH_INCPATH = -I$(MYLIBS_DIR)/sp++/include/
++export THIRDLIB =
++export SEARCH_LIBPATH =
++export SEARCH_INCPATH = -I$(MYLIBS_DIR)/sp++/include/
+ 
+ ifeq ($(LIBINC_ETIO),yes)
+ THIRDLIB+=etio
+diff --git a/src/EVA11/base/USB.cpp b/src/EVA11/base/USB.cpp
+deleted file mode 100644
+index dc85a0c..0000000
+--- a/src/EVA11/base/USB.cpp
++++ /dev/null
+@@ -1,117 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  USB.cpp
+- *
+- *    Description:  Implementation of USB
+- *
+- *        Version:  1.0
+- *        Created:  2012年11月03日 12时27分01秒
+- *       Revision:  none
+- *       Compiler:  gcc
+- *
+- *         Author:  YOUR NAME (), 
+- *   Organization:  
+- *
+- * =====================================================================================
+- */
+-
+-#include 	<cstdio>
+-#include 	"USB.h"
+-
+-#define    USB_VENDOR_ID  		0x05ba
+-#define    USB_PRODUCT_ID		0x000a 
+-
+-USB::USB ()
+-{
+-}
+-
+-USB::~USB ()
+-{
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Init_USB
+- *  Description:  Init the USB libary used environment
+- * =====================================================================================
+- */
+-bool USB::Init_USB()
+-{
+-	int rc = 1;
+-	rc = libusb_init(NULL);
+-	if 	( rc < 0 )
+-	{
+-		perror("fail to init usb lib");
+-		return false;
+-	}
+-//	m_devh = NULL;
+-//	m_devh = libusb_open_device_with_vid_pid(NULL, 0x05ba, 0x000a);
+-//	if 	( m_devh == NULL )
+-//	{
+-//		perror("fail to open the usb device");
+-//		libusb_exit(NULL);
+-//		return false;
+-//	}
+-//	rc = libusb_claim_interface(m_devh, 0);
+-//	if 	(rc < 0) 
+-//	{
+-//		perror("fail to claim interface");
+-//		libusb_close(m_devh);
+-//		libusb_exit(NULL);
+-//		return false;
+-//	}
+-
+-	return true;
+-
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Destroy_USB
+- *  Description:  Destroy the USB library environment
+- * =====================================================================================
+- */
+-void USB::Destroy_USB()
+-{
+-//	libusb_release_interface(m_devh, 0);
+-//	libusb_close(m_devh);
+-	libusb_exit(NULL);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Show_USB_List
+- *  Description:  List All USB device of system
+- * =====================================================================================
+- */
+-void USB::Show_USB_List()
+-{
+-	libusb_device **devs;
+-	ssize_t cnt;
+-	cnt = libusb_get_device_list(NULL, &devs);
+-	if (cnt < 0)
+-	{
+-		perror("can't get device list");
+-		return;
+-	}
+-
+-	libusb_device *dev;
+-	int i = 0;
+-
+-	while ((dev = devs[i++]) != NULL) {
+-		struct libusb_device_descriptor desc;
+-		int r = libusb_get_device_descriptor(dev, &desc);
+-		if (r < 0) 
+-		{
+-			fprintf(stderr, "failed to get device descriptor");
+-			return;
+-		}
+-
+-		printf("%04x:%04x (bus %d, device %d)\n",
+-			desc.idVendor, desc.idProduct,
+-			libusb_get_bus_number(dev), libusb_get_device_address(dev));
+-	}
+-
+-	libusb_free_device_list(devs, 1);
+-}
+diff --git a/src/EVA11/base/USB.h b/src/EVA11/base/USB.h
+deleted file mode 100644
+index 9e99605..0000000
+--- a/src/EVA11/base/USB.h
++++ /dev/null
+@@ -1,41 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  USB.h
+- *
+- *    Description:  Management of USB port
+- *
+- *        Version:  1.0
+- *        Created:  2012年11月03日 12时24分48秒
+- *       Revision:  none
+- *       Compiler:  gcc
+- *
+- *         Author:  YOUR NAME (), 
+- *   Organization:  
+- *
+- * =====================================================================================
+- */
+-
+-#ifndef  _USB_INC
+-#define  _USB_INC
+-
+-#include 	<libusb.h>
+-
+-class USB
+-{
+-	public:
+-		USB ();                             /* constructor */
+-		~USB ();                            /* destructor */
+-		bool Init_USB();
+-		void Destroy_USB();
+-
+-
+-		void Show_USB_List();
+-	protected:
+-
+-	private:
+-		struct libusb_device_handle 			*m_devh;
+-
+-};
+-
+-#endif   /* ----- #ifndef _USB_INC  ----- */
+diff --git a/src/EVA11/base/USB/.USB.cpp.swp b/src/EVA11/base/USB/.USB.cpp.swp
+new file mode 100644
+index 0000000000000000000000000000000000000000..ecfcecad8b213847170900e837bc40b7696f6882
+GIT binary patch
+literal 12288
+zcmeI2TWB0*6vw}|v~_#4czF<fIN4IW+pc>_E7eV-#H58lx@psFuvlGYXTHr2?#?XV
+z%%)93D~i=t^rbHqS}he@!8>>X!3$pSLDUyTeDOiF@lEhqr2fxbvPm0l1*2HLf#2@r
+zoAaGH=YQrqUy|Kwer#|zZO?8KIMxes{+sVd)^{xxuPqniAvs|?Jbs0v;hILH?s|SU
+zIJ4ZQvEaNTfx}!&x#P-c=0@7p$(*Om+|IGSLLpZ*Jee!+yO+tDt=1K8sxNB=v;tSJ
+zK-;g~e&<@TwY!ktknExxZzx~=Ty3cp&<bb;v;tZIt$<cQE1(t73S1Kk_^l=4A~IPD
+z+F(fp-t?gr&<bb;v;tZIt$<cQE1(t73TOqi0$KsBz%`<PVF~f}G9jMD=l%ToKmQNl
+z_v?jt0h|R#!K2_lPzJqVCHQ5X5Z{8Y!5iQdcm~`9dO#6u0yl%3z^`kC_zHXpJ^~+t
+z_rZJMb?_>98N39}gWaGT{I*7j=fQK}ICug~0R!v>C6EEPf?L2!@aby!0q4LJFu`6h
+z1iHX_up0cdN{G+Fo8T-s4Nifl!BgN#a2y;38L$p~mk{D%Fbzy#fV%*JHDDD;faTzo
+z>);0*0L#F|l|ozqKY}m72jB#F3_JoJ1fyUt*aLb%4rD<B{ICK#fivI~u)uy$2BRPa
+zR)Eh?%TK_^;0)l}o(B5R3TOrXM+zJkiH2Qmd(}!!Nm;S*eJoQ}8n)-BaPDQOknTZi
+zfLS6o9G89tGb&EIS(S>-(iw`J@U_T?VOdIgUT_^gFyE4%nYFDk=~%AHQ1s&-<yvji
+z&%mOkY{##qk{k2e4i))@Qn(RqwAh#f!)f|}lgw}f3_?=UZ!0J8UW;aXz9kjhCu@e?
+zkQVtaA*$E`-&ENx-&M&VsA+hzYm`#7gYs$OpB$eQ^)8T6XD%m|q1$*M@Z$LjDa2DE
+z0XpVEstEF69T8EAXX6HV_3pQ~Y<VC}UA<H)4-KVh8kunbHm>I}Ba$`rNSpB<SEG}8
+z3+cKll{5`!lRr0Cu40fSlH?psIOZ%xg3lJpFsM665+pa_adMt#Psxf;m~(kR9Ff-}
+zrp1J7TZFIG6^r}o?!gMqDntAbr3G!y0qR|hgB{aAR8re@ibQ-@>T5JOn7HU}jl4<E
+zm(9SQ!lPs~CG6*g8wE<Vt6b_I9ULyvKNPpfZ6+Z)i%lM~{Zvr$9+At%Wi}hGCsR#c
+zL3K#qxu9f2;=79#JQ`Bf3^O*$pqlg5hZw$cC%FLszV^}0$*;>memuR(P?IE`30t{N
+zQ#$?v6_^w9qU$db;kqF#Sc#<si4XHjJX|vx9>#ejT6&jMDjvSPREc;Ua^K;uV>S%C
+zNwX#6l?cDn{DRe(NGUVwIT*nC?0O95{Yj}|`ZwdfG%B|xouEMI`O*5gEHVloK|K3G
+zTcR|_9FN6ajvd9l{-EvGD-*U=Y1vlrSmVJwl)s~D1n>F05#~PYf}eae6K>&AJtE<;
+z2SnX0R?&8BpEy?3V@@+mq$t!6!Oc^T?c<dd_HvfCz^kO{x<Okg76)PU-z*Wn^W62p
+z%cJdKoBHcD5(m8K3uIaZP5cOVPc#s;tY{=2*kH+;?MUvS7^>_U86GJ2k5&c;5($(X
+zr6zHS$=J@)!0-qxhyoit7D8;W9kbE4Bqfq?ldUJ`jO;M6huiMm_>*UG_l~d`4Xbg(
+zv8N0_+(5#?aF6I~`*l}gm)JjC9-&g-?wt@NLon%B^}Ed$wsp1|H_guY2!3PnLYI!~
+z$j$}oSJLpMg$dpHLidGt-zpSlP9Mu}ojG}q3f(g&-|60d;n?H(!p|?Bm@{iks>od-
+wo5y%`Y5wjv*laZ<_t_vD!o~-6JI2Ur7h-k7t&fH0Z^4JY7Gr<z#l9#00OxW_761SM
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/EVA11/base/USB/Makefile b/src/EVA11/base/USB/Makefile
+new file mode 100644
+index 0000000..98560e8
+--- /dev/null
++++ b/src/EVA11/base/USB/Makefile
+@@ -0,0 +1,87 @@
++##########################################################
++#
++#                    The EVA11 project Makefile
++#
++# Author:    kevin.wang
++# Company:   Eddysun     xiamen
++# Date:      2012.12.13
++# Comment:   Try to re-structure the Project Makefile
++#            
++#
++###########################################################
++
++TXTOBJS	:=
++TXTDEPS	:=DEPS
++OBJS_DIR:=./$(TXTOBJS)/
++DEPS_DIR:=./$(TXTDEPS)/
++
++SRCS=
++SRCS+=$(wildcard *.cpp *.c)
++
++ifeq ($(COMPILE),arm9)
++SRCS+=$(wildcard *.s)
++endif
++
++OBJS:=$(SRCS:=.o)
++DEPS:=$(SRCS:=.dep)
++
++OBJS:=$(addprefix $(OBJS_DIR),$(OBJS))
++DEPS:=$(addprefix $(DEPS_DIR),$(DEPS))
++
++ifeq ($(DEBUG),yes)
++COMPILE_FLAG = -g2
++else
++
++ifeq ($(COMPILE),arm9)
++COMPILE_FLAG = -O2 -march=armv4t
++else 
++COMPILE_FLAG = -O2
++endif
++
++endif
++
++all: $(DEPS) $(EXEC)
++
++$(DEPS_DIR)%.cpp.dep: %.cpp | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	gcc -E -MM $^ > $@.tmp; \
++	sed 's,\(.*\)\.o[ :]*,$(TXTOBJS)/\1.cpp.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++$(DEPS_DIR)%.c.dep: %.c | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	gcc -E -MM $^ > $@.tmp; \
++	sed 's,\(.*\)\.o[ :]*,$(TXTOBJS)/\1.c.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++$(DEPS_DIR)%.s.dep: %.s | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	echo $^: $^ > $@.tmp; \
++	sed 's,\(.*\)\.s: *,$(TXTOBJS)/\1.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++depsdir:
++	@mkdir -p $(DEPS_DIR)
++
++-include $(DEPS)
++
++$(EXEC): $(OBJS)
++
++$(OBJS_DIR)%.c.o: %.c | objsdir
++	$(CC) $(C_COMPILE_FLAG) $(DFLAG) $(COMPILE_FLAG) $(SEARCH_INCPATH) -c $< -o $@
++
++$(OBJS_DIR)%.cpp.o: %.cpp | objsdir
++	$(CPP) $(CPP_COMPILE_FLAG) $(DFLAG) $(COMPILE_FLAG) $(SEARCH_INCPATH) -c $< -o $@
++
++$(OBJS_DIR)%.s.o: %.s | objsdir
++	$(AS) $< -o $@
++
++objsdir:
++	@mkdir -p $(OBJS_DIR)
++
++.PHONY: clean
++clean:
++	$(RM) -rf *.o $(DEPS_DIR)
+diff --git a/src/EVA11/base/USB/USB.cpp b/src/EVA11/base/USB/USB.cpp
+new file mode 100644
+index 0000000..dc85a0c
+--- /dev/null
++++ b/src/EVA11/base/USB/USB.cpp
+@@ -0,0 +1,117 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  USB.cpp
++ *
++ *    Description:  Implementation of USB
++ *
++ *        Version:  1.0
++ *        Created:  2012年11月03日 12时27分01秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  YOUR NAME (), 
++ *   Organization:  
++ *
++ * =====================================================================================
++ */
++
++#include 	<cstdio>
++#include 	"USB.h"
++
++#define    USB_VENDOR_ID  		0x05ba
++#define    USB_PRODUCT_ID		0x000a 
++
++USB::USB ()
++{
++}
++
++USB::~USB ()
++{
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Init_USB
++ *  Description:  Init the USB libary used environment
++ * =====================================================================================
++ */
++bool USB::Init_USB()
++{
++	int rc = 1;
++	rc = libusb_init(NULL);
++	if 	( rc < 0 )
++	{
++		perror("fail to init usb lib");
++		return false;
++	}
++//	m_devh = NULL;
++//	m_devh = libusb_open_device_with_vid_pid(NULL, 0x05ba, 0x000a);
++//	if 	( m_devh == NULL )
++//	{
++//		perror("fail to open the usb device");
++//		libusb_exit(NULL);
++//		return false;
++//	}
++//	rc = libusb_claim_interface(m_devh, 0);
++//	if 	(rc < 0) 
++//	{
++//		perror("fail to claim interface");
++//		libusb_close(m_devh);
++//		libusb_exit(NULL);
++//		return false;
++//	}
++
++	return true;
++
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Destroy_USB
++ *  Description:  Destroy the USB library environment
++ * =====================================================================================
++ */
++void USB::Destroy_USB()
++{
++//	libusb_release_interface(m_devh, 0);
++//	libusb_close(m_devh);
++	libusb_exit(NULL);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Show_USB_List
++ *  Description:  List All USB device of system
++ * =====================================================================================
++ */
++void USB::Show_USB_List()
++{
++	libusb_device **devs;
++	ssize_t cnt;
++	cnt = libusb_get_device_list(NULL, &devs);
++	if (cnt < 0)
++	{
++		perror("can't get device list");
++		return;
++	}
++
++	libusb_device *dev;
++	int i = 0;
++
++	while ((dev = devs[i++]) != NULL) {
++		struct libusb_device_descriptor desc;
++		int r = libusb_get_device_descriptor(dev, &desc);
++		if (r < 0) 
++		{
++			fprintf(stderr, "failed to get device descriptor");
++			return;
++		}
++
++		printf("%04x:%04x (bus %d, device %d)\n",
++			desc.idVendor, desc.idProduct,
++			libusb_get_bus_number(dev), libusb_get_device_address(dev));
++	}
++
++	libusb_free_device_list(devs, 1);
++}
+diff --git a/src/EVA11/base/USB/USB.h b/src/EVA11/base/USB/USB.h
+new file mode 100644
+index 0000000..9e99605
+--- /dev/null
++++ b/src/EVA11/base/USB/USB.h
+@@ -0,0 +1,41 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  USB.h
++ *
++ *    Description:  Management of USB port
++ *
++ *        Version:  1.0
++ *        Created:  2012年11月03日 12时24分48秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  YOUR NAME (), 
++ *   Organization:  
++ *
++ * =====================================================================================
++ */
++
++#ifndef  _USB_INC
++#define  _USB_INC
++
++#include 	<libusb.h>
++
++class USB
++{
++	public:
++		USB ();                             /* constructor */
++		~USB ();                            /* destructor */
++		bool Init_USB();
++		void Destroy_USB();
++
++
++		void Show_USB_List();
++	protected:
++
++	private:
++		struct libusb_device_handle 			*m_devh;
++
++};
++
++#endif   /* ----- #ifndef _USB_INC  ----- */
+diff --git a/src/EVA11/base/Video.cpp b/src/EVA11/base/Video.cpp
+deleted file mode 100644
+index ce95762..0000000
+--- a/src/EVA11/base/Video.cpp
++++ /dev/null
+@@ -1,1038 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  Video.cpp
+- *
+- *    Description:  Implementation of Video class 
+- *
+- *        Version:  1.0
+- *        Created:  2011年12月05日 20时20分43秒
+- *       Revision:  none 
+- *       Compiler:  gcc-arm
+- *
+- *         Author:  kevin.wang (), kevin.wang2004@gmail.com
+- *        Company:  Eddysun Xiamen
+- *
+- * =====================================================================================
+- */
+-
+-#include	<time.h>
+-#include	"Video.h"
+-
+-#define CoefRv 1402
+-#define CoefGu 344//714 // 344
+-#define CoefGv 714//344 // 714
+-#define CoefBu 1772
+-
+-#define  FOUR_TWO_TWO 2		//Y00 Cb Y01 Cr
+-
+-#define CLIP(color) (unsigned char)(((color)>0xFF)?0xff:(((color)<0)?0:(color)))
+-
+-Video::Video()
+-{
+-	m_AdjLight = 60;
+-	m_Posx = 160;
+-	m_Posy = 120;
+-}
+-Video::~Video()
+-{
+-
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Set_Output_Pos
+- *  Description:  
+- * =====================================================================================
+- */
+-void Video::Set_Output_Pos(const int& x,const int& y)
+-{
+-	m_Posx = x;
+-	m_Posy = y;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Init_Video
+- *  Description:  Init the Video resource 
+- * =====================================================================================
+- */
+-bool Video::Init_Video(int width,int height)
+-{
+-    	videoIn = (struct vdIn *) calloc(1, sizeof(struct vdIn)); 		/* OK  */
+-	if ( init_videoIn(videoIn, (char *)"/dev/video0", width, height, 10, V4L2_PIX_FMT_YUYV, 1, (char *)"video.avi") < 0 )
+-	{
+-		free(videoIn);
+-		videoIn = NULL;
+-		return false;
+-	}
+-	else
+-	{
+-		initLut();
+-		m_Width  = width;
+-		m_Height = height; 
+-		return true;
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Release_Video
+- *  Description:  Release the video resource 
+- * =====================================================================================
+- */
+-void Video::Release_Video()
+-{
+-    	close_v4l2(videoIn);
+-	freeLut();
+-	free(videoIn);
+-	videoIn = NULL;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  init_videoIn
+- *  Description:  Init the video resource 
+- * =====================================================================================
+- */
+-int Video::init_videoIn(struct vdIn *vd, char *device, int width, int height, int fps,
+-	     int format, int grabmethod, char *avifilename)
+-{
+-	if (vd == NULL || device == NULL)
+-		return -1;
+-	if (width == 0 || height == 0)
+-		return -1;
+-
+-	if (grabmethod < 0 || grabmethod > 1)
+-		grabmethod = 1;
+-
+-	vd->videodevice = NULL;
+-	vd->status = NULL;
+-	vd->pictName = NULL;
+-	vd->videodevice = (char *) calloc(1, 16 * sizeof(char));
+-	vd->status = (char *) calloc(1, 100 * sizeof(char));
+-	vd->pictName = (char *) calloc(1, 80 * sizeof(char));
+-	snprintf(vd->videodevice, 12, "%s", device);
+-	vd->toggleAvi = 0;
+-	vd->avifile = NULL;
+-	vd->avifilename = avifilename;
+-	vd->recordtime = 0;
+-	vd->framecount = 0;
+-	vd->recordstart = 0;
+-	vd->signalquit = 1;
+-	vd->width = width;
+-	vd->height = height;
+-	vd->fps = fps;
+-	vd->formatIn = format;
+-	vd->grabmethod = grabmethod;
+-	vd->fileCounter = 0;
+-	vd->rawFrameCapture = 0;
+-	vd->rfsBytesWritten = 0;
+-	vd->rfsFramesWritten = 0;
+-	vd->captureFile = NULL;
+-	vd->bytesWritten = 0;
+-	vd->framesWritten = 0;
+-
+-	if (init_v4l2(vd) < 0) 
+-	{
+-		printf(" Init v4L2 failed !! exit fatal \n");
+-		goto error;;
+-	}
+-
+-	vd->framesizeIn = (vd->width * vd->height << 1);
+-
+-	vd->framebuffer = (unsigned char *) calloc(1, (size_t) vd->framesizeIn);
+-
+-	if (!vd->framebuffer)
+-	{
+-		goto error;
+-	}
+-	return 0;
+-
+-error:
+-	free(vd->videodevice);
+-	free(vd->status);
+-	free(vd->pictName);
+-	close(vd->fd);
+-	return -1;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  init_v4l2
+- *  Description:  init_v4l2 
+- * =====================================================================================
+- */
+-int Video::init_v4l2(struct vdIn *vd)
+-{
+-	int i;
+-	int ret = 0;
+-	if ((vd->fd = open(vd->videodevice, O_RDWR)) == -1) 
+-	{
+-		perror("ERROR opening V4L interface \n");
+-		return -1;
+-	}
+-
+-	memset(&vd->cap, 0, sizeof(struct v4l2_capability));
+-	ret = ioctl(vd->fd, VIDIOC_QUERYCAP, &vd->cap);
+-	if (ret < 0)
+-	{
+-		printf("Error opening device %s: unable to query device.\n",
+-				vd->videodevice);
+-		goto fatal;
+-	}
+-
+-	if ((vd->cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) == 0) 
+-	{
+-		printf("Error opening device %s: video capture not supported.\n",
+-				vd->videodevice);
+-		goto fatal;;
+-	}
+-
+-	if (!(vd->cap.capabilities & V4L2_CAP_STREAMING)) 
+-	{
+-		printf("%s does not support streaming i/o\n", vd->videodevice);
+-		goto fatal;
+-	}
+-
+-	/* set format in */
+-	memset(&vd->fmt, 0, sizeof(struct v4l2_format));
+-	vd->fmt.type 		    = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+-	vd->fmt.fmt.pix.width       = vd->width;
+-	vd->fmt.fmt.pix.height      = vd->height;
+-	vd->fmt.fmt.pix.pixelformat = vd->formatIn;
+-	vd->fmt.fmt.pix.field       = V4L2_FIELD_ANY;
+-	//vd->fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
+-	ret = ioctl(vd->fd, VIDIOC_S_FMT, &vd->fmt);
+-	if (ret < 0) 
+-	{
+-		perror("Unable to set format");
+-		goto fatal;
+-	}
+-	else
+-		printf ( "Format OK\n" );
+-
+-	if ((vd->fmt.fmt.pix.width != (unsigned int)vd->width) ||
+-			(vd->fmt.fmt.pix.height != (unsigned int)vd->height)) 
+-	{
+-		printf(" format asked unavailable get width %d height %d \n",
+-				vd->fmt.fmt.pix.width, vd->fmt.fmt.pix.height);
+-		vd->width = vd->fmt.fmt.pix.width;
+-		vd->height = vd->fmt.fmt.pix.height;
+-	}
+-
+-	/* set framerate */
+-	struct v4l2_streamparm* setfps;  
+-	setfps= new struct v4l2_streamparm;
+-	memset(setfps, 0, sizeof(struct v4l2_streamparm));
+-	setfps->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+-	setfps->parm.capture.timeperframe.numerator=1;
+-	setfps->parm.capture.timeperframe.denominator=vd->fps;
+-	if ( ioctl(vd->fd, VIDIOC_S_PARM, setfps) < 0 )
+-	{
+-		perror("unable to set param\n");
+-		delete setfps;
+-		setfps = NULL;
+-		goto fatal;
+-	}
+-	delete setfps;
+-	setfps = NULL;
+-
+-	/* request buffers */
+-	memset(&vd->rb, 0, sizeof(struct v4l2_requestbuffers));
+-	vd->rb.count = NB_BUFFER;
+-	vd->rb.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+-	vd->rb.memory = V4L2_MEMORY_MMAP;
+-
+-	ret = ioctl(vd->fd, VIDIOC_REQBUFS, &vd->rb);
+-	if (ret < 0) 
+-	{
+-		printf("Unable to allocate buffers: %d.\n", errno);
+-		goto fatal;
+-	}
+-
+-	/* map the buffers */
+-	for (i = 0; i < NB_BUFFER; i++)
+-	{
+-		t_buf.index = i;
+-  		t_buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+-  		t_buf.memory = V4L2_MEMORY_MMAP;
+-
+-		ret = ioctl(vd->fd, VIDIOC_QUERYBUF, &t_buf);
+-		if (ret < 0) 
+-		{
+-			printf("Unable to query buffer (%d).\n", errno);
+-			goto fatal;
+-		}
+-
+-		vd->mapbuflength[i] = t_buf.length;
+-		vd->mem[i] = mmap(0,
+-				t_buf.length, PROT_READ, MAP_SHARED, vd->fd,
+-				t_buf.m.offset);
+-		if (vd->mem[i] == MAP_FAILED) 
+-		{
+-			printf("Unable to map buffer (%d)\n", errno);
+-			goto fatal;
+-		}
+-	}
+-	/* Queue the buffers. */
+-
+-	for ( i=0;i<NB_BUFFER;i++ )
+-	{
+-		t_buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+-		t_buf.memory = V4L2_MEMORY_MMAP;
+-		t_buf.index = i;
+-
+-		if (ioctl(vd->fd, VIDIOC_QBUF, &t_buf) < 0) 
+-		{
+-			printf("Unable to requeue buffer (%d).\n", errno);
+-			goto fatal;
+-		}
+-	}
+-
+-	Show_Video_Info();
+-
+-	return 0;
+-fatal:
+-	return -1;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  initLut
+- *  Description:  Init Lut 
+- * =====================================================================================
+- */
+-void Video::initLut(void)
+-{
+-	LutRv  = NULL;
+-	LutGu  = NULL;
+-	LutGv  = NULL;
+-	LutBu  = NULL;
+-
+-	int i;
+-	LutRv = (int *)malloc(256*sizeof(int));
+-	LutGu = (int *)malloc(256*sizeof(int));
+-	LutGv = (int *)malloc(256*sizeof(int));
+-	LutBu = (int *)malloc(256*sizeof(int));
+-
+-	for (i= 0;i < 256;i++)
+-	{
+-		LutRv[i] = (i-128)*CoefRv/1000;
+-		LutBu[i] = (i-128)*CoefBu/1000;
+-		LutGu[i] = (128-i)*CoefGu/1000;
+-		LutGv[i] = (128-i)*CoefGv/1000;
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  freeLut
+- *  Description:  FreeLut 
+- * =====================================================================================
+- */
+-void Video::freeLut(void)
+-{
+-	free(LutRv);
+-	free(LutGu);
+-	free(LutGv);
+-	free(LutBu);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  close_v4l2
+- *  Description:  close_v4l2 
+- * =====================================================================================
+- */
+-int Video::close_v4l2(struct vdIn *vd)
+-{
+-	if (vd->isstreaming)
+-		video_disable(vd);
+-	free(vd->framebuffer);
+-	vd->framebuffer = NULL;
+-	free(vd->videodevice);
+-	free(vd->status);
+-	free(vd->pictName);
+-	vd->videodevice = NULL;
+-	vd->status = NULL;
+-	vd->pictName = NULL;
+-	for (int i = 0; i < NB_BUFFER; i++) 
+-	{
+-		munmap(vd->mem[i],vd->mapbuflength[i]);
+-	}
+-	close(vd->fd);
+-	return 0;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  video_disable
+- *  Description:  video_disable
+- * =====================================================================================
+- */
+-int Video::video_disable(struct vdIn *vd)
+-{
+-	int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+-	int ret;
+-	ret = ioctl(vd->fd, VIDIOC_STREAMOFF, &type);
+-	if (ret < 0) 
+-	{
+-		perror("Unable to %s capture");
+-		return ret;
+-	}
+-	vd->isstreaming = 0;
+-	return 0;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  uvGrab
+- *  Description:  uvcGrab Capture the video file 
+- * =====================================================================================
+- */
+-int Video::uvcGrab(struct vdIn *vd)
+-{
+-	if (!vd->isstreaming)
+-	{
+-		if (video_enable(vd))
+-			goto err;
+-		else
+-			printf ( "isstreaming=%d\n",vd->isstreaming );
+-	}
+-	q_buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+-	q_buf.memory = V4L2_MEMORY_MMAP;
+-
+-	if (ioctl(vd->fd, VIDIOC_DQBUF, &q_buf) < 0) 
+-	{
+-		perror("Unable to dequeue buffer");
+-		goto err;
+-	}
+-
+-	if ( q_buf.bytesused> 0 )
+-	{
+-		vd->buf.index = q_buf.index;
+-		t_buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+-		t_buf.memory = V4L2_MEMORY_MMAP;
+-		t_buf.index = vd->buf.index;
+-
+-		if (ioctl(vd->fd,VIDIOC_QBUF,&t_buf) < 0)
+-		{
+-			printf("Unable to requeue buffer (%d).\n", errno);
+-			goto err;
+-		}
+-
+-		return 0;
+-	}
+-	else
+-		printf ( "File %s: Line %d\n",__FILE__,__LINE__ );
+-
+-err:
+-	vd->signalquit = 0;
+-	return -1;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  video_enable
+- *  Description:  video_enable function 
+- * =====================================================================================
+- */
+-int Video::video_enable(struct vdIn *vd)
+-{
+-	int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+-	int ret;
+-	ret = ioctl(vd->fd, VIDIOC_STREAMON, &type);
+-	if (ret < 0) 
+-	{
+-		printf("Unable to %s capture: %d.\n", "start", errno);
+-		return ret;
+-	}
+-	vd->isstreaming = 1;
+-	return 0;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  get_pictureYV2
+- *  Description:  get_pictureYV2
+- * =====================================================================================
+- */
+-int Video::get_pictureYV2(unsigned char *buf,int width,int height)
+-{
+-	FILE *foutpict;
+-	unsigned char *picture = NULL;
+-	char *name = NULL;
+-	name = (char *)calloc(80,1);
+-	getPictureName (name, 0);
+-	picture = (unsigned char *)malloc(width*height*3*sizeof(char));
+-	if(picture)
+-	{
+-		Pyuv422torgb24(buf, picture, width, height);
+-	}
+-	else
+-	{
+-		printf(" no room to take a picture \n");
+-		return 0;
+-	}
+-	if(name)
+-	{
+-		foutpict = fopen (name, "wb");
+-		fprintf (foutpict, "P6\n%d %d\n255\n", width, height);
+-		size_t result = fwrite (picture, sizeof (char), width * height * 3, foutpict);
+-		fclose (foutpict);
+-		free(name);
+-	}
+-	free(picture);
+-	picture = NULL;
+-	return 0;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  fill_bufYV2
+- *  Description:  
+- * =====================================================================================
+- */
+-int Video::fill_bufYV2(unsigned char *buf,unsigned char *pic,int width,int height)
+-{
+-	Pyuv422torgb24(buf, pic, width, height);
+-	return 0;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  getPictureName
+- *  Description:  getPictureName
+- * =====================================================================================
+- */
+-void Video::getPictureName (char *Picture, int fmt)
+-{
+-	fmt = fmt;
+-	char temp[80];
+-/* 	time_t curdate;
+- * 	struct tm *tdate;
+- * 	memset (temp, '\0', sizeof (temp));
+- * 	time (&curdate);
+- * 	tdate = localtime (&curdate);
+- */
+-/* 	snprintf (temp, 26, "P_%02d_%02d_%02d.%s",
+- * 			tdate->tm_hour, tdate->tm_min, tdate->tm_sec, "pnm");
+- */
+-	sprintf(temp,"%s","video.pnm");
+-	memcpy (Picture, temp, strlen (temp));
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Pyuv422torgb24
+- *  Description:  
+- * =====================================================================================
+- */
+-unsigned int Video::Pyuv422torgb24(unsigned char * input_ptr, unsigned char * output_ptr, 
+-		                   unsigned int image_width, unsigned int image_height)
+-{
+-	unsigned int i, size;
+-	unsigned char Y, Y1, U, V;
+-	unsigned char *buff = input_ptr;
+-	unsigned char *output_pt = output_ptr;
+-	size = image_width * image_height >> 1;
+-	for (i = size; i > 0; i--) 
+-	{
+-		/* bgr instead rgb ?? */
+-		Y = buff[0] ;
+-		U = buff[1] ;
+-		Y1 = buff[2];
+-		V = buff[3];
+-		buff += 4;
+-		*output_pt++ = R_FROMYV(Y,V);
+-		*output_pt++ = G_FROMYUV(Y,U,V); //b
+-		*output_pt++ = B_FROMYU(Y,U); //v
+-			
+-		*output_pt++ = R_FROMYV(Y1,V);
+-		*output_pt++ = G_FROMYUV(Y1,U,V); //b
+-		*output_pt++ = B_FROMYU(Y1,U); //v
+-	}
+-	return FOUR_TWO_TWO;
+-} 
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Pyuv422torbut16_Low
+- *  Description:  Display Data on screen directly 
+- * =====================================================================================
+- */
+-unsigned int Video::Pyuv422torbut16_Low(unsigned char * input_ptr, unsigned char * source_ptr, 
+-		                   unsigned int image_width, unsigned int image_height,short scr_w,
+-				   short scr_h)
+-{
+-	unsigned int i, size;
+-	unsigned char Y, Y1, U, V;
+-	unsigned char *buff = input_ptr;
+-	unsigned char *output_ptr = source_ptr;
+-	size = image_width * image_height >> 1;
+-	unsigned short color;
+-	unsigned short *loc;
+-	int w = 0;
+-	int h = 0;
+-	unsigned char temp1,temp2,temp3;
+-
+-	for ( i = size; i > 0; i-- ) 
+-	{
+-		Y = CLIP(buff[0]+m_AdjLight);
+-		U = buff[1] ;
+-		Y1 = CLIP(buff[2]+m_AdjLight);
+-		V = buff[3];
+-		buff += 4;
+-
+-//		color  = (B_FROMYU(Y,U)>>3);
+-//		color += ((G_FROMYUV(Y,U,V)>>2)<<5);
+-//		color += ((R_FROMYV(Y,V)>>3)<<11);
+-
+-		temp1 = (unsigned char)(B_FROMYU(Y,U)*m_FactB+0.5);
+-		temp2 = (unsigned char)(G_FROMYUV(Y,U,V)*m_FactG+0.5);
+-		temp3 = (unsigned char)(R_FROMYV(Y,V)*m_FactR+0.5);
+-		color = temp1 + ( temp2<<5 ) + ( temp3<<11 );
+-
+-		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - w ) * scr_h * 2 + h * 2 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - ( w + 1 ) ) * scr_h * 2 + h * 2 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - w ) * scr_h * 2 + ( h + 1 ) * 2 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - ( w + 1 ) ) * scr_h * 2 + ( h + 1 ) * 2 ) );
+-		*loc = color;
+-		
+-		w +=2;
+-		if ( w == image_width * 2 )
+-		{
+-			w = 0;
+-			h +=2;
+-		}
+-
+-//		color  = ( B_FROMYU(Y1,U)>>3 );
+-//		color += ((G_FROMYUV(Y1,U,V)>>2)<<5);
+-//		color += ((R_FROMYV(Y1,V)>>3)<<11);
+-
+-		temp1 = (unsigned char)(B_FROMYU(Y1,U)*m_FactB+0.5);
+-		temp2 = (unsigned char)(G_FROMYUV(Y1,U,V)*m_FactG+0.5);
+-		temp3 = (unsigned char)(R_FROMYV(Y1,V)*m_FactR+0.5);
+-		color = temp1 + ( temp2<<5 ) + ( temp3<<11 );
+-
+-		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - w ) * scr_h * 2 + h * 2 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - ( w + 1 ) ) * scr_h * 2 + h * 2 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - w ) * scr_h * 2 + ( h + 1 ) * 2 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - ( w + 1 ) ) * scr_h * 2 + ( h + 1 ) * 2 ) );
+-		*loc = color;
+-		
+-		w +=2;
+-		if ( w == image_width * 2 )
+-		{
+-			w = 0;
+-			h +=2;
+-		}
+-	}
+-	return FOUR_TWO_TWO;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Pyuv422torbut16_5097_Low
+- *  Description:  Display Data on screen directly 
+- * =====================================================================================
+- */
+-unsigned int Video::Pyuv422torbut16_5097_Low(unsigned char * input_ptr, unsigned char * source_ptr, 
+-		                   unsigned int image_width, unsigned int image_height,short scr_w,
+-				   short scr_h)
+-{
+-	unsigned int i, size;
+-	unsigned char Y, Y1, U, V;
+-	unsigned char *buff = input_ptr;
+-	unsigned char *output_ptr = source_ptr + scr_w * m_Posy * 2 + m_Posx * 2;
+-	size = image_width * image_height >> 1;
+-	unsigned short color;
+-	unsigned short *loc;
+-	int w = 0;
+-	int h = 0;
+-	unsigned char temp1,temp2,temp3;
+-
+-	for ( i = size; i > 0; i-- ) 
+-	{
+-		Y = CLIP(buff[0]+m_AdjLight);
+-		U = buff[1] ;
+-		Y1 = CLIP(buff[2]+m_AdjLight);
+-		V = buff[3];
+-		buff += 4;
+-
+-		temp1 = (unsigned char)(B_FROMYU(Y,U)*m_FactB+0.5);
+-		temp2 = (unsigned char)(G_FROMYUV(Y,U,V)*m_FactG+0.5);
+-		temp3 = (unsigned char)(R_FROMYV(Y,V)*m_FactR+0.5);
+-		color = temp1 + ( temp2<<5 ) + ( temp3<<11 );
+-
+-		loc  = (unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( ( w + 1 ) << 1 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + scr_w * ( ( h + 1 ) << 1 ) + ( ( w + 1 ) << 1 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + scr_w * ( ( h + 1 ) << 1 ) + ( w << 1 ) );
+-		*loc = color;
+-		
+-		w +=2;
+-		if ( w == image_width * 2 )
+-		{
+-			w = 0;
+-			h +=2;
+-		}
+-
+-
+-		temp1 = (unsigned char)(B_FROMYU(Y1,U)*m_FactB+0.5);
+-		temp2 = (unsigned char)(G_FROMYUV(Y1,U,V)*m_FactG+0.5);
+-		temp3 = (unsigned char)(R_FROMYV(Y1,V)*m_FactR+0.5);
+-		color = temp1 + ( temp2<<5 ) + ( temp3<<11 );
+-
+-		loc  = (unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( ( w + 1 ) << 1 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + scr_w * ( ( h + 1 ) << 1 ) + ( ( w + 1 ) << 1 ) );
+-		*loc = color;
+-		loc  = (unsigned short *)( output_ptr + scr_w * ( ( h + 1 ) << 1 ) + ( w << 1 ) );
+-		*loc = color;
+-		
+-		w +=2;
+-		if ( w == image_width * 2 )
+-		{
+-			w = 0;
+-			h +=2;
+-		}
+-	}
+-	return FOUR_TWO_TWO;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Pyuv422torbut16_High
+- *  Description:  Display Data on screen directly 
+- * =====================================================================================
+- */
+-unsigned int Video::Pyuv422torbut16_High(unsigned char * input_ptr, unsigned char * source_ptr, 
+-		                   unsigned int image_width, unsigned int image_height,short scr_w,
+-				   short scr_h)
+-{
+-	unsigned int i, size;
+-	unsigned char Y, Y1, U, V;
+-	unsigned char *buff = input_ptr;
+-	unsigned char *output_ptr = source_ptr;
+-	size = image_width * image_height >> 1;
+-	unsigned short color,color1;
+-	unsigned short *loc;
+-	int w = 0;
+-	int h = 0;
+-
+-	for ( i = size; i > 0; i-- ) 
+-	{
+-		Y = buff[0];
+-		U = buff[1] ;
+-		Y1 = buff[2];
+-		V = buff[3];
+-		buff += 4;
+-
+-		color  = (B_FROMYU(Y,U)>>3);
+-		color += ((G_FROMYUV(Y,U,V)>>2)<<5);
+-		color += ((R_FROMYV(Y,V)>>3)<<11);
+-
+-		*(unsigned short *)( output_ptr + (  ( scr_w - 1 - w ) * ( scr_h << 1 )  + ( h << 1 ) ) ) = color;
+-
+-		w ++;
+-
+-		color  = ( B_FROMYU(Y1,U)>>3 );
+-		color += ((G_FROMYUV(Y1,U,V)>>2)<<5);
+-		color += ((R_FROMYV(Y1,V)>>3)<<11);
+-
+-		*(unsigned short *)( output_ptr + (  ( scr_w - 1 - w ) * ( scr_h << 1 )  + ( h << 1 ) ) ) = color;
+-
+-		w ++;
+-		if ( w == image_width )
+-		{
+-			w = 0;
+-			h ++;
+-		}
+-	}
+-
+-	return FOUR_TWO_TWO;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Pyuv422torbut16_High
+- *  Description:  Display Data on screen directly 
+- * =====================================================================================
+- */
+-unsigned int Video::Pyuv422torbut16_5097_High(unsigned char * input_ptr, unsigned char * source_ptr, 
+-		                   unsigned int image_width, unsigned int image_height,short scr_w,
+-				   short scr_h)
+-{
+-	unsigned int i, size;
+-	unsigned char Y, Y1, U, V;
+-	unsigned char *buff = input_ptr;
+-	unsigned char *output_ptr = source_ptr + scr_w * m_Posy * 2 + m_Posx * 2;
+-	size = image_width * image_height >> 1;
+-	unsigned short color,color1;
+-	unsigned short *loc;
+-	int w = 0;
+-	int h = 0;
+-
+-	for ( i = size; i > 0; i-- ) 
+-	{
+-		Y = buff[0];
+-		U = buff[1] ;
+-		Y1 = buff[2];
+-		V = buff[3];
+-		buff += 4;
+-
+-		color  = (B_FROMYU(Y,U)>>3);
+-		color += ((G_FROMYUV(Y,U,V)>>2)<<5);
+-		color += ((R_FROMYV(Y,V)>>3)<<11);
+-
+-		*(unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) ) = color;
+-
+-		w ++;
+-
+-		color  = ( B_FROMYU(Y1,U)>>3 );
+-		color += ((G_FROMYUV(Y1,U,V)>>2)<<5);
+-		color += ((R_FROMYV(Y1,V)>>3)<<11);
+-
+-		*(unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) ) = color;
+-
+-		w ++;
+-		if ( w == image_width )
+-		{
+-			w = 0;
+-			h ++;
+-		}
+-	}
+-
+-	return FOUR_TWO_TWO;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Pyuv422torbut16_High
+- *  Description:  Display Data on screen directly 
+- * =====================================================================================
+- */
+-unsigned int Video::Pyuv422torbut16_5097_Super_High(unsigned char * input_ptr, unsigned char * source_ptr, 
+-		                   unsigned int image_width, unsigned int image_height,short scr_w,
+-				   short scr_h)
+-{
+-	unsigned int i, size;
+-	unsigned char Y, Y1, U, V;
+-	unsigned char *buff = input_ptr;
+-	unsigned char *output_ptr = source_ptr;
+-	size = image_width * image_height >> 1;
+-	unsigned short color,color1;
+-	unsigned short *loc;
+-	int w = 0;
+-	int h = 0;
+-
+-	for ( i = size; i > 0; i-- )
+-	{
+-		Y = buff[0];
+-		U = buff[1] ;
+-		Y1 = buff[2];
+-		V = buff[3];
+-		buff += 4;
+-
+-		color  = (B_FROMYU(Y,U)>>3);
+-		color += ((G_FROMYUV(Y,U,V)>>2)<<5);
+-		color += ((R_FROMYV(Y,V)>>3)<<11);
+-
+-		*(unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) ) = color;
+-
+-		w ++;
+-
+-		color  = ( B_FROMYU(Y1,U)>>3 );
+-		color += ((G_FROMYUV(Y1,U,V)>>2)<<5);
+-		color += ((R_FROMYV(Y1,V)>>3)<<11);
+-
+-		*(unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) ) = color;
+-
+-		w ++;
+-		if ( w == image_width )
+-		{
+-			w = 0;
+-			h ++;
+-		}
+-	}
+-
+-	return FOUR_TWO_TWO;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  RGB_Functions
+- *  Description:  RGB_Functions sets
+- *
+- *  R = Y + 1.403V'
+- *  G = Y - 0.344U' - 0.714V'
+- *  B = Y + 1.770U'
+- * =====================================================================================
+- */
+-unsigned char Video::R_FROMYV(unsigned char y, unsigned char v)
+-{
+-	return CLIP(y + LutRv[v]);
+-}
+-
+-unsigned char Video::G_FROMYUV(unsigned char y, unsigned char u, unsigned char v)
+-{
+-	return CLIP(y + LutGu[u] + LutGv[v]);
+-}
+-
+-unsigned char Video::B_FROMYU(unsigned char y, unsigned char u)
+-{
+-	return CLIP(y + LutBu[u]);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Sample_Pic
+- *  Description:  Sample picture 
+- * =====================================================================================
+- */
+-void Video::Sample_Pic()
+-{
+-	for ( int i=0;i<2;i++ )
+-	{
+-		uvcGrab(videoIn);
+-	}
+-	get_pictureYV2(videoIn->framebuffer,videoIn->width,videoIn->height);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Sample_Pic
+- *  Description:  Sample picture 
+- * =====================================================================================
+- */
+-void Video::Sample_Pic2(unsigned char* pic)
+-{
+-	if ( uvcGrab(videoIn) != -1 )
+-		fill_bufYV2((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Sample_Pic
+- *  Description:  Sample picture 
+- * =====================================================================================
+- */
+-void Video::Sample_Pic3(unsigned char* pic,short scr_w,short scr_h)
+-{
+-	if ( uvcGrab(videoIn) != -1 )
+-	{
+-		if 	( videoIn->width == 160 && videoIn->height == 120 )
+-			Pyuv422torbut16_Low((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height,scr_w,scr_h);
+-		else if ( videoIn->width == 320 && videoIn->height == 240 )
+-			Pyuv422torbut16_High((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height,scr_w,scr_h);
+-	}
+-}
+-		
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Sample_Pic4
+- *  Description:  Smart5097 Used Function 
+- * =====================================================================================
+- */
+-void Video::Sample_Pic4(unsigned char* pic,short scr_w,short scr_h)
+-{
+-	if ( uvcGrab(videoIn) != -1 )
+-	{
+-		if 	( videoIn->width == 160 && videoIn->height == 120 )
+-			Pyuv422torbut16_5097_Low((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height,scr_w,scr_h);
+-		else if ( videoIn->width == 320 && videoIn->height == 240 )
+-			Pyuv422torbut16_5097_High((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height,scr_w,scr_h);
+-		else if ( videoIn->width == 640 && videoIn->height == 480 )
+-			Pyuv422torbut16_5097_Super_High((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height,scr_w,scr_h);
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Adjust_Light
+- *  Description:  flag == false more light 
+- *                flag == true more dark
+- * =====================================================================================
+- */
+-void Video::Adjust_Light(bool flag)
+-{
+-	if ( flag == false )
+-		m_AdjLight ++;
+-	else
+-		m_AdjLight --;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Show_Video_Info
+- *  Description:  Show Video Infomation 
+- * =====================================================================================
+- */
+-void Video::Show_Video_Info()
+-{
+-	struct vdIn	*vd = videoIn;
+-	memset(&vd->fmt, 0, sizeof(struct v4l2_format));
+-	vd->fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+-	if (ioctl(vd->fd, VIDIOC_G_FMT, &vd->fmt) < 0)
+-	{
+-		printf("get format failed\n");
+-	}
+-	else
+-	{
+-		printf("Video Width = %d\n", vd->fmt.fmt.pix.width);
+-		printf("Video Height = %d\n", vd->fmt.fmt.pix.height);
+-	 	unsigned char F1,F2,F3,F4;	
+-		F1 = vd->fmt.fmt.pix.pixelformat & 0xff;
+-		F2 = ( vd->fmt.fmt.pix.pixelformat >> 8 ) & 0xff;
+-		F3 = ( vd->fmt.fmt.pix.pixelformat >> 16 ) & 0xff;
+-		F4 = ( vd->fmt.fmt.pix.pixelformat >> 24 ) & 0xff;
+-		printf ( "Video Format = %c%c%c%c\n",F1,F2,F3,F4 );
+-	}
+-
+-//	v4l2_std_id id;
+-//	int ret;
+-//	int add=0;
+-//	do{
+-//		ret = ioctl(vd->fd,VIDIOC_QUERYSTD,&id);
+-//		add ++;
+-//	}while( ret == -1 && add < 1000 );
+-//
+-//	if ( add >= 999 )
+-//	{
+-//		printf ( "can't get value\n" );
+-//	}
+-//
+-//	if 	( id == V4L2_STD_NTSC )
+-//	{
+-//		printf ( "Video std = ntsc \n" );
+-//	}
+-//	else if ( id == V4L2_STD_PAL )
+-//	{
+-//		printf ( "Video std = pal \n" );
+-//	}
+-//	else
+-//	{
+-//		printf ( "no found std\n" );
+-//	}
+-
+-
+-//	struct v4l2_fmtdesc* argp;
+-//	memset(argp, 0, sizeof(struct v4l2_fmtdesc));
+-//	if (ioctl(vd->fd, VIDIOC_ENUM_FMT, argp) < 0)
+-//	{
+-//		printf ( "%d\n",argp->type );
+-//	}
+-}
+diff --git a/src/EVA11/base/Video.h b/src/EVA11/base/Video.h
+deleted file mode 100644
+index e992c0e..0000000
+--- a/src/EVA11/base/Video.h
++++ /dev/null
+@@ -1,98 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  Video.h
+- *
+- *    Description:  Manage USB port camera class
+- *
+- *        Version:  1.0
+- *        Created:  2011年12月05日 20时14分48秒
+- *       Revision:  none
+- *       Compiler:  gcc
+- *
+- *         Author:  kevin.wang (), kevin.wang2004@gmail.com
+- *        Company:  Eddysun Xiamen
+- *
+- * =====================================================================================
+- */
+-
+-#ifndef  _VIDEO_INC
+-#define  _VIDEO_INC
+-
+-#include	"VideoHead.h"
+-
+-class Video
+-{
+-	public:
+-		Video();
+-		~Video();
+-		bool Init_Video(int width,int height);
+-		void Release_Video();
+-		void Sample_Pic();
+-		void Sample_Pic2(unsigned char*);
+-		void Sample_Pic3(unsigned char*,short scr_w,short scr_h);
+-		void Sample_Pic4(unsigned char*,short scr_w,short scr_h);
+-		void Adjust_Light(bool);
+-
+-		void Set_Output_Pos(const int& x,const int& y); 
+-	private:
+-		int init_videoIn(struct vdIn *vd, char *device, 
+-				int width, int height, int fps,
+-			        int format, int grabmethod, char *avifilename);
+-		int init_v4l2(struct vdIn *vd);
+-		int close_v4l2(struct vdIn *vd);
+-		void initLut(void);
+-		void freeLut(void);
+-		int video_disable(struct vdIn *vd);
+-		int video_enable(struct vdIn *vd);
+-		int uvcGrab(struct vdIn *vd);
+-		int get_pictureYV2(unsigned char *buf,int width,int height);
+-		int fill_bufYV2(unsigned char *buf,unsigned char *pic,int width,int height);
+-		void getPictureName (char *Picture, int fmt);
+-		unsigned char R_FROMYV(unsigned char y, unsigned char v);
+-		unsigned char G_FROMYUV(unsigned char y,unsigned char u ,unsigned char v);
+-		unsigned char B_FROMYU(unsigned char y, unsigned char u);
+-		unsigned int  Pyuv422torgb24(unsigned char * input_ptr, unsigned char * output_ptr, 
+-			       unsigned int image_width, unsigned int image_height);
+-
+-		unsigned int  Pyuv422torbut16_Low(unsigned char * input_ptr, unsigned char * output_ptr, 
+-			       unsigned int image_width, unsigned int image_height,short scr_w,short scr_h);
+-		unsigned int  Pyuv422torbut16_High(unsigned char * input_ptr, unsigned char * output_ptr, 
+-			       unsigned int image_width, unsigned int image_height,short scr_w,short scr_h);
+-
+-		unsigned int  Pyuv422torbut16_5097_Super_High(unsigned char * input_ptr, unsigned char * output_ptr, 
+-			       unsigned int image_width, unsigned int image_height,short scr_w,short scr_h);
+-		unsigned int  Pyuv422torbut16_5097_High(unsigned char * input_ptr, unsigned char * output_ptr, 
+-			       unsigned int image_width, unsigned int image_height,short scr_w,short scr_h);
+-		unsigned int  Pyuv422torbut16_5097_Low(unsigned char * input_ptr, unsigned char * output_ptr, 
+-			       unsigned int image_width, unsigned int image_height,short scr_w,short scr_h);
+-
+-		void Show_Video_Info();
+-	private:
+-#ifdef ARM9
+-		constexpr static double	m_FactR = static_cast<double>(31) / static_cast<double>(255);
+-		constexpr static double	m_FactG = static_cast<double>(63) / static_cast<double>(255);
+-		constexpr static double	m_FactB = static_cast<double>(31) / static_cast<double>(255);
+-#endif
+-
+-#ifdef X86 
+-		const static double	m_FactR = 31. / 255.;
+-		const static double	m_FactG = 63. / 255.;
+-		const static double	m_FactB = 31. / 255.;
+-#endif
+-
+-		int		m_Width;
+-		int		m_Height;
+-		int 		*LutRv ;
+-		int 		*LutGu ;
+-		int 		*LutGv ;
+-		int		*LutBu ;
+-		struct vdIn	*videoIn;
+-		v4l2_buffer     t_buf;
+-		v4l2_buffer 	q_buf;
+-		unsigned char	m_AdjLight;
+-
+-		int		m_Posx;
+-		int		m_Posy;
+-};
+-#endif   /* ----- #ifndef _VIDEO_INC  ----- */
+diff --git a/src/EVA11/base/Video/Makefile b/src/EVA11/base/Video/Makefile
+new file mode 100644
+index 0000000..98560e8
+--- /dev/null
++++ b/src/EVA11/base/Video/Makefile
+@@ -0,0 +1,87 @@
++##########################################################
++#
++#                    The EVA11 project Makefile
++#
++# Author:    kevin.wang
++# Company:   Eddysun     xiamen
++# Date:      2012.12.13
++# Comment:   Try to re-structure the Project Makefile
++#            
++#
++###########################################################
++
++TXTOBJS	:=
++TXTDEPS	:=DEPS
++OBJS_DIR:=./$(TXTOBJS)/
++DEPS_DIR:=./$(TXTDEPS)/
++
++SRCS=
++SRCS+=$(wildcard *.cpp *.c)
++
++ifeq ($(COMPILE),arm9)
++SRCS+=$(wildcard *.s)
++endif
++
++OBJS:=$(SRCS:=.o)
++DEPS:=$(SRCS:=.dep)
++
++OBJS:=$(addprefix $(OBJS_DIR),$(OBJS))
++DEPS:=$(addprefix $(DEPS_DIR),$(DEPS))
++
++ifeq ($(DEBUG),yes)
++COMPILE_FLAG = -g2
++else
++
++ifeq ($(COMPILE),arm9)
++COMPILE_FLAG = -O2 -march=armv4t
++else 
++COMPILE_FLAG = -O2
++endif
++
++endif
++
++all: $(DEPS) $(EXEC)
++
++$(DEPS_DIR)%.cpp.dep: %.cpp | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	gcc -E -MM $^ > $@.tmp; \
++	sed 's,\(.*\)\.o[ :]*,$(TXTOBJS)/\1.cpp.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++$(DEPS_DIR)%.c.dep: %.c | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	gcc -E -MM $^ > $@.tmp; \
++	sed 's,\(.*\)\.o[ :]*,$(TXTOBJS)/\1.c.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++$(DEPS_DIR)%.s.dep: %.s | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	echo $^: $^ > $@.tmp; \
++	sed 's,\(.*\)\.s: *,$(TXTOBJS)/\1.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++depsdir:
++	@mkdir -p $(DEPS_DIR)
++
++-include $(DEPS)
++
++$(EXEC): $(OBJS)
++
++$(OBJS_DIR)%.c.o: %.c | objsdir
++	$(CC) $(C_COMPILE_FLAG) $(DFLAG) $(COMPILE_FLAG) $(SEARCH_INCPATH) -c $< -o $@
++
++$(OBJS_DIR)%.cpp.o: %.cpp | objsdir
++	$(CPP) $(CPP_COMPILE_FLAG) $(DFLAG) $(COMPILE_FLAG) $(SEARCH_INCPATH) -c $< -o $@
++
++$(OBJS_DIR)%.s.o: %.s | objsdir
++	$(AS) $< -o $@
++
++objsdir:
++	@mkdir -p $(OBJS_DIR)
++
++.PHONY: clean
++clean:
++	$(RM) -rf *.o $(DEPS_DIR)
+diff --git a/src/EVA11/base/Video/Video.cpp b/src/EVA11/base/Video/Video.cpp
+new file mode 100644
+index 0000000..ce95762
+--- /dev/null
++++ b/src/EVA11/base/Video/Video.cpp
+@@ -0,0 +1,1038 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  Video.cpp
++ *
++ *    Description:  Implementation of Video class 
++ *
++ *        Version:  1.0
++ *        Created:  2011年12月05日 20时20分43秒
++ *       Revision:  none 
++ *       Compiler:  gcc-arm
++ *
++ *         Author:  kevin.wang (), kevin.wang2004@gmail.com
++ *        Company:  Eddysun Xiamen
++ *
++ * =====================================================================================
++ */
++
++#include	<time.h>
++#include	"Video.h"
++
++#define CoefRv 1402
++#define CoefGu 344//714 // 344
++#define CoefGv 714//344 // 714
++#define CoefBu 1772
++
++#define  FOUR_TWO_TWO 2		//Y00 Cb Y01 Cr
++
++#define CLIP(color) (unsigned char)(((color)>0xFF)?0xff:(((color)<0)?0:(color)))
++
++Video::Video()
++{
++	m_AdjLight = 60;
++	m_Posx = 160;
++	m_Posy = 120;
++}
++Video::~Video()
++{
++
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Set_Output_Pos
++ *  Description:  
++ * =====================================================================================
++ */
++void Video::Set_Output_Pos(const int& x,const int& y)
++{
++	m_Posx = x;
++	m_Posy = y;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Init_Video
++ *  Description:  Init the Video resource 
++ * =====================================================================================
++ */
++bool Video::Init_Video(int width,int height)
++{
++    	videoIn = (struct vdIn *) calloc(1, sizeof(struct vdIn)); 		/* OK  */
++	if ( init_videoIn(videoIn, (char *)"/dev/video0", width, height, 10, V4L2_PIX_FMT_YUYV, 1, (char *)"video.avi") < 0 )
++	{
++		free(videoIn);
++		videoIn = NULL;
++		return false;
++	}
++	else
++	{
++		initLut();
++		m_Width  = width;
++		m_Height = height; 
++		return true;
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Release_Video
++ *  Description:  Release the video resource 
++ * =====================================================================================
++ */
++void Video::Release_Video()
++{
++    	close_v4l2(videoIn);
++	freeLut();
++	free(videoIn);
++	videoIn = NULL;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  init_videoIn
++ *  Description:  Init the video resource 
++ * =====================================================================================
++ */
++int Video::init_videoIn(struct vdIn *vd, char *device, int width, int height, int fps,
++	     int format, int grabmethod, char *avifilename)
++{
++	if (vd == NULL || device == NULL)
++		return -1;
++	if (width == 0 || height == 0)
++		return -1;
++
++	if (grabmethod < 0 || grabmethod > 1)
++		grabmethod = 1;
++
++	vd->videodevice = NULL;
++	vd->status = NULL;
++	vd->pictName = NULL;
++	vd->videodevice = (char *) calloc(1, 16 * sizeof(char));
++	vd->status = (char *) calloc(1, 100 * sizeof(char));
++	vd->pictName = (char *) calloc(1, 80 * sizeof(char));
++	snprintf(vd->videodevice, 12, "%s", device);
++	vd->toggleAvi = 0;
++	vd->avifile = NULL;
++	vd->avifilename = avifilename;
++	vd->recordtime = 0;
++	vd->framecount = 0;
++	vd->recordstart = 0;
++	vd->signalquit = 1;
++	vd->width = width;
++	vd->height = height;
++	vd->fps = fps;
++	vd->formatIn = format;
++	vd->grabmethod = grabmethod;
++	vd->fileCounter = 0;
++	vd->rawFrameCapture = 0;
++	vd->rfsBytesWritten = 0;
++	vd->rfsFramesWritten = 0;
++	vd->captureFile = NULL;
++	vd->bytesWritten = 0;
++	vd->framesWritten = 0;
++
++	if (init_v4l2(vd) < 0) 
++	{
++		printf(" Init v4L2 failed !! exit fatal \n");
++		goto error;;
++	}
++
++	vd->framesizeIn = (vd->width * vd->height << 1);
++
++	vd->framebuffer = (unsigned char *) calloc(1, (size_t) vd->framesizeIn);
++
++	if (!vd->framebuffer)
++	{
++		goto error;
++	}
++	return 0;
++
++error:
++	free(vd->videodevice);
++	free(vd->status);
++	free(vd->pictName);
++	close(vd->fd);
++	return -1;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  init_v4l2
++ *  Description:  init_v4l2 
++ * =====================================================================================
++ */
++int Video::init_v4l2(struct vdIn *vd)
++{
++	int i;
++	int ret = 0;
++	if ((vd->fd = open(vd->videodevice, O_RDWR)) == -1) 
++	{
++		perror("ERROR opening V4L interface \n");
++		return -1;
++	}
++
++	memset(&vd->cap, 0, sizeof(struct v4l2_capability));
++	ret = ioctl(vd->fd, VIDIOC_QUERYCAP, &vd->cap);
++	if (ret < 0)
++	{
++		printf("Error opening device %s: unable to query device.\n",
++				vd->videodevice);
++		goto fatal;
++	}
++
++	if ((vd->cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) == 0) 
++	{
++		printf("Error opening device %s: video capture not supported.\n",
++				vd->videodevice);
++		goto fatal;;
++	}
++
++	if (!(vd->cap.capabilities & V4L2_CAP_STREAMING)) 
++	{
++		printf("%s does not support streaming i/o\n", vd->videodevice);
++		goto fatal;
++	}
++
++	/* set format in */
++	memset(&vd->fmt, 0, sizeof(struct v4l2_format));
++	vd->fmt.type 		    = V4L2_BUF_TYPE_VIDEO_CAPTURE;
++	vd->fmt.fmt.pix.width       = vd->width;
++	vd->fmt.fmt.pix.height      = vd->height;
++	vd->fmt.fmt.pix.pixelformat = vd->formatIn;
++	vd->fmt.fmt.pix.field       = V4L2_FIELD_ANY;
++	//vd->fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
++	ret = ioctl(vd->fd, VIDIOC_S_FMT, &vd->fmt);
++	if (ret < 0) 
++	{
++		perror("Unable to set format");
++		goto fatal;
++	}
++	else
++		printf ( "Format OK\n" );
++
++	if ((vd->fmt.fmt.pix.width != (unsigned int)vd->width) ||
++			(vd->fmt.fmt.pix.height != (unsigned int)vd->height)) 
++	{
++		printf(" format asked unavailable get width %d height %d \n",
++				vd->fmt.fmt.pix.width, vd->fmt.fmt.pix.height);
++		vd->width = vd->fmt.fmt.pix.width;
++		vd->height = vd->fmt.fmt.pix.height;
++	}
++
++	/* set framerate */
++	struct v4l2_streamparm* setfps;  
++	setfps= new struct v4l2_streamparm;
++	memset(setfps, 0, sizeof(struct v4l2_streamparm));
++	setfps->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
++	setfps->parm.capture.timeperframe.numerator=1;
++	setfps->parm.capture.timeperframe.denominator=vd->fps;
++	if ( ioctl(vd->fd, VIDIOC_S_PARM, setfps) < 0 )
++	{
++		perror("unable to set param\n");
++		delete setfps;
++		setfps = NULL;
++		goto fatal;
++	}
++	delete setfps;
++	setfps = NULL;
++
++	/* request buffers */
++	memset(&vd->rb, 0, sizeof(struct v4l2_requestbuffers));
++	vd->rb.count = NB_BUFFER;
++	vd->rb.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
++	vd->rb.memory = V4L2_MEMORY_MMAP;
++
++	ret = ioctl(vd->fd, VIDIOC_REQBUFS, &vd->rb);
++	if (ret < 0) 
++	{
++		printf("Unable to allocate buffers: %d.\n", errno);
++		goto fatal;
++	}
++
++	/* map the buffers */
++	for (i = 0; i < NB_BUFFER; i++)
++	{
++		t_buf.index = i;
++  		t_buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
++  		t_buf.memory = V4L2_MEMORY_MMAP;
++
++		ret = ioctl(vd->fd, VIDIOC_QUERYBUF, &t_buf);
++		if (ret < 0) 
++		{
++			printf("Unable to query buffer (%d).\n", errno);
++			goto fatal;
++		}
++
++		vd->mapbuflength[i] = t_buf.length;
++		vd->mem[i] = mmap(0,
++				t_buf.length, PROT_READ, MAP_SHARED, vd->fd,
++				t_buf.m.offset);
++		if (vd->mem[i] == MAP_FAILED) 
++		{
++			printf("Unable to map buffer (%d)\n", errno);
++			goto fatal;
++		}
++	}
++	/* Queue the buffers. */
++
++	for ( i=0;i<NB_BUFFER;i++ )
++	{
++		t_buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
++		t_buf.memory = V4L2_MEMORY_MMAP;
++		t_buf.index = i;
++
++		if (ioctl(vd->fd, VIDIOC_QBUF, &t_buf) < 0) 
++		{
++			printf("Unable to requeue buffer (%d).\n", errno);
++			goto fatal;
++		}
++	}
++
++	Show_Video_Info();
++
++	return 0;
++fatal:
++	return -1;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  initLut
++ *  Description:  Init Lut 
++ * =====================================================================================
++ */
++void Video::initLut(void)
++{
++	LutRv  = NULL;
++	LutGu  = NULL;
++	LutGv  = NULL;
++	LutBu  = NULL;
++
++	int i;
++	LutRv = (int *)malloc(256*sizeof(int));
++	LutGu = (int *)malloc(256*sizeof(int));
++	LutGv = (int *)malloc(256*sizeof(int));
++	LutBu = (int *)malloc(256*sizeof(int));
++
++	for (i= 0;i < 256;i++)
++	{
++		LutRv[i] = (i-128)*CoefRv/1000;
++		LutBu[i] = (i-128)*CoefBu/1000;
++		LutGu[i] = (128-i)*CoefGu/1000;
++		LutGv[i] = (128-i)*CoefGv/1000;
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  freeLut
++ *  Description:  FreeLut 
++ * =====================================================================================
++ */
++void Video::freeLut(void)
++{
++	free(LutRv);
++	free(LutGu);
++	free(LutGv);
++	free(LutBu);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  close_v4l2
++ *  Description:  close_v4l2 
++ * =====================================================================================
++ */
++int Video::close_v4l2(struct vdIn *vd)
++{
++	if (vd->isstreaming)
++		video_disable(vd);
++	free(vd->framebuffer);
++	vd->framebuffer = NULL;
++	free(vd->videodevice);
++	free(vd->status);
++	free(vd->pictName);
++	vd->videodevice = NULL;
++	vd->status = NULL;
++	vd->pictName = NULL;
++	for (int i = 0; i < NB_BUFFER; i++) 
++	{
++		munmap(vd->mem[i],vd->mapbuflength[i]);
++	}
++	close(vd->fd);
++	return 0;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  video_disable
++ *  Description:  video_disable
++ * =====================================================================================
++ */
++int Video::video_disable(struct vdIn *vd)
++{
++	int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
++	int ret;
++	ret = ioctl(vd->fd, VIDIOC_STREAMOFF, &type);
++	if (ret < 0) 
++	{
++		perror("Unable to %s capture");
++		return ret;
++	}
++	vd->isstreaming = 0;
++	return 0;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  uvGrab
++ *  Description:  uvcGrab Capture the video file 
++ * =====================================================================================
++ */
++int Video::uvcGrab(struct vdIn *vd)
++{
++	if (!vd->isstreaming)
++	{
++		if (video_enable(vd))
++			goto err;
++		else
++			printf ( "isstreaming=%d\n",vd->isstreaming );
++	}
++	q_buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
++	q_buf.memory = V4L2_MEMORY_MMAP;
++
++	if (ioctl(vd->fd, VIDIOC_DQBUF, &q_buf) < 0) 
++	{
++		perror("Unable to dequeue buffer");
++		goto err;
++	}
++
++	if ( q_buf.bytesused> 0 )
++	{
++		vd->buf.index = q_buf.index;
++		t_buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
++		t_buf.memory = V4L2_MEMORY_MMAP;
++		t_buf.index = vd->buf.index;
++
++		if (ioctl(vd->fd,VIDIOC_QBUF,&t_buf) < 0)
++		{
++			printf("Unable to requeue buffer (%d).\n", errno);
++			goto err;
++		}
++
++		return 0;
++	}
++	else
++		printf ( "File %s: Line %d\n",__FILE__,__LINE__ );
++
++err:
++	vd->signalquit = 0;
++	return -1;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  video_enable
++ *  Description:  video_enable function 
++ * =====================================================================================
++ */
++int Video::video_enable(struct vdIn *vd)
++{
++	int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
++	int ret;
++	ret = ioctl(vd->fd, VIDIOC_STREAMON, &type);
++	if (ret < 0) 
++	{
++		printf("Unable to %s capture: %d.\n", "start", errno);
++		return ret;
++	}
++	vd->isstreaming = 1;
++	return 0;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  get_pictureYV2
++ *  Description:  get_pictureYV2
++ * =====================================================================================
++ */
++int Video::get_pictureYV2(unsigned char *buf,int width,int height)
++{
++	FILE *foutpict;
++	unsigned char *picture = NULL;
++	char *name = NULL;
++	name = (char *)calloc(80,1);
++	getPictureName (name, 0);
++	picture = (unsigned char *)malloc(width*height*3*sizeof(char));
++	if(picture)
++	{
++		Pyuv422torgb24(buf, picture, width, height);
++	}
++	else
++	{
++		printf(" no room to take a picture \n");
++		return 0;
++	}
++	if(name)
++	{
++		foutpict = fopen (name, "wb");
++		fprintf (foutpict, "P6\n%d %d\n255\n", width, height);
++		size_t result = fwrite (picture, sizeof (char), width * height * 3, foutpict);
++		fclose (foutpict);
++		free(name);
++	}
++	free(picture);
++	picture = NULL;
++	return 0;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  fill_bufYV2
++ *  Description:  
++ * =====================================================================================
++ */
++int Video::fill_bufYV2(unsigned char *buf,unsigned char *pic,int width,int height)
++{
++	Pyuv422torgb24(buf, pic, width, height);
++	return 0;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  getPictureName
++ *  Description:  getPictureName
++ * =====================================================================================
++ */
++void Video::getPictureName (char *Picture, int fmt)
++{
++	fmt = fmt;
++	char temp[80];
++/* 	time_t curdate;
++ * 	struct tm *tdate;
++ * 	memset (temp, '\0', sizeof (temp));
++ * 	time (&curdate);
++ * 	tdate = localtime (&curdate);
++ */
++/* 	snprintf (temp, 26, "P_%02d_%02d_%02d.%s",
++ * 			tdate->tm_hour, tdate->tm_min, tdate->tm_sec, "pnm");
++ */
++	sprintf(temp,"%s","video.pnm");
++	memcpy (Picture, temp, strlen (temp));
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Pyuv422torgb24
++ *  Description:  
++ * =====================================================================================
++ */
++unsigned int Video::Pyuv422torgb24(unsigned char * input_ptr, unsigned char * output_ptr, 
++		                   unsigned int image_width, unsigned int image_height)
++{
++	unsigned int i, size;
++	unsigned char Y, Y1, U, V;
++	unsigned char *buff = input_ptr;
++	unsigned char *output_pt = output_ptr;
++	size = image_width * image_height >> 1;
++	for (i = size; i > 0; i--) 
++	{
++		/* bgr instead rgb ?? */
++		Y = buff[0] ;
++		U = buff[1] ;
++		Y1 = buff[2];
++		V = buff[3];
++		buff += 4;
++		*output_pt++ = R_FROMYV(Y,V);
++		*output_pt++ = G_FROMYUV(Y,U,V); //b
++		*output_pt++ = B_FROMYU(Y,U); //v
++			
++		*output_pt++ = R_FROMYV(Y1,V);
++		*output_pt++ = G_FROMYUV(Y1,U,V); //b
++		*output_pt++ = B_FROMYU(Y1,U); //v
++	}
++	return FOUR_TWO_TWO;
++} 
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Pyuv422torbut16_Low
++ *  Description:  Display Data on screen directly 
++ * =====================================================================================
++ */
++unsigned int Video::Pyuv422torbut16_Low(unsigned char * input_ptr, unsigned char * source_ptr, 
++		                   unsigned int image_width, unsigned int image_height,short scr_w,
++				   short scr_h)
++{
++	unsigned int i, size;
++	unsigned char Y, Y1, U, V;
++	unsigned char *buff = input_ptr;
++	unsigned char *output_ptr = source_ptr;
++	size = image_width * image_height >> 1;
++	unsigned short color;
++	unsigned short *loc;
++	int w = 0;
++	int h = 0;
++	unsigned char temp1,temp2,temp3;
++
++	for ( i = size; i > 0; i-- ) 
++	{
++		Y = CLIP(buff[0]+m_AdjLight);
++		U = buff[1] ;
++		Y1 = CLIP(buff[2]+m_AdjLight);
++		V = buff[3];
++		buff += 4;
++
++//		color  = (B_FROMYU(Y,U)>>3);
++//		color += ((G_FROMYUV(Y,U,V)>>2)<<5);
++//		color += ((R_FROMYV(Y,V)>>3)<<11);
++
++		temp1 = (unsigned char)(B_FROMYU(Y,U)*m_FactB+0.5);
++		temp2 = (unsigned char)(G_FROMYUV(Y,U,V)*m_FactG+0.5);
++		temp3 = (unsigned char)(R_FROMYV(Y,V)*m_FactR+0.5);
++		color = temp1 + ( temp2<<5 ) + ( temp3<<11 );
++
++		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - w ) * scr_h * 2 + h * 2 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - ( w + 1 ) ) * scr_h * 2 + h * 2 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - w ) * scr_h * 2 + ( h + 1 ) * 2 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - ( w + 1 ) ) * scr_h * 2 + ( h + 1 ) * 2 ) );
++		*loc = color;
++		
++		w +=2;
++		if ( w == image_width * 2 )
++		{
++			w = 0;
++			h +=2;
++		}
++
++//		color  = ( B_FROMYU(Y1,U)>>3 );
++//		color += ((G_FROMYUV(Y1,U,V)>>2)<<5);
++//		color += ((R_FROMYV(Y1,V)>>3)<<11);
++
++		temp1 = (unsigned char)(B_FROMYU(Y1,U)*m_FactB+0.5);
++		temp2 = (unsigned char)(G_FROMYUV(Y1,U,V)*m_FactG+0.5);
++		temp3 = (unsigned char)(R_FROMYV(Y1,V)*m_FactR+0.5);
++		color = temp1 + ( temp2<<5 ) + ( temp3<<11 );
++
++		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - w ) * scr_h * 2 + h * 2 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - ( w + 1 ) ) * scr_h * 2 + h * 2 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - w ) * scr_h * 2 + ( h + 1 ) * 2 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + ( ( scr_w - 1 - ( w + 1 ) ) * scr_h * 2 + ( h + 1 ) * 2 ) );
++		*loc = color;
++		
++		w +=2;
++		if ( w == image_width * 2 )
++		{
++			w = 0;
++			h +=2;
++		}
++	}
++	return FOUR_TWO_TWO;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Pyuv422torbut16_5097_Low
++ *  Description:  Display Data on screen directly 
++ * =====================================================================================
++ */
++unsigned int Video::Pyuv422torbut16_5097_Low(unsigned char * input_ptr, unsigned char * source_ptr, 
++		                   unsigned int image_width, unsigned int image_height,short scr_w,
++				   short scr_h)
++{
++	unsigned int i, size;
++	unsigned char Y, Y1, U, V;
++	unsigned char *buff = input_ptr;
++	unsigned char *output_ptr = source_ptr + scr_w * m_Posy * 2 + m_Posx * 2;
++	size = image_width * image_height >> 1;
++	unsigned short color;
++	unsigned short *loc;
++	int w = 0;
++	int h = 0;
++	unsigned char temp1,temp2,temp3;
++
++	for ( i = size; i > 0; i-- ) 
++	{
++		Y = CLIP(buff[0]+m_AdjLight);
++		U = buff[1] ;
++		Y1 = CLIP(buff[2]+m_AdjLight);
++		V = buff[3];
++		buff += 4;
++
++		temp1 = (unsigned char)(B_FROMYU(Y,U)*m_FactB+0.5);
++		temp2 = (unsigned char)(G_FROMYUV(Y,U,V)*m_FactG+0.5);
++		temp3 = (unsigned char)(R_FROMYV(Y,V)*m_FactR+0.5);
++		color = temp1 + ( temp2<<5 ) + ( temp3<<11 );
++
++		loc  = (unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( ( w + 1 ) << 1 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + scr_w * ( ( h + 1 ) << 1 ) + ( ( w + 1 ) << 1 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + scr_w * ( ( h + 1 ) << 1 ) + ( w << 1 ) );
++		*loc = color;
++		
++		w +=2;
++		if ( w == image_width * 2 )
++		{
++			w = 0;
++			h +=2;
++		}
++
++
++		temp1 = (unsigned char)(B_FROMYU(Y1,U)*m_FactB+0.5);
++		temp2 = (unsigned char)(G_FROMYUV(Y1,U,V)*m_FactG+0.5);
++		temp3 = (unsigned char)(R_FROMYV(Y1,V)*m_FactR+0.5);
++		color = temp1 + ( temp2<<5 ) + ( temp3<<11 );
++
++		loc  = (unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( ( w + 1 ) << 1 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + scr_w * ( ( h + 1 ) << 1 ) + ( ( w + 1 ) << 1 ) );
++		*loc = color;
++		loc  = (unsigned short *)( output_ptr + scr_w * ( ( h + 1 ) << 1 ) + ( w << 1 ) );
++		*loc = color;
++		
++		w +=2;
++		if ( w == image_width * 2 )
++		{
++			w = 0;
++			h +=2;
++		}
++	}
++	return FOUR_TWO_TWO;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Pyuv422torbut16_High
++ *  Description:  Display Data on screen directly 
++ * =====================================================================================
++ */
++unsigned int Video::Pyuv422torbut16_High(unsigned char * input_ptr, unsigned char * source_ptr, 
++		                   unsigned int image_width, unsigned int image_height,short scr_w,
++				   short scr_h)
++{
++	unsigned int i, size;
++	unsigned char Y, Y1, U, V;
++	unsigned char *buff = input_ptr;
++	unsigned char *output_ptr = source_ptr;
++	size = image_width * image_height >> 1;
++	unsigned short color,color1;
++	unsigned short *loc;
++	int w = 0;
++	int h = 0;
++
++	for ( i = size; i > 0; i-- ) 
++	{
++		Y = buff[0];
++		U = buff[1] ;
++		Y1 = buff[2];
++		V = buff[3];
++		buff += 4;
++
++		color  = (B_FROMYU(Y,U)>>3);
++		color += ((G_FROMYUV(Y,U,V)>>2)<<5);
++		color += ((R_FROMYV(Y,V)>>3)<<11);
++
++		*(unsigned short *)( output_ptr + (  ( scr_w - 1 - w ) * ( scr_h << 1 )  + ( h << 1 ) ) ) = color;
++
++		w ++;
++
++		color  = ( B_FROMYU(Y1,U)>>3 );
++		color += ((G_FROMYUV(Y1,U,V)>>2)<<5);
++		color += ((R_FROMYV(Y1,V)>>3)<<11);
++
++		*(unsigned short *)( output_ptr + (  ( scr_w - 1 - w ) * ( scr_h << 1 )  + ( h << 1 ) ) ) = color;
++
++		w ++;
++		if ( w == image_width )
++		{
++			w = 0;
++			h ++;
++		}
++	}
++
++	return FOUR_TWO_TWO;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Pyuv422torbut16_High
++ *  Description:  Display Data on screen directly 
++ * =====================================================================================
++ */
++unsigned int Video::Pyuv422torbut16_5097_High(unsigned char * input_ptr, unsigned char * source_ptr, 
++		                   unsigned int image_width, unsigned int image_height,short scr_w,
++				   short scr_h)
++{
++	unsigned int i, size;
++	unsigned char Y, Y1, U, V;
++	unsigned char *buff = input_ptr;
++	unsigned char *output_ptr = source_ptr + scr_w * m_Posy * 2 + m_Posx * 2;
++	size = image_width * image_height >> 1;
++	unsigned short color,color1;
++	unsigned short *loc;
++	int w = 0;
++	int h = 0;
++
++	for ( i = size; i > 0; i-- ) 
++	{
++		Y = buff[0];
++		U = buff[1] ;
++		Y1 = buff[2];
++		V = buff[3];
++		buff += 4;
++
++		color  = (B_FROMYU(Y,U)>>3);
++		color += ((G_FROMYUV(Y,U,V)>>2)<<5);
++		color += ((R_FROMYV(Y,V)>>3)<<11);
++
++		*(unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) ) = color;
++
++		w ++;
++
++		color  = ( B_FROMYU(Y1,U)>>3 );
++		color += ((G_FROMYUV(Y1,U,V)>>2)<<5);
++		color += ((R_FROMYV(Y1,V)>>3)<<11);
++
++		*(unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) ) = color;
++
++		w ++;
++		if ( w == image_width )
++		{
++			w = 0;
++			h ++;
++		}
++	}
++
++	return FOUR_TWO_TWO;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Pyuv422torbut16_High
++ *  Description:  Display Data on screen directly 
++ * =====================================================================================
++ */
++unsigned int Video::Pyuv422torbut16_5097_Super_High(unsigned char * input_ptr, unsigned char * source_ptr, 
++		                   unsigned int image_width, unsigned int image_height,short scr_w,
++				   short scr_h)
++{
++	unsigned int i, size;
++	unsigned char Y, Y1, U, V;
++	unsigned char *buff = input_ptr;
++	unsigned char *output_ptr = source_ptr;
++	size = image_width * image_height >> 1;
++	unsigned short color,color1;
++	unsigned short *loc;
++	int w = 0;
++	int h = 0;
++
++	for ( i = size; i > 0; i-- )
++	{
++		Y = buff[0];
++		U = buff[1] ;
++		Y1 = buff[2];
++		V = buff[3];
++		buff += 4;
++
++		color  = (B_FROMYU(Y,U)>>3);
++		color += ((G_FROMYUV(Y,U,V)>>2)<<5);
++		color += ((R_FROMYV(Y,V)>>3)<<11);
++
++		*(unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) ) = color;
++
++		w ++;
++
++		color  = ( B_FROMYU(Y1,U)>>3 );
++		color += ((G_FROMYUV(Y1,U,V)>>2)<<5);
++		color += ((R_FROMYV(Y1,V)>>3)<<11);
++
++		*(unsigned short *)( output_ptr + scr_w * ( h << 1 ) + ( w << 1 ) ) = color;
++
++		w ++;
++		if ( w == image_width )
++		{
++			w = 0;
++			h ++;
++		}
++	}
++
++	return FOUR_TWO_TWO;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  RGB_Functions
++ *  Description:  RGB_Functions sets
++ *
++ *  R = Y + 1.403V'
++ *  G = Y - 0.344U' - 0.714V'
++ *  B = Y + 1.770U'
++ * =====================================================================================
++ */
++unsigned char Video::R_FROMYV(unsigned char y, unsigned char v)
++{
++	return CLIP(y + LutRv[v]);
++}
++
++unsigned char Video::G_FROMYUV(unsigned char y, unsigned char u, unsigned char v)
++{
++	return CLIP(y + LutGu[u] + LutGv[v]);
++}
++
++unsigned char Video::B_FROMYU(unsigned char y, unsigned char u)
++{
++	return CLIP(y + LutBu[u]);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Sample_Pic
++ *  Description:  Sample picture 
++ * =====================================================================================
++ */
++void Video::Sample_Pic()
++{
++	for ( int i=0;i<2;i++ )
++	{
++		uvcGrab(videoIn);
++	}
++	get_pictureYV2(videoIn->framebuffer,videoIn->width,videoIn->height);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Sample_Pic
++ *  Description:  Sample picture 
++ * =====================================================================================
++ */
++void Video::Sample_Pic2(unsigned char* pic)
++{
++	if ( uvcGrab(videoIn) != -1 )
++		fill_bufYV2((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Sample_Pic
++ *  Description:  Sample picture 
++ * =====================================================================================
++ */
++void Video::Sample_Pic3(unsigned char* pic,short scr_w,short scr_h)
++{
++	if ( uvcGrab(videoIn) != -1 )
++	{
++		if 	( videoIn->width == 160 && videoIn->height == 120 )
++			Pyuv422torbut16_Low((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height,scr_w,scr_h);
++		else if ( videoIn->width == 320 && videoIn->height == 240 )
++			Pyuv422torbut16_High((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height,scr_w,scr_h);
++	}
++}
++		
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Sample_Pic4
++ *  Description:  Smart5097 Used Function 
++ * =====================================================================================
++ */
++void Video::Sample_Pic4(unsigned char* pic,short scr_w,short scr_h)
++{
++	if ( uvcGrab(videoIn) != -1 )
++	{
++		if 	( videoIn->width == 160 && videoIn->height == 120 )
++			Pyuv422torbut16_5097_Low((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height,scr_w,scr_h);
++		else if ( videoIn->width == 320 && videoIn->height == 240 )
++			Pyuv422torbut16_5097_High((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height,scr_w,scr_h);
++		else if ( videoIn->width == 640 && videoIn->height == 480 )
++			Pyuv422torbut16_5097_Super_High((unsigned char *)videoIn->mem[videoIn->buf.index],pic,videoIn->width,videoIn->height,scr_w,scr_h);
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Adjust_Light
++ *  Description:  flag == false more light 
++ *                flag == true more dark
++ * =====================================================================================
++ */
++void Video::Adjust_Light(bool flag)
++{
++	if ( flag == false )
++		m_AdjLight ++;
++	else
++		m_AdjLight --;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Show_Video_Info
++ *  Description:  Show Video Infomation 
++ * =====================================================================================
++ */
++void Video::Show_Video_Info()
++{
++	struct vdIn	*vd = videoIn;
++	memset(&vd->fmt, 0, sizeof(struct v4l2_format));
++	vd->fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
++	if (ioctl(vd->fd, VIDIOC_G_FMT, &vd->fmt) < 0)
++	{
++		printf("get format failed\n");
++	}
++	else
++	{
++		printf("Video Width = %d\n", vd->fmt.fmt.pix.width);
++		printf("Video Height = %d\n", vd->fmt.fmt.pix.height);
++	 	unsigned char F1,F2,F3,F4;	
++		F1 = vd->fmt.fmt.pix.pixelformat & 0xff;
++		F2 = ( vd->fmt.fmt.pix.pixelformat >> 8 ) & 0xff;
++		F3 = ( vd->fmt.fmt.pix.pixelformat >> 16 ) & 0xff;
++		F4 = ( vd->fmt.fmt.pix.pixelformat >> 24 ) & 0xff;
++		printf ( "Video Format = %c%c%c%c\n",F1,F2,F3,F4 );
++	}
++
++//	v4l2_std_id id;
++//	int ret;
++//	int add=0;
++//	do{
++//		ret = ioctl(vd->fd,VIDIOC_QUERYSTD,&id);
++//		add ++;
++//	}while( ret == -1 && add < 1000 );
++//
++//	if ( add >= 999 )
++//	{
++//		printf ( "can't get value\n" );
++//	}
++//
++//	if 	( id == V4L2_STD_NTSC )
++//	{
++//		printf ( "Video std = ntsc \n" );
++//	}
++//	else if ( id == V4L2_STD_PAL )
++//	{
++//		printf ( "Video std = pal \n" );
++//	}
++//	else
++//	{
++//		printf ( "no found std\n" );
++//	}
++
++
++//	struct v4l2_fmtdesc* argp;
++//	memset(argp, 0, sizeof(struct v4l2_fmtdesc));
++//	if (ioctl(vd->fd, VIDIOC_ENUM_FMT, argp) < 0)
++//	{
++//		printf ( "%d\n",argp->type );
++//	}
++}
+diff --git a/src/EVA11/base/Video/Video.h b/src/EVA11/base/Video/Video.h
+new file mode 100644
+index 0000000..e992c0e
+--- /dev/null
++++ b/src/EVA11/base/Video/Video.h
+@@ -0,0 +1,98 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  Video.h
++ *
++ *    Description:  Manage USB port camera class
++ *
++ *        Version:  1.0
++ *        Created:  2011年12月05日 20时14分48秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  kevin.wang (), kevin.wang2004@gmail.com
++ *        Company:  Eddysun Xiamen
++ *
++ * =====================================================================================
++ */
++
++#ifndef  _VIDEO_INC
++#define  _VIDEO_INC
++
++#include	"VideoHead.h"
++
++class Video
++{
++	public:
++		Video();
++		~Video();
++		bool Init_Video(int width,int height);
++		void Release_Video();
++		void Sample_Pic();
++		void Sample_Pic2(unsigned char*);
++		void Sample_Pic3(unsigned char*,short scr_w,short scr_h);
++		void Sample_Pic4(unsigned char*,short scr_w,short scr_h);
++		void Adjust_Light(bool);
++
++		void Set_Output_Pos(const int& x,const int& y); 
++	private:
++		int init_videoIn(struct vdIn *vd, char *device, 
++				int width, int height, int fps,
++			        int format, int grabmethod, char *avifilename);
++		int init_v4l2(struct vdIn *vd);
++		int close_v4l2(struct vdIn *vd);
++		void initLut(void);
++		void freeLut(void);
++		int video_disable(struct vdIn *vd);
++		int video_enable(struct vdIn *vd);
++		int uvcGrab(struct vdIn *vd);
++		int get_pictureYV2(unsigned char *buf,int width,int height);
++		int fill_bufYV2(unsigned char *buf,unsigned char *pic,int width,int height);
++		void getPictureName (char *Picture, int fmt);
++		unsigned char R_FROMYV(unsigned char y, unsigned char v);
++		unsigned char G_FROMYUV(unsigned char y,unsigned char u ,unsigned char v);
++		unsigned char B_FROMYU(unsigned char y, unsigned char u);
++		unsigned int  Pyuv422torgb24(unsigned char * input_ptr, unsigned char * output_ptr, 
++			       unsigned int image_width, unsigned int image_height);
++
++		unsigned int  Pyuv422torbut16_Low(unsigned char * input_ptr, unsigned char * output_ptr, 
++			       unsigned int image_width, unsigned int image_height,short scr_w,short scr_h);
++		unsigned int  Pyuv422torbut16_High(unsigned char * input_ptr, unsigned char * output_ptr, 
++			       unsigned int image_width, unsigned int image_height,short scr_w,short scr_h);
++
++		unsigned int  Pyuv422torbut16_5097_Super_High(unsigned char * input_ptr, unsigned char * output_ptr, 
++			       unsigned int image_width, unsigned int image_height,short scr_w,short scr_h);
++		unsigned int  Pyuv422torbut16_5097_High(unsigned char * input_ptr, unsigned char * output_ptr, 
++			       unsigned int image_width, unsigned int image_height,short scr_w,short scr_h);
++		unsigned int  Pyuv422torbut16_5097_Low(unsigned char * input_ptr, unsigned char * output_ptr, 
++			       unsigned int image_width, unsigned int image_height,short scr_w,short scr_h);
++
++		void Show_Video_Info();
++	private:
++#ifdef ARM9
++		constexpr static double	m_FactR = static_cast<double>(31) / static_cast<double>(255);
++		constexpr static double	m_FactG = static_cast<double>(63) / static_cast<double>(255);
++		constexpr static double	m_FactB = static_cast<double>(31) / static_cast<double>(255);
++#endif
++
++#ifdef X86 
++		const static double	m_FactR = 31. / 255.;
++		const static double	m_FactG = 63. / 255.;
++		const static double	m_FactB = 31. / 255.;
++#endif
++
++		int		m_Width;
++		int		m_Height;
++		int 		*LutRv ;
++		int 		*LutGu ;
++		int 		*LutGv ;
++		int		*LutBu ;
++		struct vdIn	*videoIn;
++		v4l2_buffer     t_buf;
++		v4l2_buffer 	q_buf;
++		unsigned char	m_AdjLight;
++
++		int		m_Posx;
++		int		m_Posy;
++};
++#endif   /* ----- #ifndef _VIDEO_INC  ----- */
+diff --git a/src/EVA11/base/Video/VideoHead.h b/src/EVA11/base/Video/VideoHead.h
+new file mode 100644
+index 0000000..e413877
+--- /dev/null
++++ b/src/EVA11/base/Video/VideoHead.h
+@@ -0,0 +1,205 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  VideoHead.h
++ *
++ *    Description:  Video class used head file
++ *
++ *        Version:  1.0
++ *        Created:  2011年12月05日 20时42分28秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  kevin.wang (), kevin.wang2004@gmail.com
++ *        Company:  Eddysun Xiamen
++ *
++ * =====================================================================================
++ */
++#ifndef  _VIDEOHEAD_INC
++#define  _VIDEOHEAD_INC
++
++#include 	<cstdio>
++#include	<cstdlib>
++#include 	<string.h>
++#include 	<fcntl.h>
++#include 	<unistd.h>
++#include 	<errno.h>
++#include 	<sys/ioctl.h>
++#include 	<sys/mman.h>
++#include 	<sys/select.h>
++#include 	<linux/videodev2.h>
++
++#define NB_BUFFER 	    	4//4
++#define AVI_MAX_TRACKS  	2
++
++#define uint32_t 		unsigned int 
++#define uint8_t  		unsigned char 
++#define uint16_t 		unsigned short
++#define uint64_t 		unsigned long long
++
++typedef struct
++{
++	off_t key;
++	off_t pos;
++	off_t len;
++} video_index_entry;
++
++typedef struct
++{
++	off_t pos;
++	off_t len;
++	off_t tot;
++} audio_index_entry;
++
++typedef struct track_s
++{
++	long   a_fmt;             /* Audio format, see #defines below */
++	long   a_chans;           /* Audio channels, 0 for no audio */
++	long   a_rate;            /* Rate in Hz */
++	long   a_bits;            /* bits per audio sample */
++	long   mp3rate;           /* mp3 bitrate kbs*/
++	long   audio_strn;        /* Audio stream number */
++	off_t  audio_bytes;       /* Total number of bytes of audio data */
++	long   audio_chunks;      /* Chunks of audio data in the file */
++	char   audio_tag[4];      /* Tag of audio data */
++	long   audio_posc;        /* Audio position: chunk */
++	long   audio_posb;        /* Audio position: byte within chunk */
++	off_t a_codech_off;       /* absolut offset of audio codec information */ 
++	off_t a_codecf_off;       /* absolut offset of audio codec information */ 
++	audio_index_entry *audio_index;
++} track_t;
++
++typedef struct
++{
++	uint32_t	bi_size;
++	uint32_t  bi_width;
++	uint32_t  bi_height;
++	uint16_t  bi_planes;
++	uint16_t  bi_bit_count;
++	uint32_t  bi_compression;
++	uint32_t  bi_size_image;
++	uint32_t  bi_x_pels_per_meter;
++	uint32_t  bi_y_pels_per_meter;
++	uint32_t  bi_clr_used;
++	uint32_t  bi_clr_important;
++} BITMAPINFOHEADER_avilib;
++
++typedef struct
++{
++	uint16_t  w_format_tag;
++	uint16_t  n_channels;
++	uint32_t  n_samples_per_sec;
++	uint32_t  n_avg_bytes_per_sec;
++	uint16_t  n_block_align;
++	uint16_t  w_bits_per_sample;
++	uint16_t  cb_size;
++} WAVEFORMATEX_avilib;
++
++typedef struct
++{
++	uint32_t fcc_type; 
++	uint32_t fcc_handler; 
++	uint32_t dw_flags; 
++	uint32_t dw_caps; 
++	uint16_t w_priority;
++	uint16_t w_language;
++	uint32_t dw_scale;
++	uint32_t dw_rate;
++	uint32_t dw_start;
++	uint32_t dw_length;
++	uint32_t dw_initial_frames;
++	uint32_t dw_suggested_buffer_size;
++	uint32_t dw_quality;
++	uint32_t dw_sample_size;
++	uint32_t dw_left;
++	uint32_t dw_top;
++	uint32_t dw_right;
++	uint32_t dw_bottom;
++	uint32_t dw_edit_count;
++	uint32_t dw_format_change_count;
++	char     sz_name[64];
++} AVISTREAMINFO;
++
++typedef struct
++{
++	long   fdes;              /* File descriptor of AVI file */
++	long   mode;              /* 0 for reading, 1 for writing */
++
++	long   width;             /* Width  of a video frame */
++	long   height;            /* Height of a video frame */
++	double fps;               /* Frames per second */
++	char   compressor[8];     /* Type of compressor, 4 bytes + padding for 0 byte */
++	char   compressor2[8];     /* Type of compressor, 4 bytes + padding for 0 byte */
++	long   video_strn;        /* Video stream number */
++	long   video_frames;      /* Number of video frames */
++	char   video_tag[4];      /* Tag of video data */
++	long   video_pos;         /* Number of next frame to be read
++			       (if index present) */
++
++	unsigned long max_len;    /* maximum video chunk present */
++
++	track_t track[AVI_MAX_TRACKS];  // up to AVI_MAX_TRACKS audio tracks supported
++
++	off_t pos;        /* position in file */
++	long   n_idx;             /* number of index entries actually filled */
++	long   max_idx;           /* number of index entries actually allocated */
++
++	off_t v_codech_off;       /* absolut offset of video codec (strh) info */ 
++	off_t v_codecf_off;       /* absolut offset of video codec (strf) info */ 
++
++	unsigned char (*idx)[16]; /* index entries (AVI idx1 tag) */
++	video_index_entry *video_index;
++
++	off_t last_pos;          /* Position of last frame written */
++	unsigned long last_len;          /* Length of last frame written */
++	int must_use_index;              /* Flag if frames are duplicated */
++	off_t movi_start;
++
++	int anum;            // total number of audio tracks 
++	int aptr;            // current audio working track 
++
++	BITMAPINFOHEADER_avilib *bitmap_info_header;
++	WAVEFORMATEX_avilib *wave_format_ex[AVI_MAX_TRACKS];
++} avi_t;
++
++struct vdIn {
++	int fd;
++	char *videodevice;
++	char *status;
++	char *pictName;
++	struct v4l2_capability cap;
++	struct v4l2_format fmt;
++	struct v4l2_buffer buf;
++	struct v4l2_requestbuffers rb;
++	void *mem[NB_BUFFER];
++	int mapbuflength[NB_BUFFER];
++	unsigned char *framebuffer;
++	int isstreaming;
++	int grabmethod;
++	int width;
++	int height;
++	int fps;
++	int formatIn;
++	int formatOut;
++	int framesizeIn;
++	int signalquit;
++	int toggleAvi;
++	int getPict;
++	int rawFrameCapture;
++	/* raw frame capture */
++	unsigned int fileCounter;
++	/* raw frame stream capture */
++	unsigned int rfsFramesWritten;
++	unsigned int rfsBytesWritten;
++	/* raw stream capture */
++	FILE *captureFile;
++	unsigned int framesWritten;
++	unsigned int bytesWritten;
++	avi_t *avifile;
++	char *avifilename;
++	int framecount;
++	int recordstart;
++	int recordtime;
++};
++#endif   /* ----- #ifndef videohead_INC  ----- */
++
+diff --git a/src/EVA11/base/VideoHead.h b/src/EVA11/base/VideoHead.h
+deleted file mode 100644
+index e413877..0000000
+--- a/src/EVA11/base/VideoHead.h
++++ /dev/null
+@@ -1,205 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  VideoHead.h
+- *
+- *    Description:  Video class used head file
+- *
+- *        Version:  1.0
+- *        Created:  2011年12月05日 20时42分28秒
+- *       Revision:  none
+- *       Compiler:  gcc
+- *
+- *         Author:  kevin.wang (), kevin.wang2004@gmail.com
+- *        Company:  Eddysun Xiamen
+- *
+- * =====================================================================================
+- */
+-#ifndef  _VIDEOHEAD_INC
+-#define  _VIDEOHEAD_INC
+-
+-#include 	<cstdio>
+-#include	<cstdlib>
+-#include 	<string.h>
+-#include 	<fcntl.h>
+-#include 	<unistd.h>
+-#include 	<errno.h>
+-#include 	<sys/ioctl.h>
+-#include 	<sys/mman.h>
+-#include 	<sys/select.h>
+-#include 	<linux/videodev2.h>
+-
+-#define NB_BUFFER 	    	4//4
+-#define AVI_MAX_TRACKS  	2
+-
+-#define uint32_t 		unsigned int 
+-#define uint8_t  		unsigned char 
+-#define uint16_t 		unsigned short
+-#define uint64_t 		unsigned long long
+-
+-typedef struct
+-{
+-	off_t key;
+-	off_t pos;
+-	off_t len;
+-} video_index_entry;
+-
+-typedef struct
+-{
+-	off_t pos;
+-	off_t len;
+-	off_t tot;
+-} audio_index_entry;
+-
+-typedef struct track_s
+-{
+-	long   a_fmt;             /* Audio format, see #defines below */
+-	long   a_chans;           /* Audio channels, 0 for no audio */
+-	long   a_rate;            /* Rate in Hz */
+-	long   a_bits;            /* bits per audio sample */
+-	long   mp3rate;           /* mp3 bitrate kbs*/
+-	long   audio_strn;        /* Audio stream number */
+-	off_t  audio_bytes;       /* Total number of bytes of audio data */
+-	long   audio_chunks;      /* Chunks of audio data in the file */
+-	char   audio_tag[4];      /* Tag of audio data */
+-	long   audio_posc;        /* Audio position: chunk */
+-	long   audio_posb;        /* Audio position: byte within chunk */
+-	off_t a_codech_off;       /* absolut offset of audio codec information */ 
+-	off_t a_codecf_off;       /* absolut offset of audio codec information */ 
+-	audio_index_entry *audio_index;
+-} track_t;
+-
+-typedef struct
+-{
+-	uint32_t	bi_size;
+-	uint32_t  bi_width;
+-	uint32_t  bi_height;
+-	uint16_t  bi_planes;
+-	uint16_t  bi_bit_count;
+-	uint32_t  bi_compression;
+-	uint32_t  bi_size_image;
+-	uint32_t  bi_x_pels_per_meter;
+-	uint32_t  bi_y_pels_per_meter;
+-	uint32_t  bi_clr_used;
+-	uint32_t  bi_clr_important;
+-} BITMAPINFOHEADER_avilib;
+-
+-typedef struct
+-{
+-	uint16_t  w_format_tag;
+-	uint16_t  n_channels;
+-	uint32_t  n_samples_per_sec;
+-	uint32_t  n_avg_bytes_per_sec;
+-	uint16_t  n_block_align;
+-	uint16_t  w_bits_per_sample;
+-	uint16_t  cb_size;
+-} WAVEFORMATEX_avilib;
+-
+-typedef struct
+-{
+-	uint32_t fcc_type; 
+-	uint32_t fcc_handler; 
+-	uint32_t dw_flags; 
+-	uint32_t dw_caps; 
+-	uint16_t w_priority;
+-	uint16_t w_language;
+-	uint32_t dw_scale;
+-	uint32_t dw_rate;
+-	uint32_t dw_start;
+-	uint32_t dw_length;
+-	uint32_t dw_initial_frames;
+-	uint32_t dw_suggested_buffer_size;
+-	uint32_t dw_quality;
+-	uint32_t dw_sample_size;
+-	uint32_t dw_left;
+-	uint32_t dw_top;
+-	uint32_t dw_right;
+-	uint32_t dw_bottom;
+-	uint32_t dw_edit_count;
+-	uint32_t dw_format_change_count;
+-	char     sz_name[64];
+-} AVISTREAMINFO;
+-
+-typedef struct
+-{
+-	long   fdes;              /* File descriptor of AVI file */
+-	long   mode;              /* 0 for reading, 1 for writing */
+-
+-	long   width;             /* Width  of a video frame */
+-	long   height;            /* Height of a video frame */
+-	double fps;               /* Frames per second */
+-	char   compressor[8];     /* Type of compressor, 4 bytes + padding for 0 byte */
+-	char   compressor2[8];     /* Type of compressor, 4 bytes + padding for 0 byte */
+-	long   video_strn;        /* Video stream number */
+-	long   video_frames;      /* Number of video frames */
+-	char   video_tag[4];      /* Tag of video data */
+-	long   video_pos;         /* Number of next frame to be read
+-			       (if index present) */
+-
+-	unsigned long max_len;    /* maximum video chunk present */
+-
+-	track_t track[AVI_MAX_TRACKS];  // up to AVI_MAX_TRACKS audio tracks supported
+-
+-	off_t pos;        /* position in file */
+-	long   n_idx;             /* number of index entries actually filled */
+-	long   max_idx;           /* number of index entries actually allocated */
+-
+-	off_t v_codech_off;       /* absolut offset of video codec (strh) info */ 
+-	off_t v_codecf_off;       /* absolut offset of video codec (strf) info */ 
+-
+-	unsigned char (*idx)[16]; /* index entries (AVI idx1 tag) */
+-	video_index_entry *video_index;
+-
+-	off_t last_pos;          /* Position of last frame written */
+-	unsigned long last_len;          /* Length of last frame written */
+-	int must_use_index;              /* Flag if frames are duplicated */
+-	off_t movi_start;
+-
+-	int anum;            // total number of audio tracks 
+-	int aptr;            // current audio working track 
+-
+-	BITMAPINFOHEADER_avilib *bitmap_info_header;
+-	WAVEFORMATEX_avilib *wave_format_ex[AVI_MAX_TRACKS];
+-} avi_t;
+-
+-struct vdIn {
+-	int fd;
+-	char *videodevice;
+-	char *status;
+-	char *pictName;
+-	struct v4l2_capability cap;
+-	struct v4l2_format fmt;
+-	struct v4l2_buffer buf;
+-	struct v4l2_requestbuffers rb;
+-	void *mem[NB_BUFFER];
+-	int mapbuflength[NB_BUFFER];
+-	unsigned char *framebuffer;
+-	int isstreaming;
+-	int grabmethod;
+-	int width;
+-	int height;
+-	int fps;
+-	int formatIn;
+-	int formatOut;
+-	int framesizeIn;
+-	int signalquit;
+-	int toggleAvi;
+-	int getPict;
+-	int rawFrameCapture;
+-	/* raw frame capture */
+-	unsigned int fileCounter;
+-	/* raw frame stream capture */
+-	unsigned int rfsFramesWritten;
+-	unsigned int rfsBytesWritten;
+-	/* raw stream capture */
+-	FILE *captureFile;
+-	unsigned int framesWritten;
+-	unsigned int bytesWritten;
+-	avi_t *avifile;
+-	char *avifilename;
+-	int framecount;
+-	int recordstart;
+-	int recordtime;
+-};
+-#endif   /* ----- #ifndef videohead_INC  ----- */
+-
+diff --git a/src/EVA11/base/VideoPanel.cpp b/src/EVA11/base/VideoPanel.cpp
+index bbc35ed..e4c5c85 100644
+--- a/src/EVA11/base/VideoPanel.cpp
++++ b/src/EVA11/base/VideoPanel.cpp
+@@ -18,7 +18,7 @@
+ 
+ #include 	"Language.h"
+ #include 	"Graphic.h"
+-#include 	"Video.h"
++#include 	"./Video/Video.h"
+ #include 	"Msgbox.h"
+ #include 	"Algorithm.h"
+ 
+diff --git a/src/EVA11/base/ZKPanel.cpp b/src/EVA11/base/ZKPanel.cpp
+index 8e6bea7..a3c0f51 100644
+--- a/src/EVA11/base/ZKPanel.cpp
++++ b/src/EVA11/base/ZKPanel.cpp
+@@ -403,6 +403,9 @@ void ZKPanel::Clean_ZKScreen(Graphic& g)
+ 
+ 	m_Zscreen->Drawme(g,true);
+ 	m_AlarmManage->Draw_Alarm_Sets(g,true);
++#ifdef X86
++	g.Update_Rect(0,0,640,480);
++#endif
+ }
+ 
+ /* 
+-- 
+1.8.5.1
+
