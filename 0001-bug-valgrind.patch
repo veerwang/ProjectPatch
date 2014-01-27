@@ -1,0 +1,425 @@
+From a3abb2e352cc0b14fc5b15d7bdf7484da85fd73f Mon Sep 17 00:00:00 2001
+From: kevin <kevin.wang2004@hotmail.com>
+Date: Mon, 27 Jan 2014 08:47:48 +0800
+Subject: [PATCH] =?UTF-8?q?=E8=BF=9B=E8=A1=8C=E6=B5=8B=E8=AF=95=E4=BB=A3?=
+ =?UTF-8?q?=E7=A0=81=E7=9A=84=E6=B7=BB=E5=8A=A0,=E5=B9=B6=E4=B8=94?=
+ =?UTF-8?q?=E4=BF=AE=E6=AD=A3=E4=B8=80=E4=B8=AA=E5=86=85=E5=AD=98=E6=B3=84?=
+ =?UTF-8?q?=E6=BC=8F=E7=9A=84bug=EF=BC=8C=E6=98=AF=E9=80=9A=E8=BF=87valgri?=
+ =?UTF-8?q?nd=E5=B7=A5=E5=85=B7=E6=89=BE=E5=87=BA=E7=9A=84=E3=80=82?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ src/EVA11/base/MKlib.mk           |  4 ++++
+ src/EVA11/base/Makefile           |  2 +-
+ src/EVA11/base/Msgbox.cpp         |  4 ++--
+ src/EVA11/base/Parawin.cpp        |  9 +++++++
+ src/EVA11/base/Test/BaseTest.cpp  | 32 +++++++++++++++++++++++++
+ src/EVA11/base/Test/BaseTest.h    | 29 +++++++++++++++++++++++
+ src/EVA11/base/Test/SmallTest.cpp | 44 +++++++++++++++++++++++++++++++++++
+ src/EVA11/base/Test/SmallTest.h   | 31 +++++++++++++++++++++++++
+ src/EVA11/base/Test/Test.cpp      | 49 +++++++++++++++++++++++++++++++++++----
+ src/EVA11/base/Test/Test.h        |  6 ++++-
+ src/EVA11/base/main.cpp           | 19 ++++++++++++---
+ 11 files changed, 218 insertions(+), 11 deletions(-)
+ create mode 100644 src/EVA11/base/Test/BaseTest.cpp
+ create mode 100644 src/EVA11/base/Test/BaseTest.h
+ create mode 100644 src/EVA11/base/Test/SmallTest.cpp
+ create mode 100644 src/EVA11/base/Test/SmallTest.h
+
+diff --git a/src/EVA11/base/MKlib.mk b/src/EVA11/base/MKlib.mk
+index 459c3e7..3377e27 100644
+--- a/src/EVA11/base/MKlib.mk
++++ b/src/EVA11/base/MKlib.mk
+@@ -189,4 +189,8 @@ THIRDLIB+=fusion
+ THIRDLIB+=++dfb
+ SEARCH_LIBPATH+=-L$(MYLIBS_DIR)/libdirectfb/lib/
+ SEARCH_INCPATH+=-I$(MYLIBS_DIR)/libdirectfb/include/
++
++SEARCH_LIBPATH+=-L$(MYLIBS_DIR)/libdirectfb/lib/
++SEARCH_INCPATH+=-I$(MYLIBS_DIR)/libdirectfb/include/
++SEARCH_INCPATH+=-I$(MYLIBS_DIR)/libdirectfb/include/directfb/
+ endif
+diff --git a/src/EVA11/base/Makefile b/src/EVA11/base/Makefile
+index 16f1668..07935f9 100644
+--- a/src/EVA11/base/Makefile
++++ b/src/EVA11/base/Makefile
+@@ -52,7 +52,7 @@ else
+ 
+ ifeq ($(COMPILE),arm9)
+ COMPILE_FLAG = -O2 -march=armv4t
+-else 
++else
+ COMPILE_FLAG = -O2
+ endif
+ 
+diff --git a/src/EVA11/base/Msgbox.cpp b/src/EVA11/base/Msgbox.cpp
+index cf70950..eea7111 100644
+--- a/src/EVA11/base/Msgbox.cpp
++++ b/src/EVA11/base/Msgbox.cpp
+@@ -52,12 +52,12 @@ Msgbox::Msgbox (int x,int y,int width,int heigh,const char *text,MSGBOXTYPE type
+ 
+ Msgbox::~Msgbox ()
+ {
+-	if ( m_Text == NULL )
++	if ( m_Text != NULL )
+ 	{
+ 		delete[] m_Text;
+ 		m_Text = NULL;
+ 	}
+-	if ( m_Content == NULL )
++	if ( m_Content != NULL )
+ 	{
+ 		delete[] m_Content;
+ 		m_Content = NULL;
+diff --git a/src/EVA11/base/Parawin.cpp b/src/EVA11/base/Parawin.cpp
+index e5dee8a..fc237a0 100644
+--- a/src/EVA11/base/Parawin.cpp
++++ b/src/EVA11/base/Parawin.cpp
+@@ -225,6 +225,15 @@ void Parawin::Destroy_GUI()
+ 	Basewin::Destroy_GUI();
+ 	if 	( m_Title    != NULL ) delete m_Title;
+ 	if 	( m_SubTitle != NULL ) delete m_SubTitle;
++
++	for ( int i=0;i<MAXNORCOUNT;i++ )
++	{
++		if ( m_NorLable[i] != NULL )
++		{
++			delete m_NorLable[i];
++			m_NorLable[i] = NULL;
++		}
++	}
+ }
+ 
+ /* 
+diff --git a/src/EVA11/base/Test/BaseTest.cpp b/src/EVA11/base/Test/BaseTest.cpp
+new file mode 100644
+index 0000000..4c2f221
+--- /dev/null
++++ b/src/EVA11/base/Test/BaseTest.cpp
+@@ -0,0 +1,32 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  BaseTest.cpp
++ *
++ *    Description:  
++ *
++ *        Version:  1.0
++ *        Created:  2014年01月26日 10时59分30秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  YOUR NAME (), 
++ *   Organization:  
++ *
++ * =====================================================================================
++ */
++
++#include 	"BaseTest.h"
++#include 	<cstdlib>
++#include 	<cstdio>
++#include 	<iostream>
++
++BaseTest::BaseTest ()
++{
++	printf ( "BaseTest create\n" );
++}
++
++BaseTest::~BaseTest ()
++{
++	printf ( "BaseTest destroy\n" );
++}
+diff --git a/src/EVA11/base/Test/BaseTest.h b/src/EVA11/base/Test/BaseTest.h
+new file mode 100644
+index 0000000..e0fee97
+--- /dev/null
++++ b/src/EVA11/base/Test/BaseTest.h
+@@ -0,0 +1,29 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  BaseTest.h
++ *
++ *    Description:  
++ *
++ *        Version:  1.0
++ *        Created:  2014年01月26日 10时58分57秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  YOUR NAME (), 
++ *   Organization:  
++ *
++ * =====================================================================================
++ */
++
++class BaseTest
++{
++	public:
++		BaseTest ();                             /* constructor */
++		~BaseTest ();                            /* constructor */
++
++	protected:
++
++	private:
++
++}; /* -----  end of class BaseTest  ----- */
+diff --git a/src/EVA11/base/Test/SmallTest.cpp b/src/EVA11/base/Test/SmallTest.cpp
+new file mode 100644
+index 0000000..527fddf
+--- /dev/null
++++ b/src/EVA11/base/Test/SmallTest.cpp
+@@ -0,0 +1,44 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  SmallTest.cpp
++ *
++ *    Description:  
++ *
++ *        Version:  1.0
++ *        Created:  2014年01月26日 11时06分18秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  YOUR NAME (), 
++ *   Organization:  
++ *
++ * =====================================================================================
++ */
++
++#include 	<cstdlib>
++#include 	<cstdio>
++#include 	<iostream>
++
++#include 	"SmallTest.h"
++
++SmallTest::SmallTest ()
++{
++	printf ( "SmallTest Create\n" );
++}
++
++SmallTest::~SmallTest ()
++{
++	printf ( "SmallTest Destroy\n" );
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  SayHello
++ *  Description:  
++ * =====================================================================================
++ */
++void SmallTest::SayHello()
++{
++	printf ( "Say Hello %d\n",m_ID );
++}
+diff --git a/src/EVA11/base/Test/SmallTest.h b/src/EVA11/base/Test/SmallTest.h
+new file mode 100644
+index 0000000..19b9814
+--- /dev/null
++++ b/src/EVA11/base/Test/SmallTest.h
+@@ -0,0 +1,31 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  SmallTest.h
++ *
++ *    Description:  
++ *
++ *        Version:  1.0
++ *        Created:  2014年01月26日 11时05分44秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  YOUR NAME (), 
++ *   Organization:  
++ *
++ * =====================================================================================
++ */
++
++class SmallTest
++{
++	public:
++		SmallTest ();                             /* constructor */
++		~SmallTest ();                             /* constructor */
++		void SayHello();
++
++	protected:
++
++	private:
++		int		m_ID;
++
++}; /* -----  end of class SmallTest  ----- */
+diff --git a/src/EVA11/base/Test/Test.cpp b/src/EVA11/base/Test/Test.cpp
+index 9ebd62e..71ae25a 100644
+--- a/src/EVA11/base/Test/Test.cpp
++++ b/src/EVA11/base/Test/Test.cpp
+@@ -16,6 +16,7 @@
+  * =====================================================================================
+  */
+ 
++#include 	<assert.h>
+ #include 	<memory>
+ #include 	<cstdlib>
+ #include 	<cstdio>
+@@ -26,10 +27,13 @@
+ 
+ #include 	"Test.h"
+ 
+-#define  SWAP(x,y) do{__typeof__(x) t; t = x; x = y; y = t;}while(0);
++#define  SWAP(x,y) __extention__{__typeof__(x) t; t = x; x = y; y = t;}
++#define  MIN(x,y)  __extention__{x > y ? y : x}
+ 
++const char *str = "hello";
+ Test::Test ()
+ {
++	printf ( "Test create\n" );
+ //	printf ( "test class\n" );
+ //	char text[] = "hell1o the world";
+ //
+@@ -61,20 +65,57 @@ Test::Test ()
+ 	v.push_back(2);
+ 
+ 	for_each(v.begin(),v.end(),[](int val){ std::cout<<val<<std::endl; });
+-#endif
+ 
+ 	float m = 10;
+ 	float n = 20;
+ 	printf ( "m=%f,n=%f\n",m,n );
+ 
+-	SWAP(m,n)
+-
++	SWAP(m,n);
+ 	printf ( "m=%f,n=%f\n",m,n );
+ 
++	int re = MIN(10,6);
++	printf ( "%d\n",re );
++
++
+ 	std::shared_ptr<int> ptr;
++#endif
++	const char *src = "hello";
++	char *des = new char[6];
++	printf ( "%s\n",src );
++	Str_Cpy(src,des);
++	printf ( "%s\n",des );
++	delete[] des;
++	des = NULL; 
++
++	m_SmallTest.SayHello();
++	printf ( "%d\n",sizeof(SmallTest) );
++
++	int a[4] = {1,2,3,8};
++	printf ( "addressd1 = %d\n",&a );
++	printf ( "%d\n",*(&a+1) );
++	printf ( "addressd2 = %d\n",&a+1 );
++
++	int *p = (int *)(&a+1);
++	printf ( "%d\n",*(p-1) );
+ 
+ }  /* -----  end of method Test::Test  (constructor)  ----- */
+ 
+ Test::~Test ()
+ {
++	printf ( "Test destroy\n" );
+ }  /* -----  end of method Test::Test  (constructor)  ----- */
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Str_Cpy
++ *  Description:  
++ * =====================================================================================
++ */
++void Test::Str_Cpy(const char* src,char* des)
++{
++	assert(src);
++	if ( src == des ) return;
++	int len = strlen(src)+1;
++	while(len--)
++		*des++ = *src++;
++}
+diff --git a/src/EVA11/base/Test/Test.h b/src/EVA11/base/Test/Test.h
+index 6e1e158..19c010b 100644
+--- a/src/EVA11/base/Test/Test.h
++++ b/src/EVA11/base/Test/Test.h
+@@ -16,14 +16,18 @@
+  * =====================================================================================
+  */
+ 
+-class Test
++#include 	"BaseTest.h"
++#include 	"SmallTest.h"
++class Test : public BaseTest
+ {
+ 	public:
+ 		Test ();                             /* constructor */
+ 		~Test ();                            /* destructor */
++		void Str_Cpy(const char* src,char* des);
+ 
+ 	protected:
+ 
+ 	private:
++		SmallTest	m_SmallTest;
+ 
+ }; /* -----  end of class Test  ----- */
+diff --git a/src/EVA11/base/main.cpp b/src/EVA11/base/main.cpp
+index c0f19f8..a9c75e2 100644
+--- a/src/EVA11/base/main.cpp
++++ b/src/EVA11/base/main.cpp
+@@ -20,6 +20,7 @@
+ 
+ #include 	<cstdlib>
+ #include 	<cstdio>
++#include 	<stdlib.h>
+ #include	<iostream>	
+ #include 	<stdint.h>
+ #include 	<signal.h>
+@@ -352,6 +353,18 @@ void Signal_Interrupt(int n,siginfo_t *psiginfo,void *myact)
+ 	exit(0);
+ }
+ 
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  ExitProcess
++ *  Description:  When the Programe End run this function
++ * =====================================================================================
++ */
++void ExitProcess(void)
++{
++	std::cout<<"EVA11 Program Exit Normally!"<<std::endl;
++}
++
+ /*
+  * ===  FUNCTION  ======================================================================
+  *         Name:  main
+@@ -361,12 +374,13 @@ void Signal_Interrupt(int n,siginfo_t *psiginfo,void *myact)
+ 	int
+ main ( int argc, char *argv[] )
+ {
+-	Test test;
++	Test test;						/* 进行测试的代码 */
++	atexit(ExitProcess);
+ 	struct sigaction act;  
+ 	sigemptyset(&act.sa_mask);     				/* * 清空阻塞信号 **/  
+ 	act.sa_flags = SA_SIGINFO;     				/* * 设置SA_SIGINFO 表示传递附加信息到触发函数 **/  
+ 	act.sa_sigaction = Signal_Interrupt;  
+-	if	( sigaction(SIGINT,&act,NULL) < 0 )  
++	if	( sigaction(SIGINT,&act,NULL) < 0 )
+ 	{
+ 		perror("install signal error\n");  
+ 	}
+@@ -393,7 +407,6 @@ main ( int argc, char *argv[] )
+ 	{
+ 		Standard_SDL_Fun();
+ 	}
+-
+ 	return EXIT_SUCCESS;
+ }
+ #endif
+-- 
+1.8.5.1
+
