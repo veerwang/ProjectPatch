@@ -1,0 +1,120 @@
+From 9147173e31821c90c7d15bf0ed6fa9fcc253a7ff Mon Sep 17 00:00:00 2001
+From: kevin <kevin.wang2004@hotmail.com>
+Date: Wed, 29 Jan 2014 11:24:26 +0800
+Subject: [PATCH] =?UTF-8?q?=E4=BF=AE=E6=AD=A3=E4=B8=80=E4=B8=AA=E6=8B=A5?=
+ =?UTF-8?q?=E6=9C=89=E9=9C=80=E5=87=BD=E6=95=B0=EF=BC=8C=E4=BD=86=E6=98=AF?=
+ =?UTF-8?q?=E6=B2=A1=E6=9C=89=E8=99=9A=E8=A7=A3=E6=9E=84=E5=87=BD=E6=95=B0?=
+ =?UTF-8?q?=E7=9A=84=E7=B1=BB?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ src/EVA11/base/Mainwin.cpp      | 9 +++++----
+ src/EVA11/base/Operationwin.cpp | 1 -
+ src/EVA11/base/SQLLiteWrapper.h | 2 +-
+ src/EVA11/base/Test/Test.cpp    | 6 +++---
+ src/EVA11/base/main.cpp         | 1 +
+ 5 files changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/src/EVA11/base/Mainwin.cpp b/src/EVA11/base/Mainwin.cpp
+index 50be7b0..663ddf6 100644
+--- a/src/EVA11/base/Mainwin.cpp
++++ b/src/EVA11/base/Mainwin.cpp
+@@ -86,6 +86,7 @@ int Mainwin::Loopwindow(Graphic &g)
+ 	Init_View_Sets(g);
+ 	Drawme(g);
+ 	Init_Process_Sets();
++	
+ #ifdef CALSAMPLE
+ 	unsigned long long len = 0;
+ 	struct tm *timenow;
+@@ -821,7 +822,7 @@ void Mainwin::Refresh_Normal_Label_Content_1_DZKPanel(Graphic& g,int sub)
+ 							{
+ 								if 	( m_gp->ProbeFun[m_gp->MixPrimarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]] == 0 ||  
+ 									  m_gp->ProbeFun[m_gp->MixSecondarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]] == 0 )
+-										sprintf(m_Msg,"OFF",m_gp->ScrSigM[m_gp->ScrSigFocus]-2+1);
++										sprintf(m_Msg,"%s","OFF");
+ 								else
+ 									m_lo->Frequence_2_Char(m_gp->FreqValue[m_gp->FreqIndex[m_gp->MixPrimarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]]],m_Msg);
+ 							}
+@@ -835,7 +836,7 @@ void Mainwin::Refresh_Normal_Label_Content_1_DZKPanel(Graphic& g,int sub)
+ 							{
+ 								if 	( m_gp->ProbeFun[m_gp->MixPrimarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]] == 0 ||  
+ 									  m_gp->ProbeFun[m_gp->MixSecondarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]] == 0 )
+-										sprintf(m_Msg,"OFF",m_gp->ScrSigM[m_gp->ScrSigFocus]-2+1);
++										sprintf(m_Msg,"%s","OFF");
+ 								else
+ 									m_lo->Frequence_2_Char(m_gp->FreqValue[m_gp->FreqIndex[m_gp->MixSecondarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]]],m_Msg);
+ 							}
+@@ -1059,9 +1060,9 @@ void Mainwin::Refresh_Normal_Label_Content_2_ColorPanel(Graphic& g,int sub)
+ 							break;
+ 						case 1:
+ 							if 	( m_gp->ColorSpotSampleType == 0 )
+-								sprintf(m_Msg,"%d",m_gp->ColorSpotSampIntervalClock);
++								sprintf(m_Msg,"%lld",m_gp->ColorSpotSampIntervalClock);
+ 							else if ( m_gp->ColorSpotSampleType == 1 )
+-								sprintf(m_Msg,"%d",m_gp->ColorSPotSampOutPuls);
++								sprintf(m_Msg,"%lld",m_gp->ColorSPotSampOutPuls);
+ 							break;
+ 						case 5:
+ 							if 	( m_gp->ColorSpotDispMode == 0 )
+diff --git a/src/EVA11/base/Operationwin.cpp b/src/EVA11/base/Operationwin.cpp
+index 86458ae..d20bddd 100644
+--- a/src/EVA11/base/Operationwin.cpp
++++ b/src/EVA11/base/Operationwin.cpp
+@@ -85,7 +85,6 @@ void Operationwin::Destroy_GUI()
+ void Operationwin::Drawme(Graphic &g)
+ {
+ 	Basewin::Drawme(g);
+-
+ 	m_Title->Drawme(g);
+ }
+ 
+diff --git a/src/EVA11/base/SQLLiteWrapper.h b/src/EVA11/base/SQLLiteWrapper.h
+index 531b4b5..d323826 100644
+--- a/src/EVA11/base/SQLLiteWrapper.h
++++ b/src/EVA11/base/SQLLiteWrapper.h
+@@ -42,7 +42,7 @@ class SQLiteDB : public IResult
+ 
+ public:
+ 	SQLiteDB();
+-	~SQLiteDB();
++	virtual ~SQLiteDB();
+ 	
+ 	/*Open Connection*/
+ 	bool OpenConnection(std::string DatabaseName,std::string DatabaseDir); 
+diff --git a/src/EVA11/base/Test/Test.cpp b/src/EVA11/base/Test/Test.cpp
+index 71ae25a..3957c5c 100644
+--- a/src/EVA11/base/Test/Test.cpp
++++ b/src/EVA11/base/Test/Test.cpp
+@@ -70,11 +70,11 @@ Test::Test ()
+ 	float n = 20;
+ 	printf ( "m=%f,n=%f\n",m,n );
+ 
+-	SWAP(m,n);
++//	SWAP(m,n);
+ 	printf ( "m=%f,n=%f\n",m,n );
+ 
+-	int re = MIN(10,6);
+-	printf ( "%d\n",re );
++//	int re = MIN(10,6);
++//	printf ( "%d\n",re );
+ 
+ 
+ 	std::shared_ptr<int> ptr;
+diff --git a/src/EVA11/base/main.cpp b/src/EVA11/base/main.cpp
+index a9c75e2..cdc0690 100644
+--- a/src/EVA11/base/main.cpp
++++ b/src/EVA11/base/main.cpp
+@@ -375,6 +375,7 @@ void ExitProcess(void)
+ main ( int argc, char *argv[] )
+ {
+ 	Test test;						/* 进行测试的代码 */
++	
+ 	atexit(ExitProcess);
+ 	struct sigaction act;  
+ 	sigemptyset(&act.sa_mask);     				/* * 清空阻塞信号 **/  
+-- 
+1.8.5.1
+
