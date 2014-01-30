@@ -1,0 +1,28 @@
+From 815841daab4024fa6a7be635c9e2779aa0328de8 Mon Sep 17 00:00:00 2001
+From: kevin <kevin.wang2004@hotmail.com>
+Date: Thu, 30 Jan 2014 11:46:12 +0800
+Subject: [PATCH] =?UTF-8?q?=E5=B0=8F=E5=B0=8F=E7=9A=84=E4=BF=AE=E6=AD=A3?=
+ =?UTF-8?q?=E5=9C=A8shellcommand=E4=B8=AD?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ src/EVA11/base/ShellCommand.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/EVA11/base/ShellCommand.cpp b/src/EVA11/base/ShellCommand.cpp
+index 035976c..d022f0a 100644
+--- a/src/EVA11/base/ShellCommand.cpp
++++ b/src/EVA11/base/ShellCommand.cpp
+@@ -86,6 +86,7 @@ ShellCommand::SHELLCOMMAND ShellCommand::Analyze( int argc, char* argv[] )
+ 				break;
+ 		}				/* -----  end switch  ----- */
+ 	}
++	return SHELLCOMMAND_INVALID;
+ }
+ 
+ /* 
+-- 
+1.8.5.2
+
