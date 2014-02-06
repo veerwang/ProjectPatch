@@ -1,120 +1,2560 @@
-From 9147173e31821c90c7d15bf0ed6fa9fcc253a7ff Mon Sep 17 00:00:00 2001
+From 5d21a46243e1a4130f2eecec557874c9905ec5ce Mon Sep 17 00:00:00 2001
 From: kevin <kevin.wang2004@hotmail.com>
-Date: Wed, 29 Jan 2014 11:24:26 +0800
-Subject: [PATCH] =?UTF-8?q?=E4=BF=AE=E6=AD=A3=E4=B8=80=E4=B8=AA=E6=8B=A5?=
- =?UTF-8?q?=E6=9C=89=E9=9C=80=E5=87=BD=E6=95=B0=EF=BC=8C=E4=BD=86=E6=98=AF?=
- =?UTF-8?q?=E6=B2=A1=E6=9C=89=E8=99=9A=E8=A7=A3=E6=9E=84=E5=87=BD=E6=95=B0?=
- =?UTF-8?q?=E7=9A=84=E7=B1=BB?=
+Date: Wed, 5 Feb 2014 19:48:25 +0800
+Subject: [PATCH 1/2] =?UTF-8?q?=E8=BF=9B=E8=A1=8C=E5=B7=A5=E7=A8=8B?=
+ =?UTF-8?q?=E7=9B=AE=E5=BD=95=E8=B0=83=E6=95=B4?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 ---
- src/EVA11/base/Mainwin.cpp      | 9 +++++----
- src/EVA11/base/Operationwin.cpp | 1 -
- src/EVA11/base/SQLLiteWrapper.h | 2 +-
- src/EVA11/base/Test/Test.cpp    | 6 +++---
- src/EVA11/base/main.cpp         | 1 +
- 5 files changed, 10 insertions(+), 9 deletions(-)
+ src/EVA11/base/Algorithm.cpp      |  42 --
+ src/EVA11/base/Algorithm.h        |   3 -
+ src/EVA11/base/ColorObj.cpp       | 144 -------
+ src/EVA11/base/ColorObj.h         |  62 ---
+ src/EVA11/base/DetectView.cpp     |   7 +-
+ src/EVA11/base/GUI/ColorObj.cpp   | 144 +++++++
+ src/EVA11/base/GUI/ColorObj.h     |  62 +++
+ src/EVA11/base/GUI/GUILowCode.hpp | 850 ++++++++++++++++++++++++++++++++++++++
+ src/EVA11/base/GUI/Makefile       |  87 ++++
+ src/EVA11/base/GUILowCode.hpp     | 850 --------------------------------------
+ src/EVA11/base/Gradual.cpp        |   7 +-
+ src/EVA11/base/Graphic.cpp        |  48 ++-
+ src/EVA11/base/Graphic.h          |   6 +-
+ src/EVA11/base/Label.cpp          |   1 -
+ src/EVA11/base/Label.h            |   2 +-
+ src/EVA11/base/Makefile           |   2 +
+ 16 files changed, 1197 insertions(+), 1120 deletions(-)
+ delete mode 100644 src/EVA11/base/ColorObj.cpp
+ delete mode 100644 src/EVA11/base/ColorObj.h
+ create mode 100644 src/EVA11/base/GUI/ColorObj.cpp
+ create mode 100644 src/EVA11/base/GUI/ColorObj.h
+ create mode 100644 src/EVA11/base/GUI/GUILowCode.hpp
+ create mode 100644 src/EVA11/base/GUI/Makefile
+ delete mode 100644 src/EVA11/base/GUILowCode.hpp
 
-diff --git a/src/EVA11/base/Mainwin.cpp b/src/EVA11/base/Mainwin.cpp
-index 50be7b0..663ddf6 100644
---- a/src/EVA11/base/Mainwin.cpp
-+++ b/src/EVA11/base/Mainwin.cpp
-@@ -86,6 +86,7 @@ int Mainwin::Loopwindow(Graphic &g)
- 	Init_View_Sets(g);
- 	Drawme(g);
- 	Init_Process_Sets();
-+	
- #ifdef CALSAMPLE
- 	unsigned long long len = 0;
- 	struct tm *timenow;
-@@ -821,7 +822,7 @@ void Mainwin::Refresh_Normal_Label_Content_1_DZKPanel(Graphic& g,int sub)
- 							{
- 								if 	( m_gp->ProbeFun[m_gp->MixPrimarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]] == 0 ||  
- 									  m_gp->ProbeFun[m_gp->MixSecondarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]] == 0 )
--										sprintf(m_Msg,"OFF",m_gp->ScrSigM[m_gp->ScrSigFocus]-2+1);
-+										sprintf(m_Msg,"%s","OFF");
- 								else
- 									m_lo->Frequence_2_Char(m_gp->FreqValue[m_gp->FreqIndex[m_gp->MixPrimarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]]],m_Msg);
- 							}
-@@ -835,7 +836,7 @@ void Mainwin::Refresh_Normal_Label_Content_1_DZKPanel(Graphic& g,int sub)
- 							{
- 								if 	( m_gp->ProbeFun[m_gp->MixPrimarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]] == 0 ||  
- 									  m_gp->ProbeFun[m_gp->MixSecondarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]] == 0 )
--										sprintf(m_Msg,"OFF",m_gp->ScrSigM[m_gp->ScrSigFocus]-2+1);
-+										sprintf(m_Msg,"%s","OFF");
- 								else
- 									m_lo->Frequence_2_Char(m_gp->FreqValue[m_gp->FreqIndex[m_gp->MixSecondarySig[m_gp->ScrSigM[m_gp->ScrSigFocus]-2]]],m_Msg);
- 							}
-@@ -1059,9 +1060,9 @@ void Mainwin::Refresh_Normal_Label_Content_2_ColorPanel(Graphic& g,int sub)
- 							break;
- 						case 1:
- 							if 	( m_gp->ColorSpotSampleType == 0 )
--								sprintf(m_Msg,"%d",m_gp->ColorSpotSampIntervalClock);
-+								sprintf(m_Msg,"%lld",m_gp->ColorSpotSampIntervalClock);
- 							else if ( m_gp->ColorSpotSampleType == 1 )
--								sprintf(m_Msg,"%d",m_gp->ColorSPotSampOutPuls);
-+								sprintf(m_Msg,"%lld",m_gp->ColorSPotSampOutPuls);
- 							break;
- 						case 5:
- 							if 	( m_gp->ColorSpotDispMode == 0 )
-diff --git a/src/EVA11/base/Operationwin.cpp b/src/EVA11/base/Operationwin.cpp
-index 86458ae..d20bddd 100644
---- a/src/EVA11/base/Operationwin.cpp
-+++ b/src/EVA11/base/Operationwin.cpp
-@@ -85,7 +85,6 @@ void Operationwin::Destroy_GUI()
- void Operationwin::Drawme(Graphic &g)
- {
- 	Basewin::Drawme(g);
+diff --git a/src/EVA11/base/Algorithm.cpp b/src/EVA11/base/Algorithm.cpp
+index b3697ae..156108e 100644
+--- a/src/EVA11/base/Algorithm.cpp
++++ b/src/EVA11/base/Algorithm.cpp
+@@ -540,48 +540,6 @@ void Algorithm::MDelay(int ms)
+ 		timeUse = 1000 * (tpEnd.tv_sec - tpStart.tv_sec) + (tpEnd.tv_usec - tpStart.tv_usec)/1000;
+ 	} while(timeUse < ms);
+ }
 -
- 	m_Title->Drawme(g);
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Alpha_Color
+- *  Description:  Alpha Color calculate,only called in Alpha parameters exist
+- * =====================================================================================
+- */
+-int Algorithm::Alpha_Color(int r,int g,int b,int alph,short bkcolor)
+-{
+-	int nr    = r;
+-	int ng    = g;
+-	int nb    = b;
+-	int alpha = alph;
+-
+-	int oldr  = (( bkcolor >> 11 ) & 0x1f)<<3;
+-	int oldg  = (( bkcolor >> 5 ) & 0x3f)<<2;
+-	int oldb  = (( bkcolor ) & 0x1f)<<3;
+-
+-	nr        = (((nr - oldr)*alpha)>>8) + oldr;
+-	ng        = (((ng - oldg)*alpha)>>8) + oldg;
+-	nb        = (((nb - oldb)*alpha)>>8) + oldb;
+-
+-	return ( nr << 16 ) + ( ng << 8 ) + nb;
+-}
+-int Algorithm::Alpha_Color(short fgcolor,int alph,short bkcolor)
+-{
+-	int nr    = (( fgcolor >> 11 ) & 0x1f)<<3;
+-	int ng    = (( fgcolor >> 5) & 0x3f)<<2;
+-	int nb    = (( fgcolor ) & 0x1f)<<3;
+-	int alpha = alph;
+-
+-	int oldr  = (( bkcolor >> 11 ) & 0x1f)<<3;
+-	int oldg  = (( bkcolor >> 5 ) & 0x3f)<<2;
+-	int oldb  = (( bkcolor ) & 0x1f)<<3;
+-
+-	nr        = (((nr - oldr)*alpha)>>8) + oldr;
+-	ng        = (((ng - oldg)*alpha)>>8) + oldg;
+-	nb        = (((nb - oldb)*alpha)>>8) + oldb;
+-
+-	return ( nr << 16 ) + ( ng << 8 ) + nb;
+-}
+-
+ /* 
+  * ===  FUNCTION  ======================================================================
+  *         Name:  Calculate_SX_SY
+diff --git a/src/EVA11/base/Algorithm.h b/src/EVA11/base/Algorithm.h
+index 2ce6074..6e5a2d0 100644
+--- a/src/EVA11/base/Algorithm.h
++++ b/src/EVA11/base/Algorithm.h
+@@ -70,9 +70,6 @@ class Algorithm
+ 
+ 		void PolyFit(double *x, double *y, int n, double *a, int m, double *dt);
+ 
+-		int Alpha_Color(int r,int g,int b,int alph,short bkcolor);
+-		int Alpha_Color(short fgcolor,int alpha,short bkcolor);
+-
+ 		void Calculate_SX_SY(const int& x1,const int& y1,
+ 				     const int& x2,const int& y2,
+ 				     double& sx,double& sy);
+diff --git a/src/EVA11/base/ColorObj.cpp b/src/EVA11/base/ColorObj.cpp
+deleted file mode 100644
+index 7da4beb..0000000
+--- a/src/EVA11/base/ColorObj.cpp
++++ /dev/null
+@@ -1,144 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  ColorObj.cpp
+- *
+- *    Description:  implementation of ColorObj class 
+- *
+- *        Version:  1.0
+- *        Created:  2013年01月18日 11时44分42秒
+- *       Revision:  none
+- *       Compiler:  gcc
+- *
+- *         Author:  YOUR NAME (), 
+- *   Organization:  
+- *
+- * =====================================================================================
+- */
+-
+-#include 	<SDL.h>
+-#include 	"ColorObj.h"
+-
+-std::auto_ptr<ColorObj> ColorObj::m_Instance;
+-
+-struct ColorObj::PImpl
+-{
+-	static const int	MAXPENCOUNT 	= 32;
+-	ColorV 			Pen[MAXPENCOUNT];
+-};
+-
+-ColorObj::ColorObj () : m_Imple(new struct PImpl)
+-{
+-}
+-
+-ColorObj::~ColorObj ()
+-{
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Instance
+- *  Description:  Only use this function to init logic class 
+- * =====================================================================================
+- */
+-ColorObj* ColorObj::Instance()
+-{
+-	if ( m_Instance.get() == 0 )
+-	{
+-		m_Instance.reset( new ColorObj() );
+-	}
+-	return m_Instance.get();
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Init_Object
+- *  Description:  initialization of Color Object
+- * =====================================================================================
+- */
+-bool ColorObj::Init_Object()
+-{
+-	m_Imple->Pen[0].color32  = 0x000000ff;
+-	m_Imple->Pen[1].color32  = 0x45660b9f;
+-	m_Imple->Pen[2].color32  = 0x0000ffff;
+-	m_Imple->Pen[3].color32  = 0x00ff00ff;
+-	m_Imple->Pen[4].color32  = 0xffff00ff;
+-	m_Imple->Pen[5].color32  = 0xff7a00ff;
+-	m_Imple->Pen[6].color32  = 0xff00ffff;
+-	m_Imple->Pen[7].color32  = 0x00ffffff;
+-	m_Imple->Pen[8].color32  = 0x7d9953ff;
+-	m_Imple->Pen[9].color32  = 0xfffab3ff;
+-	m_Imple->Pen[10].color32 = 0x000000ff;
+-	m_Imple->Pen[11].color32 = 0xffff00ff;
+-	m_Imple->Pen[12].color32 = 0xff0000ff;
+-	m_Imple->Pen[13].color32 = 0xffffffff;
+-	m_Imple->Pen[14].color32 = 0xffffffff;
+-	m_Imple->Pen[15].color32 = 0xffffffff;
+-	m_Imple->Pen[16].color32 = 0xf5ffccff;
+-	m_Imple->Pen[17].color32 = 0x45660bff;
+-	m_Imple->Pen[18].color32 = 0xd7d7d7ff;
+-	m_Imple->Pen[19].color32 = 0x000000ff;
+-	m_Imple->Pen[20].color32 = 0x000000ff;
+-	m_Imple->Pen[21].color32 = 0xffffffff;
+-	m_Imple->Pen[22].color32 = 0x000000ff;
+-	m_Imple->Pen[23].color32 = 0xfffab3ff;
+-	m_Imple->Pen[24].color32 = 0xff0000ff;
+-	m_Imple->Pen[25].color32 = 0xf5ffccff;
+-	m_Imple->Pen[26].color32 = 0x000000ff;
+-	m_Imple->Pen[27].color32 = 0xff0000ff;
+-	m_Imple->Pen[28].color32 = 0x000000ff;
+-	m_Imple->Pen[29].color32 = 0xefe559ff;
+-	m_Imple->Pen[30].color32 = 0x000000ff;
+-	m_Imple->Pen[31].color32 = 0xffffffff;
+-
+-	SDL_Surface* p24ColorSurface = SDL_CreateRGBSurface(SDL_SWSURFACE,1,1,24,0xff0000,0x00ff00,0x0000ff,0x0);
+-	if 	( p24ColorSurface == NULL )
+-	{
+-		printf("SDL Create color surface fail: %s\n",SDL_GetError());
+-		return false; 
+-	}
+-	SDL_Surface* p16ColorSurface = SDL_CreateRGBSurface(SDL_SWSURFACE,1,1,16,0xf800,0x07e0,0x001f,0);
+-	if 	( p16ColorSurface == NULL )
+-	{
+-		SDL_FreeSurface(p24ColorSurface);
+-		printf("SDL Create color surface fail: %s\n",SDL_GetError());
+-		return false; 
+-	}
+-
+-	for ( int i=0;i<m_Imple->MAXPENCOUNT;i++ )
+-	{
+-		m_Imple->Pen[i].index = i;
+-		m_Imple->Pen[i].r = (m_Imple->Pen[i].color32>>24)&0xff;
+-		m_Imple->Pen[i].g = (m_Imple->Pen[i].color32>>16)&0xff;
+-		m_Imple->Pen[i].b = (m_Imple->Pen[i].color32>>8 )&0xff;
+-		m_Imple->Pen[i].a = (m_Imple->Pen[i].color32>>0 )&0xff;
+-		m_Imple->Pen[i].color24 =  SDL_MapRGB(p24ColorSurface->format,m_Imple->Pen[i].r,m_Imple->Pen[i].g,m_Imple->Pen[i].b);
+-		m_Imple->Pen[i].color16 =  SDL_MapRGB(p16ColorSurface->format,m_Imple->Pen[i].r,m_Imple->Pen[i].g,m_Imple->Pen[i].b);
+-	}
+-
+-	SDL_FreeSurface(p16ColorSurface);
+-	SDL_FreeSurface(p24ColorSurface);
+-	return true;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Destroy_Object
+- *  Description:  Destroy the Color Object 
+- * =====================================================================================
+- */
+-void ColorObj::Destroy_Object()
+-{
+-
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Get_ColorVP
+- *  Description:  Get the Color Variables Point 
+- * =====================================================================================
+- */
+-ColorObj::ColorV* ColorObj::Get_ColorVP(const int index)
+-{
+-	return &m_Imple->Pen[index];
+-}
+diff --git a/src/EVA11/base/ColorObj.h b/src/EVA11/base/ColorObj.h
+deleted file mode 100644
+index 840a661..0000000
+--- a/src/EVA11/base/ColorObj.h
++++ /dev/null
+@@ -1,62 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  ColorObj.h
+- *
+- *    Description:  Manage Color 
+- *
+- *        Version:  1.0
+- *        Created:  2013年01月18日 11时41分44秒
+- *       Revision:  none
+- *       Compiler:  gcc
+- *
+- *         Author:  YOUR NAME (), 
+- *   Organization:  
+- *
+- * =====================================================================================
+- */
+-
+-#ifndef  COLOROBJ_INC
+-#define  COLOROBJ_INC
+-
+-#include 	<inttypes.h>
+-#include 	<memory>
+-
+-class ColorObj
+-{
+-	public:
+-		struct ColorV 
+-		{
+-			uint32_t	index;
+-			uint32_t	color32;
+-			uint32_t	color24;
+-			uint16_t	color16;
+-			uint8_t		r;
+-			uint8_t		g;
+-			uint8_t		b;
+-			uint8_t		a;
+-		};
+-		typedef struct ColorV ColorV;
+-
+-		static ColorObj* Instance();
+-
+-		bool Init_Object();
+-		void Destroy_Object();
+-		ColorV* Get_ColorVP(const int);
+-	protected:
+-
+-	private:
+-		ColorObj ();
+-		ColorObj (const ColorObj&);
+-		ColorObj& operator = (const ColorObj&);
+-		~ColorObj ();
+-
+-	private:
+-		friend class std::auto_ptr<ColorObj>;
+-		static std::auto_ptr<ColorObj>		m_Instance;
+-
+-		struct PImpl;
+-		std::auto_ptr<struct PImpl>		m_Imple;
+-
+-}; /* -----  end of class ColorObj  ----- */
+-#endif   /* ----- #ifndef COLOROBJ_INC  ----- */
+diff --git a/src/EVA11/base/DetectView.cpp b/src/EVA11/base/DetectView.cpp
+index 9846476..6d0658f 100644
+--- a/src/EVA11/base/DetectView.cpp
++++ b/src/EVA11/base/DetectView.cpp
+@@ -22,8 +22,6 @@
+ #include 	"Language.h"
+ #include 	"Global.h"
+ 
+-#include 	"Algorithm.h"
+-
+ #include 	"BasePanel.h"
+ #include 	"ZKPanel.h"
+ #include 	"VideoPanel.h"
+@@ -265,14 +263,13 @@ int  DetectView::Loop_View(Graphic& g)
+  */
+ void DetectView::Lock_View(Graphic& g)
+ {
+-	Algorithm *alg = Algorithm::Instance();
+ 	g.Load_Disp_Area(m_X,m_Y,m_X+m_Width-1,m_Y+m_Heigh-1,m_ViewDisBuffer);
+ 	for ( int i=m_X;i<=((m_X+m_Width-1)>>1);i++ )
+ 	{
+ 		for ( int j=m_Y;j<m_Y+m_Heigh-1;j++ )
+ 		{
+-			g.Setpixel(i,j,g.RGB24_16(alg->Alpha_Color(239,60,25,80,g.Getpixel(i,j))));
+-			g.Setpixel(m_X+m_Width-i-1,j,g.RGB24_16(alg->Alpha_Color(239,60,25,80,g.Getpixel(m_X+m_Width-i-1,j))));
++			g.Setpixel(i,j,g.RGB24_16(g.Alpha_Color(239,60,25,80,g.Getpixel(i,j))));
++			g.Setpixel(m_X+m_Width-i-1,j,g.RGB24_16(g.Alpha_Color(239,60,25,80,g.Getpixel(m_X+m_Width-i-1,j))));
+ 		}
+ 	}
+ #ifdef X86
+diff --git a/src/EVA11/base/GUI/ColorObj.cpp b/src/EVA11/base/GUI/ColorObj.cpp
+new file mode 100644
+index 0000000..7da4beb
+--- /dev/null
++++ b/src/EVA11/base/GUI/ColorObj.cpp
+@@ -0,0 +1,144 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  ColorObj.cpp
++ *
++ *    Description:  implementation of ColorObj class 
++ *
++ *        Version:  1.0
++ *        Created:  2013年01月18日 11时44分42秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  YOUR NAME (), 
++ *   Organization:  
++ *
++ * =====================================================================================
++ */
++
++#include 	<SDL.h>
++#include 	"ColorObj.h"
++
++std::auto_ptr<ColorObj> ColorObj::m_Instance;
++
++struct ColorObj::PImpl
++{
++	static const int	MAXPENCOUNT 	= 32;
++	ColorV 			Pen[MAXPENCOUNT];
++};
++
++ColorObj::ColorObj () : m_Imple(new struct PImpl)
++{
++}
++
++ColorObj::~ColorObj ()
++{
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Instance
++ *  Description:  Only use this function to init logic class 
++ * =====================================================================================
++ */
++ColorObj* ColorObj::Instance()
++{
++	if ( m_Instance.get() == 0 )
++	{
++		m_Instance.reset( new ColorObj() );
++	}
++	return m_Instance.get();
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Init_Object
++ *  Description:  initialization of Color Object
++ * =====================================================================================
++ */
++bool ColorObj::Init_Object()
++{
++	m_Imple->Pen[0].color32  = 0x000000ff;
++	m_Imple->Pen[1].color32  = 0x45660b9f;
++	m_Imple->Pen[2].color32  = 0x0000ffff;
++	m_Imple->Pen[3].color32  = 0x00ff00ff;
++	m_Imple->Pen[4].color32  = 0xffff00ff;
++	m_Imple->Pen[5].color32  = 0xff7a00ff;
++	m_Imple->Pen[6].color32  = 0xff00ffff;
++	m_Imple->Pen[7].color32  = 0x00ffffff;
++	m_Imple->Pen[8].color32  = 0x7d9953ff;
++	m_Imple->Pen[9].color32  = 0xfffab3ff;
++	m_Imple->Pen[10].color32 = 0x000000ff;
++	m_Imple->Pen[11].color32 = 0xffff00ff;
++	m_Imple->Pen[12].color32 = 0xff0000ff;
++	m_Imple->Pen[13].color32 = 0xffffffff;
++	m_Imple->Pen[14].color32 = 0xffffffff;
++	m_Imple->Pen[15].color32 = 0xffffffff;
++	m_Imple->Pen[16].color32 = 0xf5ffccff;
++	m_Imple->Pen[17].color32 = 0x45660bff;
++	m_Imple->Pen[18].color32 = 0xd7d7d7ff;
++	m_Imple->Pen[19].color32 = 0x000000ff;
++	m_Imple->Pen[20].color32 = 0x000000ff;
++	m_Imple->Pen[21].color32 = 0xffffffff;
++	m_Imple->Pen[22].color32 = 0x000000ff;
++	m_Imple->Pen[23].color32 = 0xfffab3ff;
++	m_Imple->Pen[24].color32 = 0xff0000ff;
++	m_Imple->Pen[25].color32 = 0xf5ffccff;
++	m_Imple->Pen[26].color32 = 0x000000ff;
++	m_Imple->Pen[27].color32 = 0xff0000ff;
++	m_Imple->Pen[28].color32 = 0x000000ff;
++	m_Imple->Pen[29].color32 = 0xefe559ff;
++	m_Imple->Pen[30].color32 = 0x000000ff;
++	m_Imple->Pen[31].color32 = 0xffffffff;
++
++	SDL_Surface* p24ColorSurface = SDL_CreateRGBSurface(SDL_SWSURFACE,1,1,24,0xff0000,0x00ff00,0x0000ff,0x0);
++	if 	( p24ColorSurface == NULL )
++	{
++		printf("SDL Create color surface fail: %s\n",SDL_GetError());
++		return false; 
++	}
++	SDL_Surface* p16ColorSurface = SDL_CreateRGBSurface(SDL_SWSURFACE,1,1,16,0xf800,0x07e0,0x001f,0);
++	if 	( p16ColorSurface == NULL )
++	{
++		SDL_FreeSurface(p24ColorSurface);
++		printf("SDL Create color surface fail: %s\n",SDL_GetError());
++		return false; 
++	}
++
++	for ( int i=0;i<m_Imple->MAXPENCOUNT;i++ )
++	{
++		m_Imple->Pen[i].index = i;
++		m_Imple->Pen[i].r = (m_Imple->Pen[i].color32>>24)&0xff;
++		m_Imple->Pen[i].g = (m_Imple->Pen[i].color32>>16)&0xff;
++		m_Imple->Pen[i].b = (m_Imple->Pen[i].color32>>8 )&0xff;
++		m_Imple->Pen[i].a = (m_Imple->Pen[i].color32>>0 )&0xff;
++		m_Imple->Pen[i].color24 =  SDL_MapRGB(p24ColorSurface->format,m_Imple->Pen[i].r,m_Imple->Pen[i].g,m_Imple->Pen[i].b);
++		m_Imple->Pen[i].color16 =  SDL_MapRGB(p16ColorSurface->format,m_Imple->Pen[i].r,m_Imple->Pen[i].g,m_Imple->Pen[i].b);
++	}
++
++	SDL_FreeSurface(p16ColorSurface);
++	SDL_FreeSurface(p24ColorSurface);
++	return true;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Destroy_Object
++ *  Description:  Destroy the Color Object 
++ * =====================================================================================
++ */
++void ColorObj::Destroy_Object()
++{
++
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Get_ColorVP
++ *  Description:  Get the Color Variables Point 
++ * =====================================================================================
++ */
++ColorObj::ColorV* ColorObj::Get_ColorVP(const int index)
++{
++	return &m_Imple->Pen[index];
++}
+diff --git a/src/EVA11/base/GUI/ColorObj.h b/src/EVA11/base/GUI/ColorObj.h
+new file mode 100644
+index 0000000..840a661
+--- /dev/null
++++ b/src/EVA11/base/GUI/ColorObj.h
+@@ -0,0 +1,62 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  ColorObj.h
++ *
++ *    Description:  Manage Color 
++ *
++ *        Version:  1.0
++ *        Created:  2013年01月18日 11时41分44秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  YOUR NAME (), 
++ *   Organization:  
++ *
++ * =====================================================================================
++ */
++
++#ifndef  COLOROBJ_INC
++#define  COLOROBJ_INC
++
++#include 	<inttypes.h>
++#include 	<memory>
++
++class ColorObj
++{
++	public:
++		struct ColorV 
++		{
++			uint32_t	index;
++			uint32_t	color32;
++			uint32_t	color24;
++			uint16_t	color16;
++			uint8_t		r;
++			uint8_t		g;
++			uint8_t		b;
++			uint8_t		a;
++		};
++		typedef struct ColorV ColorV;
++
++		static ColorObj* Instance();
++
++		bool Init_Object();
++		void Destroy_Object();
++		ColorV* Get_ColorVP(const int);
++	protected:
++
++	private:
++		ColorObj ();
++		ColorObj (const ColorObj&);
++		ColorObj& operator = (const ColorObj&);
++		~ColorObj ();
++
++	private:
++		friend class std::auto_ptr<ColorObj>;
++		static std::auto_ptr<ColorObj>		m_Instance;
++
++		struct PImpl;
++		std::auto_ptr<struct PImpl>		m_Imple;
++
++}; /* -----  end of class ColorObj  ----- */
++#endif   /* ----- #ifndef COLOROBJ_INC  ----- */
+diff --git a/src/EVA11/base/GUI/GUILowCode.hpp b/src/EVA11/base/GUI/GUILowCode.hpp
+new file mode 100644
+index 0000000..0dca1a5
+--- /dev/null
++++ b/src/EVA11/base/GUI/GUILowCode.hpp
+@@ -0,0 +1,850 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  GUILowCode.hpp
++ *
++ *    Description:  Recreate the GUILowCode class with template
++ *                  and with the singleton pattern 
++ *                  it is a template file
++ *
++ *        Version:  1.0
++ *        Created:  2012年08月10日 17时09分48秒
++ *       Revision:  none
++ *       Compiler:  gcc
++ *
++ *         Author:  YOUR NAME (), 
++ *   Organization:  
++ *
++ * =====================================================================================
++ */
++
++#ifndef  GUILowCode_inc
++#define  GUILowCode_inc
++
++#include 	<fcntl.h> 
++#include        <unistd.h> 
++#include        <sys/ioctl.h>
++#include 	<memory>
++#include        <linux/fb.h> 
++#include 	<sys/mman.h> 
++#include 	<inttypes.h>
++
++/*-----------------------------------------------------------------------------
++ *  BP type:    16bit: uint16_t 
++ *       	 8bit: uint8_t 
++ *       	 1bit: bool
++ *-----------------------------------------------------------------------------*/
++class GUIInterface;
++template <typename BP>
++class GUILowCode
++{
++	public:
++		typedef enum
++		{
++			MODE_SRC,
++			MODE_SRC_XOR_DST,
++		} CopyMode;
++
++		static GUILowCode* Instance();
++
++		void Init_GUILowCode_Parameters(int,int,int,int,uint8_t*,uint8_t*,GUILowCode<BP>::CopyMode);
++
++		void Setpixel(int,int,BP);
++		void Line(int,int,int,int,BP);
++		void Dot_Line(int,int,int,int,BP);
++		void HLine_Fast(int,int,int,BP);
++
++		void Set_Area_Color(int,int,int,int,BP);
++		void Rectangle(int,int,int,int,BP);
++		void DrawRect(int,int,int,int,BP);
++
++		void Screen_Copy(int left,int up,int right,int down,int flag);
++		void Switch_Screen();
++
++		int Get_Disp_Area_Bytes(int left,int up,int right,int down);
++
++		void Movemem(short,short,short,short);
++		void MovememH(short,short,short,short,int);
++
++		void SetMode(CopyMode m);
++		CopyMode GetMode();
++	protected:
++
++	private:
++		GUILowCode ();
++		~GUILowCode ();
++		GUILowCode ( const GUILowCode& );
++		GUILowCode& operator = ( const GUILowCode& );
++
++		friend class std::auto_ptr< GUILowCode<BP> >;
++		static std::auto_ptr< GUILowCode<BP> >		m_Instance;
++
++		void draw_xish_line(int x,int y,int dx,int dy,int xdir,BP color);
++		void draw_yish_line(int x,int y,int dx,int dy,int ydir,BP color);
++
++		void draw_xdot_line(int x,int y,int dx,int dy,int xdir,BP color);
++		void draw_ydot_line(int x,int y,int dx,int dy,int xdir,BP color);
++
++		void WholeCircle(int,int,int,int,BP);
++		void Plot_Circle(int,int,int,int,BP,double);
++		void Word_Memcpy(uint8_t *des,uint8_t *src,int len);
++
++	private:
++		friend	class 					GUIInterface;
++		int						m_Screen_Width;
++		int						m_Screen_Height;
++		int						m_BPP;
++		int						m_BPP_Shift;
++		int						m_Buffer_Len;
++		uint8_t					       *m_Ptr;
++		uint8_t					       *m_Shadow_Ptr;
++		CopyMode					Mode;
++};
++
++template <typename BP>
++std::auto_ptr< GUILowCode<BP> > GUILowCode<BP>::m_Instance;
++
++template <typename BP>
++GUILowCode<BP>::GUILowCode()
++{
++}
++
++template <typename BP>
++GUILowCode<BP>::~GUILowCode()
++{
++}
++
++template <typename BP>
++GUILowCode<BP>* GUILowCode<BP>::Instance()
++{
++	if ( m_Instance.get() == 0 )
++	{
++		m_Instance.reset( new GUILowCode<BP> );
++	}
++	return m_Instance.get();
++}
++
++template <typename BP>
++void GUILowCode<BP>::Init_GUILowCode_Parameters(int w,int h,int bpp,int len,uint8_t* ptr,uint8_t* show_ptr,CopyMode mode)
++{
++	m_Screen_Width 	= w;
++	m_Screen_Height	= h;
++	m_BPP		= bpp;
++
++	if 	( m_BPP == 1 )
++		m_BPP_Shift = 0;
++	else if ( m_BPP == 8 )
++		m_BPP_Shift = 1;
++	else if ( m_BPP == 16 )
++		m_BPP_Shift = 2;
++	else 
++		printf ( "BPP is not 1,8,16" );
++
++	m_Buffer_Len    = len;
++	m_Ptr		= ptr;
++	m_Shadow_Ptr    = show_ptr;
++	Mode		= mode;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Setpixel
++ *  Description:  Draw a pixel on screen
++ * =====================================================================================
++ */
++template <>
++void GUILowCode<uint16_t>::Setpixel(int x,int y,uint16_t color)
++{
++	if ( (x<0) || (x>=m_Screen_Width) || (y<0) || (y>=m_Screen_Height) )
++	    return;
++
++	switch ( Mode )
++	{
++		case MODE_SRC:
++			*(uint16_t *)( m_Ptr + y * m_Screen_Width * 2 + x * 2 ) = color; 
++			break;
++		case MODE_SRC_XOR_DST:
++			*(uint16_t *)( m_Ptr + y * m_Screen_Width * 2 + x * 2 ) ^= color;
++			break;
++		default:	
++			*(uint16_t *)( m_Ptr + y * m_Screen_Width * 2 + x * 2 ) = color;
++			break;
++	}
++}
++
++template <>
++void GUILowCode<uint8_t>::Setpixel(int x,int y,uint8_t color)
++{
++	if ( (x<0) || (x>=m_Screen_Width) || (y<0) || (y>=m_Screen_Height) )
++	    return;
++
++	switch ( Mode )
++	{
++		case MODE_SRC:
++			*(uint8_t *)( m_Ptr +  y * m_Screen_Width + x ) = color;
++			break;
++		case MODE_SRC_XOR_DST:
++			*(uint8_t *)( m_Ptr +  y * m_Screen_Width + x ) ^= color;
++			break;
++		default:	
++			*(uint8_t *)( m_Ptr +  y * m_Screen_Width + x ) = color;
++			break;
++	}
++}
++
++static uint8_t masktab[]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
++template <>
++void GUILowCode<bool>::Setpixel(int x,int y,bool color)
++{
++	if ( (x<0) || (x>=m_Screen_Width) || (y<0) || (y>=m_Screen_Height) )
++	    return;
++
++	switch ( Mode )
++	{
++		case MODE_SRC:
++			if ( color == true )
++				*(uint8_t *)( m_Ptr + (y * ( m_Screen_Width >> 3 ) + ( x >> 3 ) ) ) |= masktab[x&0x07];
++			else               
++				*(uint8_t *)( m_Ptr + (y * ( m_Screen_Width >> 3 ) + ( x >> 3 ) ) ) &= ~masktab[x&0x07];
++			break;
++		case MODE_SRC_XOR_DST:
++			if ( color == true )
++				*(uint8_t *)( m_Ptr + (y * ( m_Screen_Width >> 3 ) + ( x >> 3 ) ) ) ^= masktab[x&0x07];
++			break;
++		default:
++			if ( color == true )
++				*(uint8_t *)( m_Ptr + (y * ( m_Screen_Width >> 3 ) + ( x >> 3 ) ) ) |= masktab[x&0x07];
++			else               
++				*(uint8_t *)( m_Ptr + (y * ( m_Screen_Width >> 3 ) + ( x >> 3 ) ) ) &= ~masktab[x&0x07];
++			break;
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  HLine_Fast
++ *  Description:  Fast Draw H-Line 
++ * =====================================================================================
++ */
++template <>
++void GUILowCode<uint16_t>::HLine_Fast(int x1,int x2,int y,uint16_t color)
++{
++	uint16_t *loc = (uint16_t *)( m_Ptr + ( ( y * m_Screen_Width ) << 1) );
++	for ( int i=x1;i<=x2;i++ )
++		*(loc+i) = color; 
++}
++template <>
++void GUILowCode<uint8_t>::HLine_Fast(int x1,int x2,int y,uint8_t color)
++{
++	uint8_t * loc = m_Ptr + ( y * m_Screen_Width );
++	if ( (x1&0x0001) )
++	{
++		*(loc + x1) = color;
++	}
++	else
++	{
++		*((uint16_t *)( loc ) + (x1>>1) ) = ( color<<8 ) | color;
++	}
++	if ( (x2&0x0001) )
++	{
++		*((uint16_t *)( loc ) + (x2>>1) ) = ( color<<8 ) | color;
++	}
++	else 
++	{
++		*(loc + x2) = color;
++	}
++	for ( int index = (x1>>1)+1;index < (x2>>1);index ++ ) 
++	{
++		*((uint16_t *)(loc) + index ) = ( color<<8 ) | color;
++	}
++}
++template <>
++void GUILowCode<bool>::HLine_Fast(int x1,int x2,int y,bool color)
++{
++	int x1_m = ( x1 >> 3 ) + 1;
++	int x2_m = x2 >> 3;
++	int x1_r = x1 & 0x0007;
++	int x2_r = x2 & 0x0007;
++
++	uint8_t * loc = m_Ptr + y * ( m_Screen_Width >> 3 );
++
++	if 	( color == true )
++	{
++		for ( int i=x1_m;i<x2_m;i++ )
++		{
++			*(loc+i) |= 0xff; 
++		}
++		if ( x2_m >= x1_m )
++		{
++			*(loc+x1_m-1) |= ( 0xff >> x1_r ); 
++			*(loc+x2_m)   |= ( 0xff << ( 7 - x2_r ) ); 
++		}
++		else
++		{
++			Line(x1,y,x2,y,color);
++		}
++	}
++	else
++	{
++		for ( int i=x1_m;i<x2_m;i++ )
++		{
++			*(loc+i) &= 0x00; 
++		}
++		if ( x2_m >= x1_m )
++		{
++			*(loc+x1_m-1) &= ~( 0xff >> x1_r ); 
++			*(loc+x2_m)   &= ~( 0xff << ( 7 - x2_r ) ); 
++		}
++		else
++		{
++			Line(x1,y,x2,y,color);
++		}
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Set_Area_Color
++ *  Description:  Set the area's color 
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::Set_Area_Color(int x1,int y1,int x2,int y2,BP color)
++{
++	for (int i=y1;i<=y2;i++ )
++	{
++		HLine_Fast(x1,x2,i,color);
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  darw_xish_line
++ *  Description:  Draw line on screen depending on the x y
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::draw_xish_line(int x,int y,int dx,int dy,int xdir,BP color)
++{
++	int dyX2=dy*2;
++	int dyX2mdxX2=dyX2-(dx*2);
++	int error=dyX2-dx;
++	Setpixel(x, y, color);
++	while (dx--) 
++	{
++		if (error >= 0) 
++		{
++			y++;
++			error += dyX2mdxX2;
++		}
++		else 
++		{
++			error += dyX2;
++		}
++		x += xdir;
++		Setpixel(x,y,color);
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  darw_xdot_line
++ *  Description:  Draw Dot line on screen depending on the x y
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::draw_xdot_line(int x,int y,int dx,int dy,int xdir,BP color)
++{
++	int dyX2=dy*2;
++	int dyX2mdxX2=dyX2-(dx*2);
++	int error=dyX2-dx;
++
++	int maxspace = 1;
++	int space = maxspace;
++
++	Setpixel(x, y, color);
++	while (dx--) 
++	{
++		if (error >= 0) 
++		{
++			y++;
++			error += dyX2mdxX2;
++		}
++		else 
++		{
++			error += dyX2;
++		}
++		x += xdir;
++
++		if ( space == 0 )
++		{
++			Setpixel(x,y,color);
++			space = maxspace;
++		}
++		else
++			space --;
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  darw_yish_line
++ *  Description:  Draw line on screen depending on the x y
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::draw_yish_line(int x,int y,int dx,int dy,int xdir,BP color)
++{
++	int dxX2=dx*2;
++	int dxX2mdyX2=dxX2-(dy*2);
++	int error=dxX2-dy;
++	Setpixel(x, y,color);
++	while (dy--) 
++	{
++		if (error >= 0) 
++		{
++			x+= xdir;
++			error += dxX2mdyX2;
++		} else 
++		{
++			error += dxX2;
++		}
++		y++;
++		Setpixel(x,y,color);
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  darw_ydot_line
++ *  Description:  Draw Dot line on screen depending on the x y
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::draw_ydot_line(int x,int y,int dx,int dy,int xdir,BP color)
++{
++	int dxX2=dx*2;
++	int dxX2mdyX2=dxX2-(dy*2);
++	int error=dxX2-dy;
++
++	int maxspace = 1;
++	int space = maxspace;
++
++	Setpixel(x, y,color);
++	while (dy--) 
++	{
++		if (error >= 0) 
++		{
++			x+= xdir;
++			error += dxX2mdyX2;
++		} else 
++		{
++			error += dxX2;
++		}
++		y++;
++
++		if ( space == 0 )
++		{
++			Setpixel(x,y,color);
++			space = maxspace;
++		}
++		else
++			space --;
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Line
++ *  Description:  Draw a line on screen, (x1 y1) (x2 y2)  with color
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::Line(int x1,int y1,int x2,int y2,BP color)
++{
++	int dx,dy;
++	if ( y1 > y2) 
++	{
++		int t = y1;
++		y1 = y2;
++		y2 = t;
++		t = x1;
++		x1 = x2;
++		x2 = t;
++	}
++	dx = x2-x1;
++	dy = y2-y1;
++	if (dx > 0) 
++	{
++		if (dx > dy)
++			draw_xish_line(x1, y1, dx, dy, 1,color);
++		else
++			draw_yish_line(x1, y1, dx, dy, 1,color);
++	} 
++	else 
++	{
++		dx = -dx;
++		if (dx > dy)
++			draw_xish_line(x1, y1, dx, dy, -1,color);
++		else
++			draw_yish_line(x1, y1, dx, dy, -1,color);
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Dot_Line
++ *  Description:  Draw a dot line on screen, (x1 y1) (x2 y2)  with color
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::Dot_Line(int x1,int y1,int x2,int y2,BP color)
++{
++	int dx,dy;
++	if ( y1 > y2 )
++	{
++		int t = y1;
++		y1 = y2;
++		y2 = t;
++		t = x1;
++		x1 = x2;
++		x2 = t;
++	}
++	dx = x2-x1;
++	dy = y2-y1;
++	if (dx > 0) 
++	{
++		if (dx > dy)
++			draw_xdot_line(x1, y1, dx, dy, 1,color);
++		else
++			draw_ydot_line(x1, y1, dx, dy, 1,color);
++	} 
++	else 
++	{
++		dx = -dx;
++		if (dx > dy)
++			draw_xdot_line(x1, y1, dx, dy, -1,color);
++		else
++			draw_ydot_line(x1, y1, dx, dy, -1,color);
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Rectangle
++ *  Description:  Draw a ractangel on screen
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::Rectangle(int x1,int y1,int x2,int y2,BP color)
++{
++	Line(x1,y1,x2,y1,color);
++	Line(x2,y1,x2,y2,color);
++	Line(x2,y2,x1,y2,color);
++	Line(x1,y2,x1,y1,color);
++}
++		
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  DrawRect
++ *  Description:  Draw the Rectangle sharp 
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::DrawRect(int x,int y,int width,int height,BP color)
++{
++	Rectangle(x,y,x+width-1,y+height-1,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  WholeCircle
++ *  Description:  The second circle drawing meathod
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::WholeCircle(int xc,int yc,int x,int y,BP color)
++{
++	Setpixel(xc+x,yc+y,color);
++	Setpixel(xc-x,yc+y,color);
++	Setpixel(xc+x,yc-y,color);
++	Setpixel(xc-x,yc-y,color);
++
++	Setpixel(xc+y,yc+x,color);
++	Setpixel(xc-y,yc+x,color);
++	Setpixel(xc+y,yc-x,color);
++	Setpixel(xc-y,yc-x,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Plot_Circle
++ *  Description:  Used for Drawing ecllipse GUILowCode 
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::Plot_Circle(int x,int y,
++		 	      int x_center,int y_center,
++		 	      BP co,double ratio)
++{
++	int startx,endx,x1,starty,endy,y1;
++	starty=static_cast<int>(y*ratio); endy=static_cast<int>((y+1)*ratio);
++	startx=static_cast<int>(x*ratio); endx=static_cast<int>((x+1)*ratio);
++	for (x1=startx;x1<endx;++x1)
++	{
++		Setpixel(x1+x_center,y+y_center,co);
++		Setpixel(x1+x_center,-y+y_center,co);
++		Setpixel(-x1+x_center,-y+y_center,co);
++		Setpixel(-x1+x_center,y+y_center,co);
++	}
++	for (y1=starty;y1<endy;++y1)
++	{
++		Setpixel(y1+x_center,x+y_center,co);
++		Setpixel(y1+x_center,-x+y_center,co);
++		Setpixel(-y1+x_center,-x+y_center,co);
++		Setpixel(-y1+x_center,x+y_center,co);
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Switch_Screen
++ *  Description:  Switch the screen ptr 
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::Switch_Screen()
++{
++	uint8_t *temp;
++	temp = m_Shadow_Ptr;	
++	m_Shadow_Ptr = m_Ptr;
++	m_Ptr = temp;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Word_Memcpy
++ *  Description:  Copy memory to showmemory as word length
++ * =====================================================================================
++ */
++template <>
++void GUILowCode<uint16_t>::Word_Memcpy(uint8_t *des,uint8_t *src,int len)
++{
++	uint16_t *des_w,*src_w;
++	len = len >> 1;
++	des_w = (uint16_t *)des;
++	src_w = (uint16_t *)src;
++	while(len--)
++		*des_w++ = *src_w++;
++}
++
++template <>
++void GUILowCode<uint8_t>::Word_Memcpy(uint8_t *des,uint8_t *src,int len)
++{
++	if ( len == 1 )
++		while(len--)
++			*des++ = *src++;
++	else
++	{
++		uint16_t *des_w,*src_w;
++		int sub=0;
++		if ( ((int)des & 0x0001) )
++		{
++			*des = *src;
++			sub++;
++			des_w = (uint16_t *)(des+1);
++			src_w = (uint16_t *)(src+1);
++		}
++		else
++		{
++			*des     = *src;
++			*(des+1) = *(src+1);
++			sub += 2;
++			des_w = (uint16_t *)(des+2);
++			src_w = (uint16_t *)(src+2);
++		}
++		if ( ( (int)( des + len - 1 ) & 0x0001 ) )
++		{
++			*(des + len - 2) = *(src + len - 2);
++			*(des + len - 1) = *(src + len - 1);
++			sub += 2;
++		}
++		else
++		{
++			*(des + len - 1) = *(src + len - 1);
++			sub++;
++		}
++		len = ((len - sub) >> 1);
++		while(len--)
++			*des_w++ = *src_w++;
++	}
++}
++
++template <>
++void GUILowCode<bool>::Word_Memcpy(uint8_t *des,uint8_t *src,int len)
++{
++
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Screen_Copy
++ *  Description:  Screen Copy function for copy scr buffer to scr shadow buffer 
++ *  	   Flag: false shadow->real
++ *               true  real->shadow
++ * =====================================================================================
++ */
++template <typename BP>
++void GUILowCode<BP>::Screen_Copy(int left,int up,int right,int down,int flag)
++{
++	if 	( flag == false )
++	{
++		for ( int i = up;i <= down;i ++ )
++		{
++			Word_Memcpy( m_Ptr + m_Screen_Width * m_BPP_Shift * i + m_BPP_Shift * left,
++				    m_Shadow_Ptr + m_Screen_Width * m_BPP_Shift * i + m_BPP_Shift * left,
++				    m_BPP_Shift * ( right - left + 1 ) );
++		}
++	}
++	else
++	{
++		for ( int i = up;i <= down;i ++ )
++		{
++			Word_Memcpy( m_Shadow_Ptr + m_Screen_Width * m_BPP_Shift * i + m_BPP_Shift * left,
++				    m_Ptr + m_Screen_Width * m_BPP_Shift * i + m_BPP_Shift * left,
++				    m_BPP_Shift * ( right - left + 1 ) );
++		}
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Get_Disp_Area_Bytes
++ *  Description:  Get the display area byres number
++ * =====================================================================================
++ */
++template <>
++int GUILowCode<uint16_t>::Get_Disp_Area_Bytes(int left,int up,int right,int down)
++{
++	return 2 * ( right - left + 1) * ( down - up + 1 );
++}
++template <>
++int GUILowCode<uint8_t>::Get_Disp_Area_Bytes(int left,int up,int right,int down)
++{
++	return ( right - left + 1) * ( down - up + 1 );
++}
++template <>
++int GUILowCode<bool>::Get_Disp_Area_Bytes(int left,int up,int right,int down)
++{
++	return ( ( right - left + 1) * ( down - up + 1 ) ) >> 3;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Movemen
++ *  Description:  Move GUI memory of screen 
++ * =====================================================================================
++ */
++template <>
++void GUILowCode<uint16_t>::Movemem(short x,short y,short height,short width)
++{
++	int nBytes;
++	int nCount;
++   	short dir = ( height<0 );
++   	if ( dir ) height = -height;
++
++	nBytes=height*m_Screen_Width*2;
++	nCount=width * 2;
++	if ( dir )  //Down Scroll
++	{ 
++		memmove(m_Ptr+((x+y*m_Screen_Width)*2)+nBytes,m_Ptr+((x+y*m_Screen_Width)*2),nCount);
++		memset(m_Ptr+((x+y*m_Screen_Width)*2),0,nCount);
++	}
++	else        //Up Scroll
++	{   
++		memmove(m_Ptr+(x+y*m_Screen_Width)*2-nBytes,m_Ptr+(x+y*m_Screen_Width)*2,nCount);
++		memset(m_Ptr+((x+y*m_Screen_Width)*2),0,nCount);
++	}
++}
++template <>
++void GUILowCode<uint8_t>::Movemem(short x,short y,short height,short width)
++{
++	int nBytes;
++	int nCount;
++   	short dir = ( height<0 );
++   	if ( dir ) height = -height;
++
++	nBytes=height*m_Screen_Width*1;
++	nCount=width * 1;
++	if ( dir )  //Down Scroll
++	{ 
++		memmove(m_Ptr+((x+y*m_Screen_Width)*1)+nBytes,m_Ptr+((x+y*m_Screen_Width)*1),nCount);
++		memset(m_Ptr+((x+y*m_Screen_Width)*1),0,nCount);
++	}
++	else        //Up Scroll
++	{   
++		memmove(m_Ptr+(x+y*m_Screen_Width)*1-nBytes,m_Ptr+(x+y*m_Screen_Width)*1,nCount);
++		memset(m_Ptr+((x+y*m_Screen_Width)*1),0,nCount);
++	}
++}
++template <>
++void GUILowCode<bool>::Movemem(short x,short y,short height,short width)
++{
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  MovemenH
++ *  Description:  Move GUI memory of horizon screen 
++ * =====================================================================================
++ */
++template <>
++void GUILowCode<uint16_t>::MovememH(short x,short y,short height,short width,int color)
++{
++	for ( int i=0; i<height; i++ )
++	{
++		*((unsigned short *)(m_Ptr+(((i+y)*m_Screen_Width+x+width)<<1))) = 
++		*((unsigned short *)(m_Ptr+(((i+y)*m_Screen_Width+x)<<1)));
++		*((unsigned short *)(m_Ptr+(((i+y)*m_Screen_Width+x)<<1))) = color; 
++	}
++}
++template <>
++void GUILowCode<uint8_t>::MovememH(short x,short y,short height,short width,int color)
++{
++	for ( int i=0; i<height; i++ )
++	{
++		*((unsigned char *)(m_Ptr+(i+y)*m_Screen_Width+x+width)) = 
++		*((unsigned char *)(m_Ptr+(i+y)*m_Screen_Width+x));
++		*((unsigned char *)(m_Ptr+(i+y)*m_Screen_Width+x)) = color; 
++	}
++}
++template <>
++void GUILowCode<bool>::MovememH(short x,short y,short height,short width,int color)
++{
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  SetMode
++ *  Description:  SetMode of Draw Screen
++ * =====================================================================================
++ */
++template<typename BP>
++void GUILowCode<BP>::SetMode(CopyMode m)
++{
++	Mode = m;	
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  GetMode
++ *  Description:  Return the Mode of GUILowCode class drawmode 
++ *      Caution:  typename very important
++ * =====================================================================================
++ */
++template<typename BP>
++typename GUILowCode<BP>::CopyMode GUILowCode<BP>::GetMode()
++{
++	return Mode;
++}
++#endif
+diff --git a/src/EVA11/base/GUI/Makefile b/src/EVA11/base/GUI/Makefile
+new file mode 100644
+index 0000000..98560e8
+--- /dev/null
++++ b/src/EVA11/base/GUI/Makefile
+@@ -0,0 +1,87 @@
++##########################################################
++#
++#                    The EVA11 project Makefile
++#
++# Author:    kevin.wang
++# Company:   Eddysun     xiamen
++# Date:      2012.12.13
++# Comment:   Try to re-structure the Project Makefile
++#            
++#
++###########################################################
++
++TXTOBJS	:=
++TXTDEPS	:=DEPS
++OBJS_DIR:=./$(TXTOBJS)/
++DEPS_DIR:=./$(TXTDEPS)/
++
++SRCS=
++SRCS+=$(wildcard *.cpp *.c)
++
++ifeq ($(COMPILE),arm9)
++SRCS+=$(wildcard *.s)
++endif
++
++OBJS:=$(SRCS:=.o)
++DEPS:=$(SRCS:=.dep)
++
++OBJS:=$(addprefix $(OBJS_DIR),$(OBJS))
++DEPS:=$(addprefix $(DEPS_DIR),$(DEPS))
++
++ifeq ($(DEBUG),yes)
++COMPILE_FLAG = -g2
++else
++
++ifeq ($(COMPILE),arm9)
++COMPILE_FLAG = -O2 -march=armv4t
++else 
++COMPILE_FLAG = -O2
++endif
++
++endif
++
++all: $(DEPS) $(EXEC)
++
++$(DEPS_DIR)%.cpp.dep: %.cpp | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	gcc -E -MM $^ > $@.tmp; \
++	sed 's,\(.*\)\.o[ :]*,$(TXTOBJS)/\1.cpp.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++$(DEPS_DIR)%.c.dep: %.c | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	gcc -E -MM $^ > $@.tmp; \
++	sed 's,\(.*\)\.o[ :]*,$(TXTOBJS)/\1.c.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++$(DEPS_DIR)%.s.dep: %.s | depsdir
++	@set -e; \
++	$(RM) -rf $@.tmp; \
++	echo $^: $^ > $@.tmp; \
++	sed 's,\(.*\)\.s: *,$(TXTOBJS)/\1.o:,g' < $@.tmp > $@; \
++	$(RM) $@.tmp
++
++depsdir:
++	@mkdir -p $(DEPS_DIR)
++
++-include $(DEPS)
++
++$(EXEC): $(OBJS)
++
++$(OBJS_DIR)%.c.o: %.c | objsdir
++	$(CC) $(C_COMPILE_FLAG) $(DFLAG) $(COMPILE_FLAG) $(SEARCH_INCPATH) -c $< -o $@
++
++$(OBJS_DIR)%.cpp.o: %.cpp | objsdir
++	$(CPP) $(CPP_COMPILE_FLAG) $(DFLAG) $(COMPILE_FLAG) $(SEARCH_INCPATH) -c $< -o $@
++
++$(OBJS_DIR)%.s.o: %.s | objsdir
++	$(AS) $< -o $@
++
++objsdir:
++	@mkdir -p $(OBJS_DIR)
++
++.PHONY: clean
++clean:
++	$(RM) -rf *.o $(DEPS_DIR)
+diff --git a/src/EVA11/base/GUILowCode.hpp b/src/EVA11/base/GUILowCode.hpp
+deleted file mode 100644
+index 0dca1a5..0000000
+--- a/src/EVA11/base/GUILowCode.hpp
++++ /dev/null
+@@ -1,850 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  GUILowCode.hpp
+- *
+- *    Description:  Recreate the GUILowCode class with template
+- *                  and with the singleton pattern 
+- *                  it is a template file
+- *
+- *        Version:  1.0
+- *        Created:  2012年08月10日 17时09分48秒
+- *       Revision:  none
+- *       Compiler:  gcc
+- *
+- *         Author:  YOUR NAME (), 
+- *   Organization:  
+- *
+- * =====================================================================================
+- */
+-
+-#ifndef  GUILowCode_inc
+-#define  GUILowCode_inc
+-
+-#include 	<fcntl.h> 
+-#include        <unistd.h> 
+-#include        <sys/ioctl.h>
+-#include 	<memory>
+-#include        <linux/fb.h> 
+-#include 	<sys/mman.h> 
+-#include 	<inttypes.h>
+-
+-/*-----------------------------------------------------------------------------
+- *  BP type:    16bit: uint16_t 
+- *       	 8bit: uint8_t 
+- *       	 1bit: bool
+- *-----------------------------------------------------------------------------*/
+-class GUIInterface;
+-template <typename BP>
+-class GUILowCode
+-{
+-	public:
+-		typedef enum
+-		{
+-			MODE_SRC,
+-			MODE_SRC_XOR_DST,
+-		} CopyMode;
+-
+-		static GUILowCode* Instance();
+-
+-		void Init_GUILowCode_Parameters(int,int,int,int,uint8_t*,uint8_t*,GUILowCode<BP>::CopyMode);
+-
+-		void Setpixel(int,int,BP);
+-		void Line(int,int,int,int,BP);
+-		void Dot_Line(int,int,int,int,BP);
+-		void HLine_Fast(int,int,int,BP);
+-
+-		void Set_Area_Color(int,int,int,int,BP);
+-		void Rectangle(int,int,int,int,BP);
+-		void DrawRect(int,int,int,int,BP);
+-
+-		void Screen_Copy(int left,int up,int right,int down,int flag);
+-		void Switch_Screen();
+-
+-		int Get_Disp_Area_Bytes(int left,int up,int right,int down);
+-
+-		void Movemem(short,short,short,short);
+-		void MovememH(short,short,short,short,int);
+-
+-		void SetMode(CopyMode m);
+-		CopyMode GetMode();
+-	protected:
+-
+-	private:
+-		GUILowCode ();
+-		~GUILowCode ();
+-		GUILowCode ( const GUILowCode& );
+-		GUILowCode& operator = ( const GUILowCode& );
+-
+-		friend class std::auto_ptr< GUILowCode<BP> >;
+-		static std::auto_ptr< GUILowCode<BP> >		m_Instance;
+-
+-		void draw_xish_line(int x,int y,int dx,int dy,int xdir,BP color);
+-		void draw_yish_line(int x,int y,int dx,int dy,int ydir,BP color);
+-
+-		void draw_xdot_line(int x,int y,int dx,int dy,int xdir,BP color);
+-		void draw_ydot_line(int x,int y,int dx,int dy,int xdir,BP color);
+-
+-		void WholeCircle(int,int,int,int,BP);
+-		void Plot_Circle(int,int,int,int,BP,double);
+-		void Word_Memcpy(uint8_t *des,uint8_t *src,int len);
+-
+-	private:
+-		friend	class 					GUIInterface;
+-		int						m_Screen_Width;
+-		int						m_Screen_Height;
+-		int						m_BPP;
+-		int						m_BPP_Shift;
+-		int						m_Buffer_Len;
+-		uint8_t					       *m_Ptr;
+-		uint8_t					       *m_Shadow_Ptr;
+-		CopyMode					Mode;
+-};
+-
+-template <typename BP>
+-std::auto_ptr< GUILowCode<BP> > GUILowCode<BP>::m_Instance;
+-
+-template <typename BP>
+-GUILowCode<BP>::GUILowCode()
+-{
+-}
+-
+-template <typename BP>
+-GUILowCode<BP>::~GUILowCode()
+-{
+-}
+-
+-template <typename BP>
+-GUILowCode<BP>* GUILowCode<BP>::Instance()
+-{
+-	if ( m_Instance.get() == 0 )
+-	{
+-		m_Instance.reset( new GUILowCode<BP> );
+-	}
+-	return m_Instance.get();
+-}
+-
+-template <typename BP>
+-void GUILowCode<BP>::Init_GUILowCode_Parameters(int w,int h,int bpp,int len,uint8_t* ptr,uint8_t* show_ptr,CopyMode mode)
+-{
+-	m_Screen_Width 	= w;
+-	m_Screen_Height	= h;
+-	m_BPP		= bpp;
+-
+-	if 	( m_BPP == 1 )
+-		m_BPP_Shift = 0;
+-	else if ( m_BPP == 8 )
+-		m_BPP_Shift = 1;
+-	else if ( m_BPP == 16 )
+-		m_BPP_Shift = 2;
+-	else 
+-		printf ( "BPP is not 1,8,16" );
+-
+-	m_Buffer_Len    = len;
+-	m_Ptr		= ptr;
+-	m_Shadow_Ptr    = show_ptr;
+-	Mode		= mode;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Setpixel
+- *  Description:  Draw a pixel on screen
+- * =====================================================================================
+- */
+-template <>
+-void GUILowCode<uint16_t>::Setpixel(int x,int y,uint16_t color)
+-{
+-	if ( (x<0) || (x>=m_Screen_Width) || (y<0) || (y>=m_Screen_Height) )
+-	    return;
+-
+-	switch ( Mode )
+-	{
+-		case MODE_SRC:
+-			*(uint16_t *)( m_Ptr + y * m_Screen_Width * 2 + x * 2 ) = color; 
+-			break;
+-		case MODE_SRC_XOR_DST:
+-			*(uint16_t *)( m_Ptr + y * m_Screen_Width * 2 + x * 2 ) ^= color;
+-			break;
+-		default:	
+-			*(uint16_t *)( m_Ptr + y * m_Screen_Width * 2 + x * 2 ) = color;
+-			break;
+-	}
+-}
+-
+-template <>
+-void GUILowCode<uint8_t>::Setpixel(int x,int y,uint8_t color)
+-{
+-	if ( (x<0) || (x>=m_Screen_Width) || (y<0) || (y>=m_Screen_Height) )
+-	    return;
+-
+-	switch ( Mode )
+-	{
+-		case MODE_SRC:
+-			*(uint8_t *)( m_Ptr +  y * m_Screen_Width + x ) = color;
+-			break;
+-		case MODE_SRC_XOR_DST:
+-			*(uint8_t *)( m_Ptr +  y * m_Screen_Width + x ) ^= color;
+-			break;
+-		default:	
+-			*(uint8_t *)( m_Ptr +  y * m_Screen_Width + x ) = color;
+-			break;
+-	}
+-}
+-
+-static uint8_t masktab[]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
+-template <>
+-void GUILowCode<bool>::Setpixel(int x,int y,bool color)
+-{
+-	if ( (x<0) || (x>=m_Screen_Width) || (y<0) || (y>=m_Screen_Height) )
+-	    return;
+-
+-	switch ( Mode )
+-	{
+-		case MODE_SRC:
+-			if ( color == true )
+-				*(uint8_t *)( m_Ptr + (y * ( m_Screen_Width >> 3 ) + ( x >> 3 ) ) ) |= masktab[x&0x07];
+-			else               
+-				*(uint8_t *)( m_Ptr + (y * ( m_Screen_Width >> 3 ) + ( x >> 3 ) ) ) &= ~masktab[x&0x07];
+-			break;
+-		case MODE_SRC_XOR_DST:
+-			if ( color == true )
+-				*(uint8_t *)( m_Ptr + (y * ( m_Screen_Width >> 3 ) + ( x >> 3 ) ) ) ^= masktab[x&0x07];
+-			break;
+-		default:
+-			if ( color == true )
+-				*(uint8_t *)( m_Ptr + (y * ( m_Screen_Width >> 3 ) + ( x >> 3 ) ) ) |= masktab[x&0x07];
+-			else               
+-				*(uint8_t *)( m_Ptr + (y * ( m_Screen_Width >> 3 ) + ( x >> 3 ) ) ) &= ~masktab[x&0x07];
+-			break;
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  HLine_Fast
+- *  Description:  Fast Draw H-Line 
+- * =====================================================================================
+- */
+-template <>
+-void GUILowCode<uint16_t>::HLine_Fast(int x1,int x2,int y,uint16_t color)
+-{
+-	uint16_t *loc = (uint16_t *)( m_Ptr + ( ( y * m_Screen_Width ) << 1) );
+-	for ( int i=x1;i<=x2;i++ )
+-		*(loc+i) = color; 
+-}
+-template <>
+-void GUILowCode<uint8_t>::HLine_Fast(int x1,int x2,int y,uint8_t color)
+-{
+-	uint8_t * loc = m_Ptr + ( y * m_Screen_Width );
+-	if ( (x1&0x0001) )
+-	{
+-		*(loc + x1) = color;
+-	}
+-	else
+-	{
+-		*((uint16_t *)( loc ) + (x1>>1) ) = ( color<<8 ) | color;
+-	}
+-	if ( (x2&0x0001) )
+-	{
+-		*((uint16_t *)( loc ) + (x2>>1) ) = ( color<<8 ) | color;
+-	}
+-	else 
+-	{
+-		*(loc + x2) = color;
+-	}
+-	for ( int index = (x1>>1)+1;index < (x2>>1);index ++ ) 
+-	{
+-		*((uint16_t *)(loc) + index ) = ( color<<8 ) | color;
+-	}
+-}
+-template <>
+-void GUILowCode<bool>::HLine_Fast(int x1,int x2,int y,bool color)
+-{
+-	int x1_m = ( x1 >> 3 ) + 1;
+-	int x2_m = x2 >> 3;
+-	int x1_r = x1 & 0x0007;
+-	int x2_r = x2 & 0x0007;
+-
+-	uint8_t * loc = m_Ptr + y * ( m_Screen_Width >> 3 );
+-
+-	if 	( color == true )
+-	{
+-		for ( int i=x1_m;i<x2_m;i++ )
+-		{
+-			*(loc+i) |= 0xff; 
+-		}
+-		if ( x2_m >= x1_m )
+-		{
+-			*(loc+x1_m-1) |= ( 0xff >> x1_r ); 
+-			*(loc+x2_m)   |= ( 0xff << ( 7 - x2_r ) ); 
+-		}
+-		else
+-		{
+-			Line(x1,y,x2,y,color);
+-		}
+-	}
+-	else
+-	{
+-		for ( int i=x1_m;i<x2_m;i++ )
+-		{
+-			*(loc+i) &= 0x00; 
+-		}
+-		if ( x2_m >= x1_m )
+-		{
+-			*(loc+x1_m-1) &= ~( 0xff >> x1_r ); 
+-			*(loc+x2_m)   &= ~( 0xff << ( 7 - x2_r ) ); 
+-		}
+-		else
+-		{
+-			Line(x1,y,x2,y,color);
+-		}
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Set_Area_Color
+- *  Description:  Set the area's color 
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::Set_Area_Color(int x1,int y1,int x2,int y2,BP color)
+-{
+-	for (int i=y1;i<=y2;i++ )
+-	{
+-		HLine_Fast(x1,x2,i,color);
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  darw_xish_line
+- *  Description:  Draw line on screen depending on the x y
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::draw_xish_line(int x,int y,int dx,int dy,int xdir,BP color)
+-{
+-	int dyX2=dy*2;
+-	int dyX2mdxX2=dyX2-(dx*2);
+-	int error=dyX2-dx;
+-	Setpixel(x, y, color);
+-	while (dx--) 
+-	{
+-		if (error >= 0) 
+-		{
+-			y++;
+-			error += dyX2mdxX2;
+-		}
+-		else 
+-		{
+-			error += dyX2;
+-		}
+-		x += xdir;
+-		Setpixel(x,y,color);
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  darw_xdot_line
+- *  Description:  Draw Dot line on screen depending on the x y
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::draw_xdot_line(int x,int y,int dx,int dy,int xdir,BP color)
+-{
+-	int dyX2=dy*2;
+-	int dyX2mdxX2=dyX2-(dx*2);
+-	int error=dyX2-dx;
+-
+-	int maxspace = 1;
+-	int space = maxspace;
+-
+-	Setpixel(x, y, color);
+-	while (dx--) 
+-	{
+-		if (error >= 0) 
+-		{
+-			y++;
+-			error += dyX2mdxX2;
+-		}
+-		else 
+-		{
+-			error += dyX2;
+-		}
+-		x += xdir;
+-
+-		if ( space == 0 )
+-		{
+-			Setpixel(x,y,color);
+-			space = maxspace;
+-		}
+-		else
+-			space --;
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  darw_yish_line
+- *  Description:  Draw line on screen depending on the x y
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::draw_yish_line(int x,int y,int dx,int dy,int xdir,BP color)
+-{
+-	int dxX2=dx*2;
+-	int dxX2mdyX2=dxX2-(dy*2);
+-	int error=dxX2-dy;
+-	Setpixel(x, y,color);
+-	while (dy--) 
+-	{
+-		if (error >= 0) 
+-		{
+-			x+= xdir;
+-			error += dxX2mdyX2;
+-		} else 
+-		{
+-			error += dxX2;
+-		}
+-		y++;
+-		Setpixel(x,y,color);
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  darw_ydot_line
+- *  Description:  Draw Dot line on screen depending on the x y
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::draw_ydot_line(int x,int y,int dx,int dy,int xdir,BP color)
+-{
+-	int dxX2=dx*2;
+-	int dxX2mdyX2=dxX2-(dy*2);
+-	int error=dxX2-dy;
+-
+-	int maxspace = 1;
+-	int space = maxspace;
+-
+-	Setpixel(x, y,color);
+-	while (dy--) 
+-	{
+-		if (error >= 0) 
+-		{
+-			x+= xdir;
+-			error += dxX2mdyX2;
+-		} else 
+-		{
+-			error += dxX2;
+-		}
+-		y++;
+-
+-		if ( space == 0 )
+-		{
+-			Setpixel(x,y,color);
+-			space = maxspace;
+-		}
+-		else
+-			space --;
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Line
+- *  Description:  Draw a line on screen, (x1 y1) (x2 y2)  with color
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::Line(int x1,int y1,int x2,int y2,BP color)
+-{
+-	int dx,dy;
+-	if ( y1 > y2) 
+-	{
+-		int t = y1;
+-		y1 = y2;
+-		y2 = t;
+-		t = x1;
+-		x1 = x2;
+-		x2 = t;
+-	}
+-	dx = x2-x1;
+-	dy = y2-y1;
+-	if (dx > 0) 
+-	{
+-		if (dx > dy)
+-			draw_xish_line(x1, y1, dx, dy, 1,color);
+-		else
+-			draw_yish_line(x1, y1, dx, dy, 1,color);
+-	} 
+-	else 
+-	{
+-		dx = -dx;
+-		if (dx > dy)
+-			draw_xish_line(x1, y1, dx, dy, -1,color);
+-		else
+-			draw_yish_line(x1, y1, dx, dy, -1,color);
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Dot_Line
+- *  Description:  Draw a dot line on screen, (x1 y1) (x2 y2)  with color
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::Dot_Line(int x1,int y1,int x2,int y2,BP color)
+-{
+-	int dx,dy;
+-	if ( y1 > y2 )
+-	{
+-		int t = y1;
+-		y1 = y2;
+-		y2 = t;
+-		t = x1;
+-		x1 = x2;
+-		x2 = t;
+-	}
+-	dx = x2-x1;
+-	dy = y2-y1;
+-	if (dx > 0) 
+-	{
+-		if (dx > dy)
+-			draw_xdot_line(x1, y1, dx, dy, 1,color);
+-		else
+-			draw_ydot_line(x1, y1, dx, dy, 1,color);
+-	} 
+-	else 
+-	{
+-		dx = -dx;
+-		if (dx > dy)
+-			draw_xdot_line(x1, y1, dx, dy, -1,color);
+-		else
+-			draw_ydot_line(x1, y1, dx, dy, -1,color);
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Rectangle
+- *  Description:  Draw a ractangel on screen
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::Rectangle(int x1,int y1,int x2,int y2,BP color)
+-{
+-	Line(x1,y1,x2,y1,color);
+-	Line(x2,y1,x2,y2,color);
+-	Line(x2,y2,x1,y2,color);
+-	Line(x1,y2,x1,y1,color);
+-}
+-		
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  DrawRect
+- *  Description:  Draw the Rectangle sharp 
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::DrawRect(int x,int y,int width,int height,BP color)
+-{
+-	Rectangle(x,y,x+width-1,y+height-1,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  WholeCircle
+- *  Description:  The second circle drawing meathod
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::WholeCircle(int xc,int yc,int x,int y,BP color)
+-{
+-	Setpixel(xc+x,yc+y,color);
+-	Setpixel(xc-x,yc+y,color);
+-	Setpixel(xc+x,yc-y,color);
+-	Setpixel(xc-x,yc-y,color);
+-
+-	Setpixel(xc+y,yc+x,color);
+-	Setpixel(xc-y,yc+x,color);
+-	Setpixel(xc+y,yc-x,color);
+-	Setpixel(xc-y,yc-x,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Plot_Circle
+- *  Description:  Used for Drawing ecllipse GUILowCode 
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::Plot_Circle(int x,int y,
+-		 	      int x_center,int y_center,
+-		 	      BP co,double ratio)
+-{
+-	int startx,endx,x1,starty,endy,y1;
+-	starty=static_cast<int>(y*ratio); endy=static_cast<int>((y+1)*ratio);
+-	startx=static_cast<int>(x*ratio); endx=static_cast<int>((x+1)*ratio);
+-	for (x1=startx;x1<endx;++x1)
+-	{
+-		Setpixel(x1+x_center,y+y_center,co);
+-		Setpixel(x1+x_center,-y+y_center,co);
+-		Setpixel(-x1+x_center,-y+y_center,co);
+-		Setpixel(-x1+x_center,y+y_center,co);
+-	}
+-	for (y1=starty;y1<endy;++y1)
+-	{
+-		Setpixel(y1+x_center,x+y_center,co);
+-		Setpixel(y1+x_center,-x+y_center,co);
+-		Setpixel(-y1+x_center,-x+y_center,co);
+-		Setpixel(-y1+x_center,x+y_center,co);
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Switch_Screen
+- *  Description:  Switch the screen ptr 
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::Switch_Screen()
+-{
+-	uint8_t *temp;
+-	temp = m_Shadow_Ptr;	
+-	m_Shadow_Ptr = m_Ptr;
+-	m_Ptr = temp;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Word_Memcpy
+- *  Description:  Copy memory to showmemory as word length
+- * =====================================================================================
+- */
+-template <>
+-void GUILowCode<uint16_t>::Word_Memcpy(uint8_t *des,uint8_t *src,int len)
+-{
+-	uint16_t *des_w,*src_w;
+-	len = len >> 1;
+-	des_w = (uint16_t *)des;
+-	src_w = (uint16_t *)src;
+-	while(len--)
+-		*des_w++ = *src_w++;
+-}
+-
+-template <>
+-void GUILowCode<uint8_t>::Word_Memcpy(uint8_t *des,uint8_t *src,int len)
+-{
+-	if ( len == 1 )
+-		while(len--)
+-			*des++ = *src++;
+-	else
+-	{
+-		uint16_t *des_w,*src_w;
+-		int sub=0;
+-		if ( ((int)des & 0x0001) )
+-		{
+-			*des = *src;
+-			sub++;
+-			des_w = (uint16_t *)(des+1);
+-			src_w = (uint16_t *)(src+1);
+-		}
+-		else
+-		{
+-			*des     = *src;
+-			*(des+1) = *(src+1);
+-			sub += 2;
+-			des_w = (uint16_t *)(des+2);
+-			src_w = (uint16_t *)(src+2);
+-		}
+-		if ( ( (int)( des + len - 1 ) & 0x0001 ) )
+-		{
+-			*(des + len - 2) = *(src + len - 2);
+-			*(des + len - 1) = *(src + len - 1);
+-			sub += 2;
+-		}
+-		else
+-		{
+-			*(des + len - 1) = *(src + len - 1);
+-			sub++;
+-		}
+-		len = ((len - sub) >> 1);
+-		while(len--)
+-			*des_w++ = *src_w++;
+-	}
+-}
+-
+-template <>
+-void GUILowCode<bool>::Word_Memcpy(uint8_t *des,uint8_t *src,int len)
+-{
+-
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Screen_Copy
+- *  Description:  Screen Copy function for copy scr buffer to scr shadow buffer 
+- *  	   Flag: false shadow->real
+- *               true  real->shadow
+- * =====================================================================================
+- */
+-template <typename BP>
+-void GUILowCode<BP>::Screen_Copy(int left,int up,int right,int down,int flag)
+-{
+-	if 	( flag == false )
+-	{
+-		for ( int i = up;i <= down;i ++ )
+-		{
+-			Word_Memcpy( m_Ptr + m_Screen_Width * m_BPP_Shift * i + m_BPP_Shift * left,
+-				    m_Shadow_Ptr + m_Screen_Width * m_BPP_Shift * i + m_BPP_Shift * left,
+-				    m_BPP_Shift * ( right - left + 1 ) );
+-		}
+-	}
+-	else
+-	{
+-		for ( int i = up;i <= down;i ++ )
+-		{
+-			Word_Memcpy( m_Shadow_Ptr + m_Screen_Width * m_BPP_Shift * i + m_BPP_Shift * left,
+-				    m_Ptr + m_Screen_Width * m_BPP_Shift * i + m_BPP_Shift * left,
+-				    m_BPP_Shift * ( right - left + 1 ) );
+-		}
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Get_Disp_Area_Bytes
+- *  Description:  Get the display area byres number
+- * =====================================================================================
+- */
+-template <>
+-int GUILowCode<uint16_t>::Get_Disp_Area_Bytes(int left,int up,int right,int down)
+-{
+-	return 2 * ( right - left + 1) * ( down - up + 1 );
+-}
+-template <>
+-int GUILowCode<uint8_t>::Get_Disp_Area_Bytes(int left,int up,int right,int down)
+-{
+-	return ( right - left + 1) * ( down - up + 1 );
+-}
+-template <>
+-int GUILowCode<bool>::Get_Disp_Area_Bytes(int left,int up,int right,int down)
+-{
+-	return ( ( right - left + 1) * ( down - up + 1 ) ) >> 3;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Movemen
+- *  Description:  Move GUI memory of screen 
+- * =====================================================================================
+- */
+-template <>
+-void GUILowCode<uint16_t>::Movemem(short x,short y,short height,short width)
+-{
+-	int nBytes;
+-	int nCount;
+-   	short dir = ( height<0 );
+-   	if ( dir ) height = -height;
+-
+-	nBytes=height*m_Screen_Width*2;
+-	nCount=width * 2;
+-	if ( dir )  //Down Scroll
+-	{ 
+-		memmove(m_Ptr+((x+y*m_Screen_Width)*2)+nBytes,m_Ptr+((x+y*m_Screen_Width)*2),nCount);
+-		memset(m_Ptr+((x+y*m_Screen_Width)*2),0,nCount);
+-	}
+-	else        //Up Scroll
+-	{   
+-		memmove(m_Ptr+(x+y*m_Screen_Width)*2-nBytes,m_Ptr+(x+y*m_Screen_Width)*2,nCount);
+-		memset(m_Ptr+((x+y*m_Screen_Width)*2),0,nCount);
+-	}
+-}
+-template <>
+-void GUILowCode<uint8_t>::Movemem(short x,short y,short height,short width)
+-{
+-	int nBytes;
+-	int nCount;
+-   	short dir = ( height<0 );
+-   	if ( dir ) height = -height;
+-
+-	nBytes=height*m_Screen_Width*1;
+-	nCount=width * 1;
+-	if ( dir )  //Down Scroll
+-	{ 
+-		memmove(m_Ptr+((x+y*m_Screen_Width)*1)+nBytes,m_Ptr+((x+y*m_Screen_Width)*1),nCount);
+-		memset(m_Ptr+((x+y*m_Screen_Width)*1),0,nCount);
+-	}
+-	else        //Up Scroll
+-	{   
+-		memmove(m_Ptr+(x+y*m_Screen_Width)*1-nBytes,m_Ptr+(x+y*m_Screen_Width)*1,nCount);
+-		memset(m_Ptr+((x+y*m_Screen_Width)*1),0,nCount);
+-	}
+-}
+-template <>
+-void GUILowCode<bool>::Movemem(short x,short y,short height,short width)
+-{
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  MovemenH
+- *  Description:  Move GUI memory of horizon screen 
+- * =====================================================================================
+- */
+-template <>
+-void GUILowCode<uint16_t>::MovememH(short x,short y,short height,short width,int color)
+-{
+-	for ( int i=0; i<height; i++ )
+-	{
+-		*((unsigned short *)(m_Ptr+(((i+y)*m_Screen_Width+x+width)<<1))) = 
+-		*((unsigned short *)(m_Ptr+(((i+y)*m_Screen_Width+x)<<1)));
+-		*((unsigned short *)(m_Ptr+(((i+y)*m_Screen_Width+x)<<1))) = color; 
+-	}
+-}
+-template <>
+-void GUILowCode<uint8_t>::MovememH(short x,short y,short height,short width,int color)
+-{
+-	for ( int i=0; i<height; i++ )
+-	{
+-		*((unsigned char *)(m_Ptr+(i+y)*m_Screen_Width+x+width)) = 
+-		*((unsigned char *)(m_Ptr+(i+y)*m_Screen_Width+x));
+-		*((unsigned char *)(m_Ptr+(i+y)*m_Screen_Width+x)) = color; 
+-	}
+-}
+-template <>
+-void GUILowCode<bool>::MovememH(short x,short y,short height,short width,int color)
+-{
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  SetMode
+- *  Description:  SetMode of Draw Screen
+- * =====================================================================================
+- */
+-template<typename BP>
+-void GUILowCode<BP>::SetMode(CopyMode m)
+-{
+-	Mode = m;	
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  GetMode
+- *  Description:  Return the Mode of GUILowCode class drawmode 
+- *      Caution:  typename very important
+- * =====================================================================================
+- */
+-template<typename BP>
+-typename GUILowCode<BP>::CopyMode GUILowCode<BP>::GetMode()
+-{
+-	return Mode;
+-}
+-#endif
+diff --git a/src/EVA11/base/Gradual.cpp b/src/EVA11/base/Gradual.cpp
+index ea39466..95b9439 100644
+--- a/src/EVA11/base/Gradual.cpp
++++ b/src/EVA11/base/Gradual.cpp
+@@ -19,7 +19,6 @@
+ #include 	"Graphic.h"
+ #include 	"Object.h"
+ #include 	"Gradual.h"
+-#include 	"Algorithm.h"
+ 
+ struct Gradual::PImpl
+ {
+@@ -53,15 +52,13 @@ Gradual::~Gradual ()
+  */
+ void Gradual::Drawme(Graphic& g)
+ {
+-	Algorithm *alg = Algorithm::Instance();
+-
+ 	if 	( m_Imple->m_Type == HTYPE )
+ 	{
+ 		for ( int i=m_X;i<m_X+m_Width;i++ )
+ 		{
+ 			for ( int j=m_Y;j<m_Y+m_Heigh;j++ )
+ 			{
+-				g.Setpixel(i,j,g.RGB24_16(alg->Alpha_Color(m_Imple->m_R,m_Imple->m_G,m_Imple->m_B,((i-m_X)*255)/m_Width,m_Imple->m_BGColor)));
++				g.Setpixel(i,j,g.RGB24_16(g.Alpha_Color(m_Imple->m_R,m_Imple->m_G,m_Imple->m_B,((i-m_X)*255)/m_Width,m_Imple->m_BGColor)));
+ 			}
+ 		}
+ 	}
+@@ -71,7 +68,7 @@ void Gradual::Drawme(Graphic& g)
+ 		{
+ 			for ( int i=m_X;i<m_X+m_Width;i++ )
+ 			{
+-				g.Setpixel(i,j,g.RGB24_16(alg->Alpha_Color(m_Imple->m_R,m_Imple->m_G,m_Imple->m_B,((j-m_Y)*255)/m_Width,m_Imple->m_BGColor)));
++				g.Setpixel(i,j,g.RGB24_16(g.Alpha_Color(m_Imple->m_R,m_Imple->m_G,m_Imple->m_B,((j-m_Y)*255)/m_Width,m_Imple->m_BGColor)));
+ 			}
+ 		}
+ 	}
+diff --git a/src/EVA11/base/Graphic.cpp b/src/EVA11/base/Graphic.cpp
+index 25cb4b5..55120f9 100644
+--- a/src/EVA11/base/Graphic.cpp
++++ b/src/EVA11/base/Graphic.cpp
+@@ -35,10 +35,8 @@
+ #include 	<SDL/SDL_rotozoom.h>
+ #include 	<SDL/SDL_image.h>
+ 
+-#include        "Algorithm.h"
+-
+ #include	"Graphic.h"
+-#include 	"GUILowCode.hpp"
++#include 	<GUILowCode.hpp>
+ 
+ #define         FD_STDIN 0
+ 
+@@ -532,6 +530,47 @@ void Graphic::Screen_Copy_Alpha(int left,int up,int right,int down,bool flag)
+ 
+ /* 
+  * ===  FUNCTION  ======================================================================
++ *         Name:  Alpha_Color
++ *  Description:  Alpha Color calculate,only called in Alpha parameters exist
++ * =====================================================================================
++ */
++int Graphic::Alpha_Color(int r,int g,int b,int alph,short bkcolor)
++{
++	int nr    = r;
++	int ng    = g;
++	int nb    = b;
++	int alpha = alph;
++
++	int oldr  = (( bkcolor >> 11 ) & 0x1f)<<3;
++	int oldg  = (( bkcolor >> 5 ) & 0x3f)<<2;
++	int oldb  = (( bkcolor ) & 0x1f)<<3;
++
++	nr        = (((nr - oldr)*alpha)>>8) + oldr;
++	ng        = (((ng - oldg)*alpha)>>8) + oldg;
++	nb        = (((nb - oldb)*alpha)>>8) + oldb;
++
++	return ( nr << 16 ) + ( ng << 8 ) + nb;
++}
++int Graphic::Alpha_Color(short fgcolor,int alph,short bkcolor)
++{
++	int nr    = (( fgcolor >> 11 ) & 0x1f)<<3;
++	int ng    = (( fgcolor >> 5) & 0x3f)<<2;
++	int nb    = (( fgcolor ) & 0x1f)<<3;
++	int alpha = alph;
++
++	int oldr  = (( bkcolor >> 11 ) & 0x1f)<<3;
++	int oldg  = (( bkcolor >> 5 ) & 0x3f)<<2;
++	int oldb  = (( bkcolor ) & 0x1f)<<3;
++
++	nr        = (((nr - oldr)*alpha)>>8) + oldr;
++	ng        = (((ng - oldg)*alpha)>>8) + oldg;
++	nb        = (((nb - oldb)*alpha)>>8) + oldb;
++
++	return ( nr << 16 ) + ( ng << 8 ) + nb;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
+  *         Name:  Word_Memcpy_Alpha
+  *  Description:  Memory copy word by word 
+  * =====================================================================================
+@@ -542,10 +581,9 @@ void Graphic::Word_Memcpy_Alpha(unsigned char *des,unsigned char *src,long len)
+ 	len = len >> 1;
+ 	des_w = (short *)des;
+ 	src_w = (short *)src;
+-	Algorithm* alm = Algorithm::Instance();
+ 	while( len-- )
+ 	{
+-		*des_w++ = RGB24_16(alm->Alpha_Color(*src_w++,m_Imple->m_Transpare,*des_w)); 
++		*des_w++ = RGB24_16(Alpha_Color(*src_w++,m_Imple->m_Transpare,*des_w)); 
+ 	}
  }
  
-diff --git a/src/EVA11/base/SQLLiteWrapper.h b/src/EVA11/base/SQLLiteWrapper.h
-index 531b4b5..d323826 100644
---- a/src/EVA11/base/SQLLiteWrapper.h
-+++ b/src/EVA11/base/SQLLiteWrapper.h
-@@ -42,7 +42,7 @@ class SQLiteDB : public IResult
+diff --git a/src/EVA11/base/Graphic.h b/src/EVA11/base/Graphic.h
+index 70d4f0d..39ec53f 100644
+--- a/src/EVA11/base/Graphic.h
++++ b/src/EVA11/base/Graphic.h
+@@ -26,8 +26,9 @@
+ #include 	<unistd.h>
+ #include 	<fcntl.h>
  
- public:
- 	SQLiteDB();
--	~SQLiteDB();
-+	virtual ~SQLiteDB();
- 	
- 	/*Open Connection*/
- 	bool OpenConnection(std::string DatabaseName,std::string DatabaseDir); 
-diff --git a/src/EVA11/base/Test/Test.cpp b/src/EVA11/base/Test/Test.cpp
-index 71ae25a..3957c5c 100644
---- a/src/EVA11/base/Test/Test.cpp
-+++ b/src/EVA11/base/Test/Test.cpp
-@@ -70,11 +70,11 @@ Test::Test ()
- 	float n = 20;
- 	printf ( "m=%f,n=%f\n",m,n );
++#include 	<ColorObj.h>
++
+ #include 	"main.h"
+-#include 	"ColorObj.h"
  
--	SWAP(m,n);
-+//	SWAP(m,n);
- 	printf ( "m=%f,n=%f\n",m,n );
- 
--	int re = MIN(10,6);
--	printf ( "%d\n",re );
-+//	int re = MIN(10,6);
-+//	printf ( "%d\n",re );
- 
- 
- 	std::shared_ptr<int> ptr;
-diff --git a/src/EVA11/base/main.cpp b/src/EVA11/base/main.cpp
-index a9c75e2..cdc0690 100644
---- a/src/EVA11/base/main.cpp
-+++ b/src/EVA11/base/main.cpp
-@@ -375,6 +375,7 @@ void ExitProcess(void)
- main ( int argc, char *argv[] )
+ class Graphic
  {
- 	Test test;						/* 进行测试的代码 */
-+	
- 	atexit(ExitProcess);
- 	struct sigaction act;  
- 	sigemptyset(&act.sa_mask);     				/* * 清空阻塞信号 **/  
+@@ -92,6 +93,8 @@ class Graphic
+ 		void HLine_Fast(int x1,int x2,int y,short color);
+ 		void Rect_Fast(int x1,int y1,int x2,int y2,short color);
+ 
++		int Alpha_Color(int r,int g,int b,int alph,short bkcolor);
++		int Alpha_Color(short fgcolor,int alpha,short bkcolor);
+ 		/*-----------------------------------------------------------------------------
+ 		 *  Memory operation
+ 		 *-----------------------------------------------------------------------------*/
+@@ -136,7 +139,6 @@ class Graphic
+ 		Graphic& operator = (const Graphic&);    
+ 
+ 		void Init_Color_System(int bpp);       		      /* Initiate the system color */
+-
+ 		/*-----------------------------------------------------------------------------
+ 		 *  Init key used variables 
+ 		 *-----------------------------------------------------------------------------*/
+diff --git a/src/EVA11/base/Label.cpp b/src/EVA11/base/Label.cpp
+index fef040d..f116221 100644
+--- a/src/EVA11/base/Label.cpp
++++ b/src/EVA11/base/Label.cpp
+@@ -17,7 +17,6 @@
+  */
+ 
+ #include 	"Graphic.h"
+-#include 	"ColorObj.h"
+ 
+ #include 	"Object.h"
+ #include 	"Label.h"
+diff --git a/src/EVA11/base/Label.h b/src/EVA11/base/Label.h
+index 98ba609..8ab0b0f 100644
+--- a/src/EVA11/base/Label.h
++++ b/src/EVA11/base/Label.h
+@@ -22,7 +22,7 @@
+ #include 	<string>
+ #include 	<memory>	
+ 
+-#include 	"ColorObj.h"
++#include 	<ColorObj.h>
+ class Graphic;
+ class Label : public Object
+ {
+diff --git a/src/EVA11/base/Makefile b/src/EVA11/base/Makefile
+index 07935f9..bb51e05 100644
+--- a/src/EVA11/base/Makefile
++++ b/src/EVA11/base/Makefile
+@@ -14,6 +14,8 @@
+ 
+ include MKlib.mk
+ 
++SEARCH_INCPATH+=-I./GUI/
++
+ SUBDIRS :=$(shell find * -maxdepth 0 -path 'OBJS' -o -path 'DEPS' -prune -o -name '*' -type d -print)
+ 
+ ifeq ($(CMOD),dynamic)
 -- 
-1.8.5.1
+1.8.5.2
 

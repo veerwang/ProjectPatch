@@ -1,0 +1,3314 @@
+From 9c192ac5cc22548e6022e94ed513e6c94a5f1cdd Mon Sep 17 00:00:00 2001
+From: kevin <kevin.wang2004@hotmail.com>
+Date: Thu, 6 Feb 2014 14:19:41 +0800
+Subject: [PATCH 2/2] =?UTF-8?q?=E6=B7=BB=E5=8A=A0GUI=E7=9B=AE=E5=BD=95?=
+ =?UTF-8?q?=E5=B0=86=E7=94=BB=E7=BA=BF=E9=83=A8=E5=88=86=E6=B7=BB=E5=8A=A0?=
+ =?UTF-8?q?=E5=88=B0=E5=B7=A5=E7=A8=8B=E5=BD=93=E4=B8=AD?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ src/EVA11/base/AlarmManage.cpp      |    3 +-
+ src/EVA11/base/AlarmRegion.cpp      |    3 +-
+ src/EVA11/base/AlarmView.cpp        |    3 +-
+ src/EVA11/base/AnalyzeView.cpp      |    2 +-
+ src/EVA11/base/BasePanel.cpp        |    2 +-
+ src/EVA11/base/Basescreen.cpp       |    2 +-
+ src/EVA11/base/Basewin.cpp          |    3 +-
+ src/EVA11/base/Battery.cpp          |    2 +-
+ src/EVA11/base/Bufferbar.cpp        |    3 +-
+ src/EVA11/base/CZKPanel.cpp         |    3 +-
+ src/EVA11/base/Chart.cpp            |    3 +-
+ src/EVA11/base/Color3DScan.cpp      |    3 +-
+ src/EVA11/base/ColorPanel.cpp       |    3 +-
+ src/EVA11/base/ColorScan.cpp        |    3 +-
+ src/EVA11/base/Colorbar.cpp         |    3 +-
+ src/EVA11/base/DZKPanel.cpp         |    3 +-
+ src/EVA11/base/Datawin.cpp          |    3 +-
+ src/EVA11/base/DebugView.cpp        |    3 +-
+ src/EVA11/base/DetectView.cpp       |    3 +-
+ src/EVA11/base/FreeType.cpp         |    3 +-
+ src/EVA11/base/GUI/Graphic.cpp      | 1023 +++++++++++++++++++++++++++++++++++
+ src/EVA11/base/GUI/Graphic.h        |  157 ++++++
+ src/EVA11/base/GUI/ProjectFixHead.h |    1 +
+ src/EVA11/base/GUI/main.h           |    1 +
+ src/EVA11/base/Gif.cpp              |    3 +-
+ src/EVA11/base/Gradual.cpp          |    3 +-
+ src/EVA11/base/Graphic.cpp          | 1023 -----------------------------------
+ src/EVA11/base/Graphic.h            |  157 ------
+ src/EVA11/base/Helpwin.cpp          |    3 +-
+ src/EVA11/base/IView.cpp            |    3 +-
+ src/EVA11/base/Iconbutton.cpp       |    3 +-
+ src/EVA11/base/Initfacade.cpp       |    2 +-
+ src/EVA11/base/Label.cpp            |    2 +-
+ src/EVA11/base/LimitManage.cpp      |    3 +-
+ src/EVA11/base/Loadwin.cpp          |    3 +-
+ src/EVA11/base/Logic.cpp            |    3 +-
+ src/EVA11/base/Mainwin.cpp          |    3 +-
+ src/EVA11/base/Makefile             |    1 +
+ src/EVA11/base/Modifywin.cpp        |    3 +-
+ src/EVA11/base/Msgbox.cpp           |    3 +-
+ src/EVA11/base/OZKPanel.cpp         |    3 +-
+ src/EVA11/base/Operationwin.cpp     |    3 +-
+ src/EVA11/base/OtherView.cpp        |    3 +-
+ src/EVA11/base/PICwin.cpp           |    3 +-
+ src/EVA11/base/PanelView.cpp        |    3 +-
+ src/EVA11/base/ParaView.cpp         |    3 +-
+ src/EVA11/base/Parawin.cpp          |    3 +-
+ src/EVA11/base/Png.cpp              |    3 +-
+ src/EVA11/base/Process.cpp          |    3 +-
+ src/EVA11/base/Resource.cpp         |    3 +-
+ src/EVA11/base/Rule.cpp             |    3 +-
+ src/EVA11/base/Sinscreen.cpp        |    3 +-
+ src/EVA11/base/Splashscreen.cpp     |    3 +-
+ src/EVA11/base/TCPMainwin.cpp       |    2 +-
+ src/EVA11/base/VideoPanel.cpp       |    3 +-
+ src/EVA11/base/ZKPanel.cpp          |    3 +-
+ src/EVA11/base/ZScreen.cpp          |    3 +-
+ src/EVA11/base/main.cpp             |    4 +-
+ 58 files changed, 1278 insertions(+), 1232 deletions(-)
+ create mode 100644 src/EVA11/base/GUI/Graphic.cpp
+ create mode 100644 src/EVA11/base/GUI/Graphic.h
+ create mode 120000 src/EVA11/base/GUI/ProjectFixHead.h
+ create mode 120000 src/EVA11/base/GUI/main.h
+ delete mode 100644 src/EVA11/base/Graphic.cpp
+ delete mode 100644 src/EVA11/base/Graphic.h
+
+diff --git a/src/EVA11/base/AlarmManage.cpp b/src/EVA11/base/AlarmManage.cpp
+index 85b5cd2..34851ca 100644
+--- a/src/EVA11/base/AlarmManage.cpp
++++ b/src/EVA11/base/AlarmManage.cpp
+@@ -19,7 +19,8 @@
+ #include 	<new>
+ #include 	<string.h>
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include 	"Global.h"
+ #include 	"Object.h"
+ #include 	"Basescreen.h"
+diff --git a/src/EVA11/base/AlarmRegion.cpp b/src/EVA11/base/AlarmRegion.cpp
+index dd0c673..1e0c370 100644
+--- a/src/EVA11/base/AlarmRegion.cpp
++++ b/src/EVA11/base/AlarmRegion.cpp
+@@ -18,10 +18,11 @@
+ #include 	<cmath>
+ #include 	<vector>
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Basescreen.h"
+ #include 	"AlarmRegion.h"
+-#include 	"Graphic.h"
+ #include 	"Algorithm.h"
+ 
+ IAlarm::IAlarm (int x,int y,int width,int height)
+diff --git a/src/EVA11/base/AlarmView.cpp b/src/EVA11/base/AlarmView.cpp
+index 97b6f04..86779b7 100644
+--- a/src/EVA11/base/AlarmView.cpp
++++ b/src/EVA11/base/AlarmView.cpp
+@@ -19,7 +19,8 @@
+ #include 	<cstdlib>
+ #include 	<cstdio>
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include	"Global.h"
+ #include 	"Device.h"
+ #include 	"Language.h"
+diff --git a/src/EVA11/base/AnalyzeView.cpp b/src/EVA11/base/AnalyzeView.cpp
+index 25dda93..6c09e14 100644
+--- a/src/EVA11/base/AnalyzeView.cpp
++++ b/src/EVA11/base/AnalyzeView.cpp
+@@ -17,7 +17,7 @@
+  */
+ 
+ #include 	"Object.h"
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
+ 
+ #include 	"Language.h"
+ #include 	"Algorithm.h"
+diff --git a/src/EVA11/base/BasePanel.cpp b/src/EVA11/base/BasePanel.cpp
+index fded375..b6e437c 100644
+--- a/src/EVA11/base/BasePanel.cpp
++++ b/src/EVA11/base/BasePanel.cpp
+@@ -15,9 +15,9 @@
+  *
+  * =====================================================================================
+  */
++#include 	<Graphic.h>
+ 
+ #include 	"Global.h"
+-#include 	"Graphic.h"
+ #include 	"Object.h"
+ #include 	"BasePanel.h"
+ 
+diff --git a/src/EVA11/base/Basescreen.cpp b/src/EVA11/base/Basescreen.cpp
+index cc8f08b..4b79e90 100644
+--- a/src/EVA11/base/Basescreen.cpp
++++ b/src/EVA11/base/Basescreen.cpp
+@@ -18,8 +18,8 @@
+ 
+ #include 	<cstdlib>
+ 
++#include 	<Graphic.h>
+ #include 	"Object.h"
+-#include 	"Graphic.h"
+ #include 	"Basescreen.h"
+ 
+ Basescreen::Basescreen (int x,int y,int width,int heigh)
+diff --git a/src/EVA11/base/Basewin.cpp b/src/EVA11/base/Basewin.cpp
+index 47d9634..d05538c 100644
+--- a/src/EVA11/base/Basewin.cpp
++++ b/src/EVA11/base/Basewin.cpp
+@@ -20,6 +20,8 @@
+ 
+ #include 	<SDL.h>
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Label.h"
+ #include	"Logic.h"
+@@ -27,7 +29,6 @@
+ #include	"Language.h"
+ #include 	"Device.h"
+ #include 	"Battery.h"
+-#include 	"Graphic.h"
+ #include 	"Algorithm.h"
+ #include	"Msgbox.h"
+ #include 	"Basewin.h"
+diff --git a/src/EVA11/base/Battery.cpp b/src/EVA11/base/Battery.cpp
+index 6d4304b..ffe6e78 100644
+--- a/src/EVA11/base/Battery.cpp
++++ b/src/EVA11/base/Battery.cpp
+@@ -15,12 +15,12 @@
+  *
+  * =====================================================================================
+  */
++#include 	<Graphic.h>
+ 
+ #include 	"Object.h"
+ #include 	"Battery.h"
+ #include 	"Msgbox.h"
+ #include 	"Language.h"
+-#include 	"Graphic.h"
+ #include 	"Logic.h"
+ 
+ #define MAXTIMES 50
+diff --git a/src/EVA11/base/Bufferbar.cpp b/src/EVA11/base/Bufferbar.cpp
+index b1107f6..9a0b638 100644
+--- a/src/EVA11/base/Bufferbar.cpp
++++ b/src/EVA11/base/Bufferbar.cpp
+@@ -15,9 +15,10 @@
+  *
+  * =====================================================================================
+  */
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Bufferbar.h"
+-#include 	"Graphic.h"
+ 
+ Bufferbar::Bufferbar (int x,int y,int width,int heigh)
+ 	: Object(x,y,width,heigh)
+diff --git a/src/EVA11/base/CZKPanel.cpp b/src/EVA11/base/CZKPanel.cpp
+index 71bba52..e08e6bf 100644
+--- a/src/EVA11/base/CZKPanel.cpp
++++ b/src/EVA11/base/CZKPanel.cpp
+@@ -16,6 +16,8 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"BasePanel.h"
+ #include 	"DZKPanel.h"
+@@ -23,7 +25,6 @@
+ 
+ #include 	"IDataProcess.h"
+ #include 	"ConcreteDataProcess.h"
+-#include 	"Graphic.h"
+ #include 	"Language.h"
+ #include 	"Global.h"
+ #include 	"Bufferbar.h"
+diff --git a/src/EVA11/base/Chart.cpp b/src/EVA11/base/Chart.cpp
+index 35f947a..d032562 100644
+--- a/src/EVA11/base/Chart.cpp
++++ b/src/EVA11/base/Chart.cpp
+@@ -16,7 +16,8 @@
+  * =====================================================================================
+  */
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Chart.h"
+ #include 	"Global.h"
+diff --git a/src/EVA11/base/Color3DScan.cpp b/src/EVA11/base/Color3DScan.cpp
+index 269c15c..45f5190 100644
+--- a/src/EVA11/base/Color3DScan.cpp
++++ b/src/EVA11/base/Color3DScan.cpp
+@@ -16,7 +16,8 @@
+  * =====================================================================================
+  */
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Basescreen.h"
+ #include 	"Color3DScan.h"
+diff --git a/src/EVA11/base/ColorPanel.cpp b/src/EVA11/base/ColorPanel.cpp
+index 8fd588a..8a62e4f 100644
+--- a/src/EVA11/base/ColorPanel.cpp
++++ b/src/EVA11/base/ColorPanel.cpp
+@@ -16,10 +16,11 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"IDataProcess.h"
+ #include 	"ConcreteDataProcess.h"
+ #include 	"Language.h"
+-#include 	"Graphic.h"
+ #include 	"Device.h"
+ #include 	"Global.h"
+ #include 	"Algorithm.h"
+diff --git a/src/EVA11/base/ColorScan.cpp b/src/EVA11/base/ColorScan.cpp
+index 6e5eb5e..f1f0182 100644
+--- a/src/EVA11/base/ColorScan.cpp
++++ b/src/EVA11/base/ColorScan.cpp
+@@ -16,10 +16,11 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Basescreen.h"
+ #include 	"ColorScan.h"
+-#include 	"Graphic.h"
+ 
+ ColorScan::ColorScan (int x,int y,int width,int heigh)
+ 	: Basescreen(x,y,width,heigh)
+diff --git a/src/EVA11/base/Colorbar.cpp b/src/EVA11/base/Colorbar.cpp
+index 06c16d7..01f0d3b 100644
+--- a/src/EVA11/base/Colorbar.cpp
++++ b/src/EVA11/base/Colorbar.cpp
+@@ -16,10 +16,11 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Basescreen.h"
+ #include 	"Colorbar.h"
+-#include 	"Graphic.h"
+ 
+ Colorbar::Colorbar (int x,int y,int width,int heigh)
+ 	: Basescreen(x,y,width,heigh)
+diff --git a/src/EVA11/base/DZKPanel.cpp b/src/EVA11/base/DZKPanel.cpp
+index 918c4dc..1baafd9 100644
+--- a/src/EVA11/base/DZKPanel.cpp
++++ b/src/EVA11/base/DZKPanel.cpp
+@@ -19,11 +19,12 @@
+ #include 	<sstream>
+ #include 	<string>	
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"IDataProcess.h"
+ #include 	"ConcreteDataProcess.h"
+ #include 	"Language.h"
+-#include 	"Graphic.h"
+ #include 	"Global.h"
+ #include 	"Bufferbar.h"
+ #include 	"Device.h"
+diff --git a/src/EVA11/base/Datawin.cpp b/src/EVA11/base/Datawin.cpp
+index e715681..ac4edda 100644
+--- a/src/EVA11/base/Datawin.cpp
++++ b/src/EVA11/base/Datawin.cpp
+@@ -18,11 +18,12 @@
+ #include 	<sys/stat.h>
+ #include	<fstream>
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Label.h"
+ #include 	"Basewin.h"
+ #include 	"Datawin.h"
+-#include 	"Graphic.h"
+ 
+ #include 	"Language.h"
+ #include 	"Global.h"
+diff --git a/src/EVA11/base/DebugView.cpp b/src/EVA11/base/DebugView.cpp
+index b5d26f7..d85e644 100644
+--- a/src/EVA11/base/DebugView.cpp
++++ b/src/EVA11/base/DebugView.cpp
+@@ -18,7 +18,8 @@
+ 
+ #include 	<etio.h>
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include	"Global.h"
+ #include 	"Device.h"
+ #include 	"Language.h"
+diff --git a/src/EVA11/base/DetectView.cpp b/src/EVA11/base/DetectView.cpp
+index 6d0658f..0703f3d 100644
+--- a/src/EVA11/base/DetectView.cpp
++++ b/src/EVA11/base/DetectView.cpp
+@@ -16,8 +16,9 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+-#include 	"Graphic.h"
+ #include 	"Device.h"
+ #include 	"Language.h"
+ #include 	"Global.h"
+diff --git a/src/EVA11/base/FreeType.cpp b/src/EVA11/base/FreeType.cpp
+index fe7c99b..ca680c5 100644
+--- a/src/EVA11/base/FreeType.cpp
++++ b/src/EVA11/base/FreeType.cpp
+@@ -15,8 +15,9 @@
+  *
+  * =====================================================================================
+  */
++#include 	<Graphic.h>
++
+ #include 	"FreeType.h"
+-#include 	"Graphic.h"
+ 
+ #include 	<wchar.h>
+ #include 	<locale>
+diff --git a/src/EVA11/base/GUI/Graphic.cpp b/src/EVA11/base/GUI/Graphic.cpp
+new file mode 100644
+index 0000000..e7c6500
+--- /dev/null
++++ b/src/EVA11/base/GUI/Graphic.cpp
+@@ -0,0 +1,1023 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  Graphic.cpp
++ *
++ *    Description:  Drawing screen class
++ *
++ *        Version:  1.0
++ *        Created:  2009年07月03日 09时21分10秒
++ *       Revision:  none
++ *       Compiler:  gcc-arm
++ *
++ *         Author:  kevin.wang
++ *        Company:  eddysun
++ *
++ * =====================================================================================
++ */
++#include        <string.h>
++#include        <sys/types.h> 
++#include        <sys/stat.h> 
++#include        <sys/ioctl.h>
++#include        <linux/fb.h> 
++#include        <unistd.h> 
++#include 	<fcntl.h> 
++#include        <math.h>
++#include 	<sys/mman.h> 
++#include        <fstream>
++#include        <iostream>
++
++#include 	<termio.h>
++
++#include 	<SDL.h>
++#include 	<SDL/SDL_gfxPrimitives.h>
++#include 	<SDL/SDL_gfxBlitFunc.h>
++#include 	<SDL/SDL_rotozoom.h>
++#include 	<SDL/SDL_image.h>
++
++#include	"Graphic.h"
++#include 	"GUILowCode.hpp"
++
++#define         FD_STDIN 0
++
++std::auto_ptr<Graphic> Graphic::m_Instance;
++
++struct Graphic::PImpl
++{
++	SDL_Surface*		m_pSurface;
++	SDL_Surface*		m_pShadowSurface;
++	SDL_Surface*		m_p32ColorSurface;
++	int			m_MaxW;
++	int			m_MaxH;
++	int			m_Bpp;
++	CopyMode 		m_Mode; 
++	int			m_Transpare;
++	int			m_Buffer_Len;
++	int			m_Color;
++	uint8_t*		m_Scr_Ptr;
++	uint8_t*		m_Shadow_Scr_Ptr;
++	GUILowCode<uint16_t>*	gc;
++	ColorObj*		cobj;
++	
++	struct termios 		new_settings;
++	struct termios		store_settings;
++	int 			m_keyflag;
++};
++
++Graphic::Graphic() : m_Imple(new struct PImpl)
++{
++	m_Imple->m_Transpare = 255;
++	m_Imple->m_Color     = 0; 
++	m_Imple->m_Mode      = MODE_SRC;
++	m_Imple->m_Scr_Ptr   = 0;
++}
++
++Graphic::~Graphic()
++{
++}
++
++/*
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Instance
++ *  Description:  make sure the class instance can be only instance once
++ * =====================================================================================
++ */
++Graphic* Graphic::Instance()
++{
++	if 	( m_Instance.get() == 0 )
++	{
++		m_Instance.reset( new Graphic() );
++	}
++	return m_Instance.get();
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Initgraph
++ *  Description:  Init the screen file and font file
++ * =====================================================================================
++ */
++bool Graphic::Initgraph(void)
++{
++	SDL_version compiled;
++	SDL_VERSION(&compiled);
++	int m = compiled.major;
++	int n = compiled.minor;
++	int p = compiled.patch;
++	std::cout<<"SDL Version: "<<m<<"."<<n<<"."<<p<<std::endl;
++
++	SDL_IMAGE_VERSION(&compiled);
++	m = compiled.major;
++	n = compiled.minor;
++	p = compiled.patch;
++	std::cout<<"SDL Image Version: "<<m<<"."<<n<<"."<<p<<std::endl;
++
++	if ( SDL_Init(SDL_INIT_VIDEO) < 0 )
++	{
++		printf("SDL init fail!: %s\n",SDL_GetError());
++		return false; 
++	}
++
++	SDL_ShowCursor(0);
++
++	m_Imple->m_pSurface 	     = NULL;
++	m_Imple->m_pShadowSurface    = NULL;
++	m_Imple->m_MaxW     	     = 640;
++	m_Imple->m_MaxH     	     = 480;
++	m_Imple->m_Bpp      	     = 16;
++
++#ifdef X86
++	uint32_t flag = SDL_SWSURFACE;
++#else
++	uint32_t flag = SDL_HWSURFACE;
++#endif
++
++	if ( !SDL_VideoModeOK(m_Imple->m_MaxW,m_Imple->m_MaxH,m_Imple->m_Bpp,flag) )
++	{
++		printf("SDL init parameters is not support: %s\n",SDL_GetError());
++		return false;
++	}
++
++	m_Imple->m_pSurface = SDL_SetVideoMode(m_Imple->m_MaxW,m_Imple->m_MaxH,m_Imple->m_Bpp,flag);
++	if ( m_Imple->m_pSurface == NULL )
++	{
++		printf("SDL set video mode fail: %s\n",SDL_GetError());
++		return false;
++	}
++
++	char *devicename = new char[100];
++	if ( SDL_VideoDriverName(devicename,100) != NULL )
++		printf ( "Device Name:%s\n",devicename );
++	delete[] devicename;
++	devicename = NULL;
++
++	m_Imple->m_p32ColorSurface = SDL_CreateRGBSurface(SDL_SWSURFACE,1,1,32,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
++	if ( m_Imple->m_p32ColorSurface == NULL )
++	{
++		printf("SDL Create color surface fail: %s\n",SDL_GetError());
++		return false; 
++	}
++
++	m_Imple->m_MaxW  = m_Imple->m_pSurface->w;         		     /* get the screen width and height from system screen */
++	m_Imple->m_MaxH = m_Imple->m_pSurface->h;
++	m_Imple->m_Bpp 	      = m_Imple->m_pSurface->format->BitsPerPixel;
++	m_Imple->m_Buffer_Len  = m_Imple->m_MaxW*m_Imple->m_MaxH*(m_Imple->m_pSurface->format->BytesPerPixel);
++	m_Imple->m_Scr_Ptr    = static_cast<unsigned char *>(m_Imple->m_pSurface->pixels);
++
++	int result = system("/sbin/hwclock -s");                	     /* set the hardware time from system time   */
++	result = result;
++
++	m_Imple->cobj = ColorObj::Instance();
++	m_Imple->cobj->Init_Object();
++
++	Clearscreen();
++	Initkey();                                         		     /* Init the standard input environment, enable read key return immediately */
++
++	m_Imple->m_pShadowSurface = SDL_CreateRGBSurface(flag,m_Imple->m_MaxW,m_Imple->m_MaxH,m_Imple->m_Bpp,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
++	if ( m_Imple->m_pShadowSurface == NULL )
++	{
++		printf("SDL Create shadow surface fail: %s\n",SDL_GetError());
++		return false; 
++	}
++
++	m_Imple->m_Shadow_Scr_Ptr = static_cast<unsigned char *>(m_Imple->m_pShadowSurface->pixels);
++	/*-----------------------------------------------------------------------------
++	 *  Initiate the globle color
++	 *-----------------------------------------------------------------------------*/
++	Init_Color_System(m_Imple->m_Bpp);
++
++	m_Imple->gc = GUILowCode<uint16_t>::Instance();
++
++	m_Imple->gc->Init_GUILowCode_Parameters(m_Imple->m_MaxW,
++			                    	m_Imple->m_MaxH,
++					    	m_Imple->m_Bpp,
++					    	m_Imple->m_Buffer_Len,
++					    	m_Imple->m_Scr_Ptr,
++					    	m_Imple->m_Shadow_Scr_Ptr,
++					    	GUILowCode<uint16_t>::MODE_SRC);
++  	return true;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Closegraph
++ *  Description:  Close the screen file and Chinese font file
++ * =====================================================================================
++ */
++void Graphic::Closegraph()
++{
++	m_Imple->cobj->Destroy_Object();
++
++	SDL_FreeSurface(m_Imple->m_p32ColorSurface);
++	SDL_FreeSurface(m_Imple->m_pShadowSurface);
++	SDL_FreeSurface(m_Imple->m_pSurface);
++
++	if ( SDL_WasInit(SDL_INIT_VIDEO) != 0 )
++		atexit(SDL_Quit);
++	Restorekey();                           			     /* Let the environment variables to be normal */
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Clearscreen
++ *  Description:  Clear the whole screen
++ * =====================================================================================
++ */
++void Graphic::Clearscreen(void)
++{
++	boxColor(m_Imple->m_pSurface,0,0,m_Imple->m_MaxW-1,m_Imple->m_MaxH-1,m_Imple->cobj->Get_ColorVP(30)->color32);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  CleanArea
++ *  Description:  Clean one area 
++ * =====================================================================================
++ */
++void Graphic::CleanArea(int x1,int y1,int x2,int y2)
++{
++	m_Imple->gc->Set_Area_Color(x1,y1,x2,y2,m_Imple->cobj->Get_ColorVP(26)->color16);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  GetColor
++ *  Description:  Set the color of front
++ * =====================================================================================
++ */
++int Graphic::Getcolor()
++{
++	return m_Imple->m_Color;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  SetColor
++ *  Description:  Set the color of front
++ * =====================================================================================
++ */
++void Graphic::Setcolor(short color)
++{
++	m_Imple->m_Color = color;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Getpixel
++ *  Description:  Get Pixel Value of Screen 
++ * =====================================================================================
++ */
++short Graphic::Getpixel(int x,int y)
++{
++	unsigned char * loc = m_Imple->m_Scr_Ptr + ((y * m_Imple->m_MaxW*2 + x*2 ));
++	return *(unsigned short *)loc; 
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Setpixel
++ *  Description:  Draw a pixel on screen
++ * =====================================================================================
++ */
++void Graphic::Setpixel(int x,int y,short color)
++{
++	m_Imple->gc->Setpixel(x,y,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Line
++ *  Description:  Draw a line on screen, (x1 y1) (x2 y2) 
++ * =====================================================================================
++ */
++void Graphic::Line(int x1,int y1,int x2,int y2)
++{
++	m_Imple->gc->Line(x1,y1,x2,y2,m_Imple->m_Color);
++}
++
++void Graphic::DoLine(int x1,int y1,int x2,int y2)
++{
++	m_Imple->gc->Dot_Line(x1,y1,x2,y2,m_Imple->m_Color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Line
++ *  Description:  Draw a line on screen, (x1 y1) (x2 y2)  with color
++ * =====================================================================================
++ */
++void Graphic::Line(int x1,int y1,int x2,int y2,short color)
++{
++	m_Imple->gc->Line(x1,y1,x2,y2,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Rectangle
++ *  Description:  Draw a ractangel on screen
++ * =====================================================================================
++ */
++void Graphic::Rectangle(int x1, int y1, int x2, int y2)
++{
++	Line(x1, y1, x2, y1);
++	Line(x2, y1, x2, y2);
++	Line(x2, y2, x1, y2);
++	Line(x1, y2, x1, y1);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  DrawRect
++ *  Description:  Draw rectangle with X Y width height
++ * =====================================================================================
++ */
++void Graphic::DrawRect(int x,int y,int width,int height)
++{
++	Rectangle(x,y,x+width-1,y+height-1);
++}
++void Graphic::DrawRect(int x,int y,int width,int height,short color)
++{
++	short save_color = m_Imple->m_Color;
++	m_Imple->m_Color = color;
++	Rectangle(x,y,x+width-1,y+height-1);
++	m_Imple->m_Color = save_color;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  DrawFillRect
++ *  Description:  Draw filled rectangle on screen
++ * =====================================================================================
++ */
++void Graphic::DrawFillRect(int x,int y,int width,int height)
++{
++	for ( int i = y; i < y+height-1; i += 1 ) 
++	{
++		m_Imple->gc->HLine_Fast(x,x+width-1,i,m_Imple->m_Color);
++	}
++}
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  DrawFillRect
++ *  Description:  Draw filled rectangle on screen
++ * =====================================================================================
++ */
++void Graphic::DrawFillRect(int x,int y,int width,int height,short color)
++{
++	int save_color = m_Imple->m_Color;
++	m_Imple->m_Color = color;
++	for ( int i = y; i < y+height-1; i += 1 )
++	{
++		m_Imple->gc->HLine_Fast(x,x+width-1,i,m_Imple->m_Color);
++	}
++	m_Imple->m_Color = save_color;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  FillRect
++ *  Description:  Draw filled rectangle on screen
++ * =====================================================================================
++ */
++void Graphic::FillRect(int x1,int y1,int x2,int y2)
++{
++	for(int j=y1;j<y2;j++)
++	{
++		HLine_Fast(x1,x2-1,j,m_Imple->m_Color);
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  SetMode
++ *  Description:  Set the drawing mode
++ * =====================================================================================
++ */
++void Graphic::SetMode(CopyMode mode)
++{
++	m_Imple->m_Mode = mode;
++
++	switch ( mode ) 
++	{
++		case MODE_SRC: 
++			m_Imple->gc->SetMode(GUILowCode<uint16_t>::MODE_SRC);
++			break;
++
++		case MODE_SRC_XOR_DST: 
++			m_Imple->gc->SetMode(GUILowCode<uint16_t>::MODE_SRC_XOR_DST);
++			break;
++
++		default:	
++			m_Imple->gc->SetMode(GUILowCode<uint16_t>::MODE_SRC);
++			break;
++	}				/* -----  end switch  ----- */
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  GetMode
++ *  Description:  Get the drawing mode
++ * =====================================================================================
++ */
++Graphic::CopyMode Graphic::GetMode(void) const
++{
++	return 	m_Imple->m_Mode;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Initkey
++ *  Description:  Init the stdin environment, for reading key value return immediatele
++ * =====================================================================================
++ */
++void Graphic::Initkey(void)
++{
++        tcgetattr(FD_STDIN,&m_Imple->store_settings);             /* save the current key environment variables in memory  */
++	m_Imple->new_settings = m_Imple->store_settings;                   /* set the new environment variables in memory */
++        m_Imple->new_settings.c_lflag &= (~ICANON);
++        m_Imple->new_settings.c_lflag &= (~ECHO);
++        m_Imple->new_settings.c_cc[VTIME] = 0;
++        m_Imple->new_settings.c_cc[VMIN] = 1;
++        tcsetattr(FD_STDIN,TCSANOW,&m_Imple->new_settings);       /* enable the new value immediately */
++	m_Imple->m_keyflag = fcntl(FD_STDIN,F_GETFL);             /* get the F_GETFL variable from environment  */
++        fcntl(FD_STDIN,F_SETFL,m_Imple->m_keyflag | O_NONBLOCK ); /* set the read key type to be NONBLOCK */
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Restorekey
++ *  Description:  Restore the environment variables to the last saving time 
++ * =====================================================================================
++ */
++void Graphic::Restorekey(void)
++{
++	fcntl(FD_STDIN,F_SETFL,m_Imple->m_keyflag);
++        tcsetattr(FD_STDIN,TCSANOW,&m_Imple->store_settings);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  MovememH
++ *  Description:  Move the memory of screen display from one place to another
++ * =====================================================================================
++ */
++void Graphic::MovememH(int x,int y,int height,int width)
++{
++	m_Imple->gc->MovememH(x,y,height,width,m_Imple->m_Color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Movemem
++ *  Description:  Move the memory of screen display from one place to another
++ * =====================================================================================
++ */
++void Graphic::Movemem(int x,int y,int height,int width)
++{
++	m_Imple->gc->Movemem(x,y,height,width);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  BresenhamCircle
++ *  Description:  The second drawing circle algorithmic
++ * =====================================================================================
++ */
++void Graphic::BresenhamCircle(int xc,int yc,int radius,uint32_t color)
++{
++	aacircleColor(m_Imple->m_pSurface,xc,yc,radius,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Get_Screen_Ptr
++ *  Description:  Get the screen ptr from Graphic class templately
++ * =====================================================================================
++ */
++unsigned char * Graphic::Get_Screen_Ptr()
++{
++	return m_Imple->m_Scr_Ptr;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Reset_Disp_Area
++ *  Description:  Clean and Initial the display area  Flag: false shadow->real true
++ *                real->shadow
++ * =====================================================================================
++ */
++void Graphic::Screen_Copy(int left,int up,int right,int down,bool flag)
++{
++	m_Imple->gc->Screen_Copy(left,up,right,down,flag);
++}
++
++void Graphic::Screen_Copy_Alpha(int left,int up,int right,int down,bool flag)
++{
++	int temp_bpp;
++	temp_bpp = m_Imple->m_Bpp >> 3;
++
++	if ( flag == false )
++	{
++		for (int i = up;i<down+1;i++)
++		{
++			Word_Memcpy_Alpha(m_Imple->m_Scr_Ptr+m_Imple->m_MaxW*temp_bpp*i+temp_bpp*(left),
++				    m_Imple->m_Shadow_Scr_Ptr+m_Imple->m_MaxW*temp_bpp*i+temp_bpp*(left),
++				    temp_bpp*(right-left+1));
++		}
++		
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Alpha_Color
++ *  Description:  Alpha Color calculate,only called in Alpha parameters exist
++ * =====================================================================================
++ */
++int Graphic::Alpha_Color(int r,int g,int b,int alph,short bkcolor)
++{
++	int nr    = r;
++	int ng    = g;
++	int nb    = b;
++	int alpha = alph;
++
++	int oldr  = (( bkcolor >> 11 ) & 0x1f)<<3;
++	int oldg  = (( bkcolor >> 5 ) & 0x3f)<<2;
++	int oldb  = (( bkcolor ) & 0x1f)<<3;
++
++	nr        = (((nr - oldr)*alpha)>>8) + oldr;
++	ng        = (((ng - oldg)*alpha)>>8) + oldg;
++	nb        = (((nb - oldb)*alpha)>>8) + oldb;
++
++	return ( nr << 16 ) + ( ng << 8 ) + nb;
++}
++int Graphic::Alpha_Color(short fgcolor,int alph,short bkcolor)
++{
++	int nr    = (( fgcolor >> 11 ) & 0x1f)<<3;
++	int ng    = (( fgcolor >> 5) & 0x3f)<<2;
++	int nb    = (( fgcolor ) & 0x1f)<<3;
++	int alpha = alph;
++
++	int oldr  = (( bkcolor >> 11 ) & 0x1f)<<3;
++	int oldg  = (( bkcolor >> 5 ) & 0x3f)<<2;
++	int oldb  = (( bkcolor ) & 0x1f)<<3;
++
++	nr        = (((nr - oldr)*alpha)>>8) + oldr;
++	ng        = (((ng - oldg)*alpha)>>8) + oldg;
++	nb        = (((nb - oldb)*alpha)>>8) + oldb;
++
++	return ( nr << 16 ) + ( ng << 8 ) + nb;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Word_Memcpy_Alpha
++ *  Description:  Memory copy word by word 
++ * =====================================================================================
++ */
++void Graphic::Word_Memcpy_Alpha(unsigned char *des,unsigned char *src,long len)
++{
++	short *des_w,*src_w;
++	len = len >> 1;
++	des_w = (short *)des;
++	src_w = (short *)src;
++	while( len-- )
++	{
++		*des_w++ = RGB24_16(Alpha_Color(*src_w++,m_Imple->m_Transpare,*des_w)); 
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Switch_Screen
++ *  Description:  Switch between real screen and shadow screen
++ * =====================================================================================
++ */
++void Graphic::Switch_Screen()
++{
++	unsigned char *temp;
++	temp = m_Imple->m_Shadow_Scr_Ptr;
++	m_Imple->m_Shadow_Scr_Ptr = m_Imple->m_Scr_Ptr;
++	m_Imple->m_Scr_Ptr = temp;
++
++	m_Imple->gc->Switch_Screen();
++	Switch_Surface();
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Init_Color_System
++ *  Description:  Init the system color
++ * =====================================================================================
++ */
++void Graphic::Init_Color_System(int b)
++{
++	if ( b == 8 )
++	{
++		for ( int i=0;i<32;i++ )
++		{
++			g_Pen[i] = 224+i;
++		}
++	}
++	else if ( b == 16 )
++	{
++		for ( int i=0;i<32;i++ )
++		{
++			g_Pen[i] = m_Imple->cobj->Get_ColorVP(i)->color16;
++		}
++	}
++
++	switch ( b )
++	{
++		case 16:
++			/*-----------------------------------------------------------------------------
++			 *  308 used color system
++			 *-----------------------------------------------------------------------------*/
++			g_BATTARY_CO = g_Pen[9];
++
++			g_SCBG_CO   = g_Pen[10]; 
++			g_SCFG_CO   = g_Pen[11]; 
++			g_SCTX_CO   = g_Pen[12]; 
++
++			g_BUTXNO_CO = g_Pen[16]; 
++			g_BUBGNO_CO = g_Pen[17];
++			g_BUBGFO_CO = g_Pen[18];
++			g_BUTXFO_CO = g_Pen[19];
++
++			g_LIGHT_CO  = g_Pen[21];
++			g_SHADOW_CO = g_Pen[20];
++
++			g_MAINBG_CO = g_Pen[22];
++			g_MAINFG_CO = g_Pen[23];
++			g_BUFFFG_CO = g_Pen[24];
++
++			g_MOVBFG_CO = g_Pen[25];
++			g_MOVBBG_CO = g_Pen[26];
++			g_MOVBTX_CO = g_Pen[27];
++
++			break;
++		case 8:	
++			/*-----------------------------------------------------------------------------
++			 *  308 used color system
++			 *-----------------------------------------------------------------------------*/
++			g_BATTARY_CO = g_Pen[9];
++
++			g_SCBG_CO   = g_Pen[10]; 
++			g_SCFG_CO   = g_Pen[11]; 
++			g_SCTX_CO   = g_Pen[12]; 
++
++			g_BUTXNO_CO = g_Pen[16]; 
++			g_BUTXFO_CO = g_Pen[19];
++			g_BUBGNO_CO = g_Pen[17];
++			g_BUBGFO_CO = g_Pen[18];
++
++			g_LIGHT_CO  = g_Pen[21];
++			g_SHADOW_CO = g_Pen[20];
++
++			g_MAINBG_CO = g_Pen[22];
++			g_MAINFG_CO = g_Pen[23];
++			g_BUFFFG_CO = g_Pen[24];
++
++			g_MOVBFG_CO = g_Pen[25];
++			g_MOVBBG_CO = g_Pen[26];
++			g_MOVBTX_CO = g_Pen[27];
++
++			g_SCBG_CO   = g_Pen[10];
++			g_SCFG_CO   = g_Pen[11];
++			g_SCTX_CO   = g_Pen[12];
++
++		        break;  
++		case 1:	
++			break;
++	}				/* -----  end switch  ----- */
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Get_Disp_Area_Bytes
++ *  Description:  Get the display area byres number
++ * =====================================================================================
++ */
++int Graphic::Get_Disp_Area_Bytes(int left,int up,int right,int down) /* on the frame */
++{
++	return m_Imple->gc->Get_Disp_Area_Bytes(left,up,right,down);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Load_Disp_Area
++ *  Description:  Load the graphic memory to memory 
++ * =====================================================================================
++ */
++void Graphic::Load_Disp_Area(int left,int up,int right,int down,unsigned char * mem)
++{
++	if ( m_Imple->m_Bpp == 8 )
++	{
++		for ( int j=up;j<=down;j++ )
++		{
++			for ( int i=left;i<=right;i++ )
++			{
++				*mem = *( m_Imple->m_Scr_Ptr + ( i + j * m_Imple->m_MaxW ) ); 
++				mem ++;
++			}
++		}
++	}
++	else if ( m_Imple->m_Bpp == 16 )
++	{
++		for ( int j=up;j<=down;j++ )
++		{
++			for ( int i=left;i<=right;i++ )
++			{
++				*(unsigned short *)mem = *(unsigned short *)( m_Imple->m_Scr_Ptr + (( i + j * m_Imple->m_MaxW ) << 1) ); 
++				mem += 2;
++			}
++		}
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Restore_Disp_Area
++ *  Description:  Restore the memory to Graphic memory 
++ * =====================================================================================
++ */
++void Graphic::Restore_Disp_Area(int left,int up,int right,int down,unsigned char * mem)
++{
++	if ( m_Imple->m_Bpp == 8 )                                 /* bpp 16 8 */
++	{
++		for ( int j=up;j<=down;j++ )
++		{
++			for ( int i=left;i<=right;i++ )
++			{
++				*( m_Imple->m_Scr_Ptr + ( i + j * m_Imple->m_MaxW ) ) = *mem; 
++				mem ++;
++			}
++		}
++	}
++	else if ( m_Imple->m_Bpp == 16 )
++	{
++		for ( int j=up;j<=down;j++ )
++		{
++			for ( int i=left;i<=right;i++ )
++			{
++				*(unsigned short *)( m_Imple->m_Scr_Ptr + (( i + j * m_Imple->m_MaxW )<<1) ) = *(unsigned short *)mem; 
++				mem += 2;
++			}
++		}
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  HLine_Fast
++ *  Description:  Fast Draw H-Line 
++ *  Note:
++ *                Only used by 8-bits color system
++ *                0           1
++ *                low         high
++ * =====================================================================================
++ */
++void Graphic::HLine_Fast(int x1,int x2,int y,short color)
++{
++	m_Imple->gc->HLine_Fast(x1,x2,y,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Rect_Fast
++ *  Description:  Draw Rectangle as new algorithmic 
++ * =====================================================================================
++ */
++void Graphic::Rect_Fast(int x1,int y1,int x2,int y2,short color)
++{
++	for ( int j=y1;j<=y2;j++ )
++	{
++		HLine_Fast(x1,x2,j,color);
++	}
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  RGB24_16
++ *  Description:  Convert RGB24 to RGB 16 ( RGB:5:6:5 ) 
++ * =====================================================================================
++ */
++unsigned short Graphic::RGB24_16(unsigned int rgb)
++{
++	return SDL_MapRGB(m_Imple->m_pSurface->format,( rgb >> 16 ) & 0xff,( rgb >> 8 ) & 0xff,rgb & 0xff);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  FillBox
++ *  Description:  FillBox with color 
++ * =====================================================================================
++ */
++void Graphic::FillBox(int x,int y,int w,int h,int r,uint32_t color)
++{
++	aacircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
++	aacircleColor(m_Imple->m_pSurface,x+w-r,y+r,r,color);
++	aacircleColor(m_Imple->m_pSurface,x+r,y+h-r,r,color);
++	aacircleColor(m_Imple->m_pSurface,x+w-r,y+h-r,r,color);
++
++	filledCircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
++	filledCircleColor(m_Imple->m_pSurface,x+w-r,y+r,r,color);
++	filledCircleColor(m_Imple->m_pSurface,x+r,y+h-r,r,color);
++	filledCircleColor(m_Imple->m_pSurface,x+w-r,y+h-r,r,color);
++
++	boxColor(m_Imple->m_pSurface,x+r,y+r,x+w-r,y+h-r,color);
++	boxColor(m_Imple->m_pSurface,x+r,y,x+w-r,y+r,color);
++	boxColor(m_Imple->m_pSurface,x+r,y+h-r,x+w-r,y+h,color);
++	boxColor(m_Imple->m_pSurface,x,y+r,x+r,y+h-r,color);
++	boxColor(m_Imple->m_pSurface,x+w-r,y+r,x+w,y+h-r,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  HalfFillBox
++ *  Description:  HalfFillBox with color 
++ * =====================================================================================
++ */
++void Graphic::HalfFillBox(int x,int y,int w,int h,int r,uint32_t color)
++{
++	aacircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
++	aacircleColor(m_Imple->m_pSurface,x+w-r,y+r,r,color);
++
++	filledCircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
++	filledCircleColor(m_Imple->m_pSurface,x+w-r,y+r,r,color);
++
++	boxColor(m_Imple->m_pSurface,x,y+r,x+w,y+h-r,color);
++	boxColor(m_Imple->m_pSurface,x+r,y,x+w-r,y+r,color);
++	boxColor(m_Imple->m_pSurface,x,y+h-r,x+w,y+h,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  QuatFillBox
++ *  Description:  Quat Fill Box with color 
++ * =====================================================================================
++ */
++void Graphic::QuatFillBox(int x,int y,int w,int h,int r,uint32_t color)
++{
++	aacircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
++
++	filledCircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
++
++	boxColor(m_Imple->m_pSurface,x+r,y+r,x+w-r,y+h-r,color);
++
++	boxColor(m_Imple->m_pSurface,x,y+r,x+r,y+h-r,color);
++	boxColor(m_Imple->m_pSurface,x+w-r,y+r,x+w,y+h-r,color);
++
++	boxColor(m_Imple->m_pSurface,x+r,y,x+w,y+r,color);
++	boxColor(m_Imple->m_pSurface,x,y+h-r,x+w,y+h,color);
++}
++
++void Graphic::Switch_Surface()
++{
++	SDL_Surface* tmp = m_Imple->m_pShadowSurface;
++	m_Imple->m_pShadowSurface = m_Imple->m_pSurface;
++	m_Imple->m_pSurface = tmp; 
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  MapColor
++ *  Description:  Map the color to SDL color system 
++ * =====================================================================================
++ */
++int  Graphic::MapColor(int r,int g,int b)
++{
++	return SDL_MapRGB(m_Imple->m_p32ColorSurface->format,r,g,b);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  FillPolygonColor
++ *  Description:  FilledPolygonColor with specail color
++ * =====================================================================================
++ */
++void Graphic::FillPolygonColor(int16_t* x,int16_t* y,int n,uint32_t color)
++{
++	filledPolygonColor(m_Imple->m_pSurface,x,y,n,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  PolygonColor
++ *  Description:  Just draw the polygon with color 
++ * =====================================================================================
++ */
++void Graphic::PolygonColor(int16_t* x,int16_t* y,int n,uint32_t color)
++{
++	aapolygonColor(m_Imple->m_pSurface,x,y,n,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Ascii
++ *  Description:  Display the ASCII charactor on screen 
++ * =====================================================================================
++ */
++void Graphic::Ascii(int x,int y,char c,uint32_t color)
++{
++	characterColor(m_Imple->m_pSurface,x,y,c,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  SmallString
++ *  Description:  Display String On Screen
++ * =====================================================================================
++ */
++void Graphic::SmallString(int x,int y,const char* str,uint32_t color)
++{
++	stringColor(m_Imple->m_pSurface,x,y,str,color);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Get/Set_Screen_XXX
++ *  Description:  Screen Parameters set or get
++ * =====================================================================================
++ */
++int Graphic::Get_Screen_Width()
++{
++	return m_Imple->m_MaxW;
++}
++int Graphic::Get_Screen_Height()
++{
++	return m_Imple->m_MaxH;
++}
++void Graphic::Set_Screen_Width(int value)
++{
++	m_Imple->m_MaxW = value;
++}
++void Graphic::Set_Screen_Height(int value)
++{
++	m_Imple->m_MaxH = value;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Set_Transparce / Get_Transparce
++ *  Description:  Set the Transparce parameters 
++ * =====================================================================================
++ */
++void Graphic::Set_Transparce(int v)
++{
++	m_Imple->m_Transpare = v;
++}
++int Graphic::Get_Transparce()
++{
++	return m_Imple->m_Transpare;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Get_bpp
++ *  Description:  Get the Device BPP
++ * =====================================================================================
++ */
++int Graphic::Get_bpp()
++{
++	return m_Imple->m_Bpp;
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Load_BMP_File
++ *  Description:  Load the BMP formate file on screen with SDL_image module 
++ *	   Note:  support picture type:
++ *	   	  gif     only one frame
++ *		  ico
++ *		  bmp
++ *		  jpeg
++ *		  png
++ *
++ *		  SDL_image库的支持
++ * =====================================================================================
++ */
++void Graphic::Load_Picture_File(int x,int y,const char* path)
++{
++	SDL_Surface *surface = IMG_Load(path);
++	if ( !surface )
++		printf("IMG_Load %s\n",IMG_GetError());
++
++	SDL_Rect offset;
++	offset.x = x;
++	offset.y = y;
++
++	SDL_BlitSurface(surface,NULL,m_Imple->m_pSurface,&offset);
++	SDL_UpdateRect(m_Imple->m_pSurface,0,0,639,479);
++}
++
++/* 
++ * ===  FUNCTION  ======================================================================
++ *         Name:  Update_Rect
++ *  Description:  The function only used by x86 platform 
++ * =====================================================================================
++ */
++void Graphic::Update_Rect(int x,int y,int w,int h)
++{
++	SDL_UpdateRect(m_Imple->m_pSurface,x,y,w,h);
++}
+diff --git a/src/EVA11/base/GUI/Graphic.h b/src/EVA11/base/GUI/Graphic.h
+new file mode 100644
+index 0000000..39ec53f
+--- /dev/null
++++ b/src/EVA11/base/GUI/Graphic.h
+@@ -0,0 +1,157 @@
++/*
++ * =====================================================================================
++ *
++ *       Filename:  Graphic.h
++ *
++ *    Description:  Drawing screen directly and Init key environment variables for 
++ *       	    getchar key return immediately
++ *
++ *        Version:  1.0
++ *        Created:  2009年07月03日 09时25分31秒
++ *       Revision:  none
++ *       Compiler:  gcc-arm
++ *
++ *         Author:  kevin.wang
++ *        Company:  eddysun
++ *
++ * =====================================================================================
++ */
++#ifndef GRAPHIC_H
++#define GRAPHIC_H
++
++#include 	<stdint.h>
++#include 	<cstdio>
++#include 	<cstdlib>
++#include 	<memory>	
++#include 	<unistd.h>
++#include 	<fcntl.h>
++
++#include 	<ColorObj.h>
++
++#include 	"main.h"
++
++class Graphic
++{
++	public:
++		typedef enum 
++		{                                        	      /* copy mode type for drawing screen */
++			MODE_SRC,
++			MODE_SRC_XOR_DST,
++			InvalidMode
++		} CopyMode;
++
++		static Graphic* Instance();
++
++                bool Initgraph();               		      /* Init the graphic screen */
++		void Closegraph();              		      /* Close the graphic screen */
++
++		void Clearscreen();             		      /* reset the screen */
++		void CleanArea(int,int,int,int);
++
++		void Setcolor(short color);     	              /* Set the front color */
++		int Getcolor(void);     			      /* Get the front color */
++		void Setpixel(int x,int y,short Color); 	      /* Draw pixel on screen */
++		short Getpixel(int x,int y);
++
++		void Line(int x1,int y1,int x2,int y2);       /* Draw line on screen */
++		void DoLine(int x1,int y1,int x2,int y2);     /* Draw line on screen */
++		void Line(int x1,int y1,int x2,int y2,short color); 
++		                                                      /* Draw line on screen */
++
++		void Rectangle(int x1,int y1,int x2,int y2);  /* Draw ractangel on screen */
++		void DrawRect(int x,int y,int width,int height); 
++								      /* Draw rectangel on screen with x y width height */
++		void DrawRect(int x,int y,int width,int height,short color); 
++								      /* Draw rectangel on screen with x y width height */
++		void DrawFillRect(int x,int y,int width,int height); 	     
++								      /* Draw filled rectangle */
++		void DrawFillRect(int x,int y,int width,int height,short color); 
++								      /* Draw filled rectangle */
++		void FillBox(int x,int y,int width,int height,int radius,uint32_t color);
++		void HalfFillBox(int x,int y,int width,int height,int radius,uint32_t color);
++		void QuatFillBox(int x,int y,int width,int height,int radius,uint32_t color);
++		void BresenhamCircle(int xc,int yc,int radius,uint32_t color); 
++								      /* draw circle on screen 2 edition*/
++		void FillRect(int x1,int y1,int x2,int y2);   /* Draw filled rectangle */
++
++		void SetMode(CopyMode);   		              /* Set the drawing mode  */
++		CopyMode GetMode(void) const;   		      /* Get the drawing mode  */
++
++		void Movemem(int x,int y,int height,int width);       /* Move the screen memory from one address to the other */
++		void MovememH(int x,int y,int height,int width);      /* Move the screen memory from one address to the other */
++		unsigned char* Get_Screen_Ptr();   		      /* Get the screen ptr right now  */
++		void Screen_Copy(int left,int up,int right,int down,bool flag);   /* screen copy flag: false shadow->real true real->shadow */
++		void Screen_Copy_Alpha(int left,int up,int right,int down,bool flag);   /* screen copy flag: false shadow->real true real->shadow */
++		void Switch_Screen();                 		      /* switch between real screen and shadow screen  */
++		void Switch_Surface();
++
++		int Get_Disp_Area_Bytes(int left,int up,int right,int down); 
++								      /* According the bpp calculate the length of display area btes */
++		void Load_Disp_Area(int left,int up,int right,int down,unsigned char *mem);
++		void Restore_Disp_Area(int left,int up,int right,int down,unsigned char *mem);
++
++		void HLine_Fast(int x1,int x2,int y,short color);
++		void Rect_Fast(int x1,int y1,int x2,int y2,short color);
++
++		int Alpha_Color(int r,int g,int b,int alph,short bkcolor);
++		int Alpha_Color(short fgcolor,int alpha,short bkcolor);
++		/*-----------------------------------------------------------------------------
++		 *  Memory operation
++		 *-----------------------------------------------------------------------------*/
++		void Word_Memcpy_Alpha(unsigned char *des,unsigned char *src,long len); 
++
++		/*-----------------------------------------------------------------------------
++		 * Class Parameters get/set 
++		 *-----------------------------------------------------------------------------*/
++		void Set_Transparce(int v);			      /* Set transpare parameters */
++		int  Get_Transparce();       
++
++		int Get_Screen_Width();
++		int Get_Screen_Height();
++		void Set_Screen_Width(int v);
++		void Set_Screen_Height(int v);
++		/*-----------------------------------------------------------------------------
++		 * Color convert 
++		 *-----------------------------------------------------------------------------*/
++		unsigned short RGB24_16(unsigned int rgb);
++		int  MapColor(int r,int g,int b);
++
++		int Get_bpp();
++
++		void FillPolygonColor(int16_t* x,int16_t* y,int n,uint32_t color);
++		void PolygonColor(int16_t* x,int16_t* y,int n,uint32_t color);
++		void Ascii(int x,int y,char c,uint32_t color);
++		void SmallString(int x,int y,const char* c,uint32_t color);
++
++		/*-----------------------------------------------------------------------------
++		 *  Picture Load functionns
++		 *-----------------------------------------------------------------------------*/
++		void Load_Picture_File(int,int,const char*);
++
++		/*-----------------------------------------------------------------------------
++		 * Only Used by x86 platform 
++		 *-----------------------------------------------------------------------------*/
++		void Update_Rect(int,int,int,int);
++	private:
++		Graphic ();                     		      /* constructor */
++ 		~Graphic ();					      /* destructor  */
++		Graphic (const Graphic&);          		      /* constructor */
++		Graphic& operator = (const Graphic&);    
++
++		void Init_Color_System(int bpp);       		      /* Initiate the system color */
++		/*-----------------------------------------------------------------------------
++		 *  Init key used variables 
++		 *-----------------------------------------------------------------------------*/
++		void Initkey(void);             		      /* Init the stdio attribution for reading key value, return immediately  */
++		void Restorekey(void);          		      /* restore the current environment to be last save time */
++	public:
++	protected:
++	private:
++		friend class std::auto_ptr<Graphic>;
++		static std::auto_ptr<Graphic>			m_Instance;
++
++		struct PImpl;
++		std::auto_ptr<struct PImpl>			m_Imple;
++
++}; /* -----  end of class Graphic  ----- */
++#endif
+diff --git a/src/EVA11/base/GUI/ProjectFixHead.h b/src/EVA11/base/GUI/ProjectFixHead.h
+new file mode 120000
+index 0000000..b11d0e1
+--- /dev/null
++++ b/src/EVA11/base/GUI/ProjectFixHead.h
+@@ -0,0 +1 @@
++../ProjectFixHead.h
+\ No newline at end of file
+diff --git a/src/EVA11/base/GUI/main.h b/src/EVA11/base/GUI/main.h
+new file mode 120000
+index 0000000..31e337c
+--- /dev/null
++++ b/src/EVA11/base/GUI/main.h
+@@ -0,0 +1 @@
++../main.h
+\ No newline at end of file
+diff --git a/src/EVA11/base/Gif.cpp b/src/EVA11/base/Gif.cpp
+index ca2f709..afd2bc4 100644
+--- a/src/EVA11/base/Gif.cpp
++++ b/src/EVA11/base/Gif.cpp
+@@ -21,8 +21,9 @@
+ 
+ #include 	<SDL.h>
+ 
++#include 	<Graphic.h>
++
+ #include 	"Gif.h"
+-#include 	"Graphic.h"
+ 
+ #define PROGRAM_NAME	"EVA11"
+ #define GIF_MESSAGE(Msg) fprintf(stderr, "\n%s: %s\n", PROGRAM_NAME, Msg)
+diff --git a/src/EVA11/base/Gradual.cpp b/src/EVA11/base/Gradual.cpp
+index 95b9439..5843ff7 100644
+--- a/src/EVA11/base/Gradual.cpp
++++ b/src/EVA11/base/Gradual.cpp
+@@ -16,7 +16,8 @@
+  * =====================================================================================
+  */
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Gradual.h"
+ 
+diff --git a/src/EVA11/base/Graphic.cpp b/src/EVA11/base/Graphic.cpp
+deleted file mode 100644
+index 55120f9..0000000
+--- a/src/EVA11/base/Graphic.cpp
++++ /dev/null
+@@ -1,1023 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  Graphic.cpp
+- *
+- *    Description:  Drawing screen class
+- *
+- *        Version:  1.0
+- *        Created:  2009年07月03日 09时21分10秒
+- *       Revision:  none
+- *       Compiler:  gcc-arm
+- *
+- *         Author:  kevin.wang
+- *        Company:  eddysun
+- *
+- * =====================================================================================
+- */
+-#include        <string.h>
+-#include        <sys/types.h> 
+-#include        <sys/stat.h> 
+-#include        <sys/ioctl.h>
+-#include        <linux/fb.h> 
+-#include        <unistd.h> 
+-#include 	<fcntl.h> 
+-#include        <math.h>
+-#include 	<sys/mman.h> 
+-#include        <fstream>
+-#include        <iostream>
+-
+-#include 	<termio.h>
+-
+-#include 	<SDL.h>
+-#include 	<SDL/SDL_gfxPrimitives.h>
+-#include 	<SDL/SDL_gfxBlitFunc.h>
+-#include 	<SDL/SDL_rotozoom.h>
+-#include 	<SDL/SDL_image.h>
+-
+-#include	"Graphic.h"
+-#include 	<GUILowCode.hpp>
+-
+-#define         FD_STDIN 0
+-
+-std::auto_ptr<Graphic> Graphic::m_Instance;
+-
+-struct Graphic::PImpl
+-{
+-	SDL_Surface*		m_pSurface;
+-	SDL_Surface*		m_pShadowSurface;
+-	SDL_Surface*		m_p32ColorSurface;
+-	int			m_MaxW;
+-	int			m_MaxH;
+-	int			m_Bpp;
+-	CopyMode 		m_Mode; 
+-	int			m_Transpare;
+-	int			m_Buffer_Len;
+-	int			m_Color;
+-	uint8_t*		m_Scr_Ptr;
+-	uint8_t*		m_Shadow_Scr_Ptr;
+-	GUILowCode<uint16_t>*	gc;
+-	ColorObj*		cobj;
+-	
+-	struct termios 		new_settings;
+-	struct termios		store_settings;
+-	int 			m_keyflag;
+-};
+-
+-Graphic::Graphic() : m_Imple(new struct PImpl)
+-{
+-	m_Imple->m_Transpare = 255;
+-	m_Imple->m_Color     = 0; 
+-	m_Imple->m_Mode      = MODE_SRC;
+-	m_Imple->m_Scr_Ptr   = 0;
+-}
+-
+-Graphic::~Graphic()
+-{
+-}
+-
+-/*
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Instance
+- *  Description:  make sure the class instance can be only instance once
+- * =====================================================================================
+- */
+-Graphic* Graphic::Instance()
+-{
+-	if 	( m_Instance.get() == 0 )
+-	{
+-		m_Instance.reset( new Graphic() );
+-	}
+-	return m_Instance.get();
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Initgraph
+- *  Description:  Init the screen file and font file
+- * =====================================================================================
+- */
+-bool Graphic::Initgraph(void)
+-{
+-	SDL_version compiled;
+-	SDL_VERSION(&compiled);
+-	int m = compiled.major;
+-	int n = compiled.minor;
+-	int p = compiled.patch;
+-	std::cout<<"SDL Version: "<<m<<"."<<n<<"."<<p<<std::endl;
+-
+-	SDL_IMAGE_VERSION(&compiled);
+-	m = compiled.major;
+-	n = compiled.minor;
+-	p = compiled.patch;
+-	std::cout<<"SDL Image Version: "<<m<<"."<<n<<"."<<p<<std::endl;
+-
+-	if ( SDL_Init(SDL_INIT_VIDEO) < 0 )
+-	{
+-		printf("SDL init fail!: %s\n",SDL_GetError());
+-		return false; 
+-	}
+-
+-	SDL_ShowCursor(0);
+-
+-	m_Imple->m_pSurface 	     = NULL;
+-	m_Imple->m_pShadowSurface    = NULL;
+-	m_Imple->m_MaxW     	     = 640;
+-	m_Imple->m_MaxH     	     = 480;
+-	m_Imple->m_Bpp      	     = 16;
+-
+-#ifdef X86
+-	uint32_t flag = SDL_SWSURFACE;
+-#else
+-	uint32_t flag = SDL_HWSURFACE;
+-#endif
+-
+-	if ( !SDL_VideoModeOK(m_Imple->m_MaxW,m_Imple->m_MaxH,m_Imple->m_Bpp,flag) )
+-	{
+-		printf("SDL init parameters is not support: %s\n",SDL_GetError());
+-		return false;
+-	}
+-
+-	m_Imple->m_pSurface = SDL_SetVideoMode(m_Imple->m_MaxW,m_Imple->m_MaxH,m_Imple->m_Bpp,flag);
+-	if ( m_Imple->m_pSurface == NULL )
+-	{
+-		printf("SDL set video mode fail: %s\n",SDL_GetError());
+-		return false;
+-	}
+-
+-	char *devicename = new char[100];
+-	if ( SDL_VideoDriverName(devicename,100) != NULL )
+-		printf ( "Device Name:%s\n",devicename );
+-	delete[] devicename;
+-	devicename = NULL;
+-
+-	m_Imple->m_p32ColorSurface = SDL_CreateRGBSurface(SDL_SWSURFACE,1,1,32,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
+-	if ( m_Imple->m_p32ColorSurface == NULL )
+-	{
+-		printf("SDL Create color surface fail: %s\n",SDL_GetError());
+-		return false; 
+-	}
+-
+-	m_Imple->m_MaxW  = m_Imple->m_pSurface->w;         		     /* get the screen width and height from system screen */
+-	m_Imple->m_MaxH = m_Imple->m_pSurface->h;
+-	m_Imple->m_Bpp 	      = m_Imple->m_pSurface->format->BitsPerPixel;
+-	m_Imple->m_Buffer_Len  = m_Imple->m_MaxW*m_Imple->m_MaxH*(m_Imple->m_pSurface->format->BytesPerPixel);
+-	m_Imple->m_Scr_Ptr    = static_cast<unsigned char *>(m_Imple->m_pSurface->pixels);
+-
+-	int result = system("/sbin/hwclock -s");                	     /* set the hardware time from system time   */
+-	result = result;
+-
+-	m_Imple->cobj = ColorObj::Instance();
+-	m_Imple->cobj->Init_Object();
+-
+-	Clearscreen();
+-	Initkey();                                         		     /* Init the standard input environment, enable read key return immediately */
+-
+-	m_Imple->m_pShadowSurface = SDL_CreateRGBSurface(flag,m_Imple->m_MaxW,m_Imple->m_MaxH,m_Imple->m_Bpp,0xff000000,0x00ff0000,0x0000ff00,0x000000ff);
+-	if ( m_Imple->m_pShadowSurface == NULL )
+-	{
+-		printf("SDL Create shadow surface fail: %s\n",SDL_GetError());
+-		return false; 
+-	}
+-
+-	m_Imple->m_Shadow_Scr_Ptr = static_cast<unsigned char *>(m_Imple->m_pShadowSurface->pixels);
+-	/*-----------------------------------------------------------------------------
+-	 *  Initiate the globle color
+-	 *-----------------------------------------------------------------------------*/
+-	Init_Color_System(m_Imple->m_Bpp);
+-
+-	m_Imple->gc = GUILowCode<uint16_t>::Instance();
+-
+-	m_Imple->gc->Init_GUILowCode_Parameters(m_Imple->m_MaxW,
+-			                    	m_Imple->m_MaxH,
+-					    	m_Imple->m_Bpp,
+-					    	m_Imple->m_Buffer_Len,
+-					    	m_Imple->m_Scr_Ptr,
+-					    	m_Imple->m_Shadow_Scr_Ptr,
+-					    	GUILowCode<uint16_t>::MODE_SRC);
+-  	return true;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Closegraph
+- *  Description:  Close the screen file and Chinese font file
+- * =====================================================================================
+- */
+-void Graphic::Closegraph()
+-{
+-	m_Imple->cobj->Destroy_Object();
+-
+-	SDL_FreeSurface(m_Imple->m_p32ColorSurface);
+-	SDL_FreeSurface(m_Imple->m_pShadowSurface);
+-	SDL_FreeSurface(m_Imple->m_pSurface);
+-
+-	if ( SDL_WasInit(SDL_INIT_VIDEO) != 0 )
+-		atexit(SDL_Quit);
+-	Restorekey();                           			     /* Let the environment variables to be normal */
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Clearscreen
+- *  Description:  Clear the whole screen
+- * =====================================================================================
+- */
+-void Graphic::Clearscreen(void)
+-{
+-	boxColor(m_Imple->m_pSurface,0,0,m_Imple->m_MaxW-1,m_Imple->m_MaxH-1,m_Imple->cobj->Get_ColorVP(30)->color32);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  CleanArea
+- *  Description:  Clean one area 
+- * =====================================================================================
+- */
+-void Graphic::CleanArea(int x1,int y1,int x2,int y2)
+-{
+-	m_Imple->gc->Set_Area_Color(x1,y1,x2,y2,m_Imple->cobj->Get_ColorVP(26)->color16);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  GetColor
+- *  Description:  Set the color of front
+- * =====================================================================================
+- */
+-int Graphic::Getcolor()
+-{
+-	return m_Imple->m_Color;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  SetColor
+- *  Description:  Set the color of front
+- * =====================================================================================
+- */
+-void Graphic::Setcolor(short color)
+-{
+-	m_Imple->m_Color = color;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Getpixel
+- *  Description:  Get Pixel Value of Screen 
+- * =====================================================================================
+- */
+-short Graphic::Getpixel(int x,int y)
+-{
+-	unsigned char * loc = m_Imple->m_Scr_Ptr + ((y * m_Imple->m_MaxW*2 + x*2 ));
+-	return *(unsigned short *)loc; 
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Setpixel
+- *  Description:  Draw a pixel on screen
+- * =====================================================================================
+- */
+-void Graphic::Setpixel(int x,int y,short color)
+-{
+-	m_Imple->gc->Setpixel(x,y,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Line
+- *  Description:  Draw a line on screen, (x1 y1) (x2 y2) 
+- * =====================================================================================
+- */
+-void Graphic::Line(int x1,int y1,int x2,int y2)
+-{
+-	m_Imple->gc->Line(x1,y1,x2,y2,m_Imple->m_Color);
+-}
+-
+-void Graphic::DoLine(int x1,int y1,int x2,int y2)
+-{
+-	m_Imple->gc->Dot_Line(x1,y1,x2,y2,m_Imple->m_Color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Line
+- *  Description:  Draw a line on screen, (x1 y1) (x2 y2)  with color
+- * =====================================================================================
+- */
+-void Graphic::Line(int x1,int y1,int x2,int y2,short color)
+-{
+-	m_Imple->gc->Line(x1,y1,x2,y2,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Rectangle
+- *  Description:  Draw a ractangel on screen
+- * =====================================================================================
+- */
+-void Graphic::Rectangle(int x1, int y1, int x2, int y2)
+-{
+-	Line(x1, y1, x2, y1);
+-	Line(x2, y1, x2, y2);
+-	Line(x2, y2, x1, y2);
+-	Line(x1, y2, x1, y1);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  DrawRect
+- *  Description:  Draw rectangle with X Y width height
+- * =====================================================================================
+- */
+-void Graphic::DrawRect(int x,int y,int width,int height)
+-{
+-	Rectangle(x,y,x+width-1,y+height-1);
+-}
+-void Graphic::DrawRect(int x,int y,int width,int height,short color)
+-{
+-	short save_color = m_Imple->m_Color;
+-	m_Imple->m_Color = color;
+-	Rectangle(x,y,x+width-1,y+height-1);
+-	m_Imple->m_Color = save_color;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  DrawFillRect
+- *  Description:  Draw filled rectangle on screen
+- * =====================================================================================
+- */
+-void Graphic::DrawFillRect(int x,int y,int width,int height)
+-{
+-	for ( int i = y; i < y+height-1; i += 1 ) 
+-	{
+-		m_Imple->gc->HLine_Fast(x,x+width-1,i,m_Imple->m_Color);
+-	}
+-}
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  DrawFillRect
+- *  Description:  Draw filled rectangle on screen
+- * =====================================================================================
+- */
+-void Graphic::DrawFillRect(int x,int y,int width,int height,short color)
+-{
+-	int save_color = m_Imple->m_Color;
+-	m_Imple->m_Color = color;
+-	for ( int i = y; i < y+height-1; i += 1 )
+-	{
+-		m_Imple->gc->HLine_Fast(x,x+width-1,i,m_Imple->m_Color);
+-	}
+-	m_Imple->m_Color = save_color;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  FillRect
+- *  Description:  Draw filled rectangle on screen
+- * =====================================================================================
+- */
+-void Graphic::FillRect(int x1,int y1,int x2,int y2)
+-{
+-	for(int j=y1;j<y2;j++)
+-	{
+-		HLine_Fast(x1,x2-1,j,m_Imple->m_Color);
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  SetMode
+- *  Description:  Set the drawing mode
+- * =====================================================================================
+- */
+-void Graphic::SetMode(CopyMode mode)
+-{
+-	m_Imple->m_Mode = mode;
+-
+-	switch ( mode ) 
+-	{
+-		case MODE_SRC: 
+-			m_Imple->gc->SetMode(GUILowCode<uint16_t>::MODE_SRC);
+-			break;
+-
+-		case MODE_SRC_XOR_DST: 
+-			m_Imple->gc->SetMode(GUILowCode<uint16_t>::MODE_SRC_XOR_DST);
+-			break;
+-
+-		default:	
+-			m_Imple->gc->SetMode(GUILowCode<uint16_t>::MODE_SRC);
+-			break;
+-	}				/* -----  end switch  ----- */
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  GetMode
+- *  Description:  Get the drawing mode
+- * =====================================================================================
+- */
+-Graphic::CopyMode Graphic::GetMode(void) const
+-{
+-	return 	m_Imple->m_Mode;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Initkey
+- *  Description:  Init the stdin environment, for reading key value return immediatele
+- * =====================================================================================
+- */
+-void Graphic::Initkey(void)
+-{
+-        tcgetattr(FD_STDIN,&m_Imple->store_settings);             /* save the current key environment variables in memory  */
+-	m_Imple->new_settings = m_Imple->store_settings;                   /* set the new environment variables in memory */
+-        m_Imple->new_settings.c_lflag &= (~ICANON);
+-        m_Imple->new_settings.c_lflag &= (~ECHO);
+-        m_Imple->new_settings.c_cc[VTIME] = 0;
+-        m_Imple->new_settings.c_cc[VMIN] = 1;
+-        tcsetattr(FD_STDIN,TCSANOW,&m_Imple->new_settings);       /* enable the new value immediately */
+-	m_Imple->m_keyflag = fcntl(FD_STDIN,F_GETFL);             /* get the F_GETFL variable from environment  */
+-        fcntl(FD_STDIN,F_SETFL,m_Imple->m_keyflag | O_NONBLOCK ); /* set the read key type to be NONBLOCK */
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Restorekey
+- *  Description:  Restore the environment variables to the last saving time 
+- * =====================================================================================
+- */
+-void Graphic::Restorekey(void)
+-{
+-	fcntl(FD_STDIN,F_SETFL,m_Imple->m_keyflag);
+-        tcsetattr(FD_STDIN,TCSANOW,&m_Imple->store_settings);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  MovememH
+- *  Description:  Move the memory of screen display from one place to another
+- * =====================================================================================
+- */
+-void Graphic::MovememH(int x,int y,int height,int width)
+-{
+-	m_Imple->gc->MovememH(x,y,height,width,m_Imple->m_Color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Movemem
+- *  Description:  Move the memory of screen display from one place to another
+- * =====================================================================================
+- */
+-void Graphic::Movemem(int x,int y,int height,int width)
+-{
+-	m_Imple->gc->Movemem(x,y,height,width);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  BresenhamCircle
+- *  Description:  The second drawing circle algorithmic
+- * =====================================================================================
+- */
+-void Graphic::BresenhamCircle(int xc,int yc,int radius,uint32_t color)
+-{
+-	aacircleColor(m_Imple->m_pSurface,xc,yc,radius,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Get_Screen_Ptr
+- *  Description:  Get the screen ptr from Graphic class templately
+- * =====================================================================================
+- */
+-unsigned char * Graphic::Get_Screen_Ptr()
+-{
+-	return m_Imple->m_Scr_Ptr;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Reset_Disp_Area
+- *  Description:  Clean and Initial the display area  Flag: false shadow->real true
+- *                real->shadow
+- * =====================================================================================
+- */
+-void Graphic::Screen_Copy(int left,int up,int right,int down,bool flag)
+-{
+-	m_Imple->gc->Screen_Copy(left,up,right,down,flag);
+-}
+-
+-void Graphic::Screen_Copy_Alpha(int left,int up,int right,int down,bool flag)
+-{
+-	int temp_bpp;
+-	temp_bpp = m_Imple->m_Bpp >> 3;
+-
+-	if ( flag == false )
+-	{
+-		for (int i = up;i<down+1;i++)
+-		{
+-			Word_Memcpy_Alpha(m_Imple->m_Scr_Ptr+m_Imple->m_MaxW*temp_bpp*i+temp_bpp*(left),
+-				    m_Imple->m_Shadow_Scr_Ptr+m_Imple->m_MaxW*temp_bpp*i+temp_bpp*(left),
+-				    temp_bpp*(right-left+1));
+-		}
+-		
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Alpha_Color
+- *  Description:  Alpha Color calculate,only called in Alpha parameters exist
+- * =====================================================================================
+- */
+-int Graphic::Alpha_Color(int r,int g,int b,int alph,short bkcolor)
+-{
+-	int nr    = r;
+-	int ng    = g;
+-	int nb    = b;
+-	int alpha = alph;
+-
+-	int oldr  = (( bkcolor >> 11 ) & 0x1f)<<3;
+-	int oldg  = (( bkcolor >> 5 ) & 0x3f)<<2;
+-	int oldb  = (( bkcolor ) & 0x1f)<<3;
+-
+-	nr        = (((nr - oldr)*alpha)>>8) + oldr;
+-	ng        = (((ng - oldg)*alpha)>>8) + oldg;
+-	nb        = (((nb - oldb)*alpha)>>8) + oldb;
+-
+-	return ( nr << 16 ) + ( ng << 8 ) + nb;
+-}
+-int Graphic::Alpha_Color(short fgcolor,int alph,short bkcolor)
+-{
+-	int nr    = (( fgcolor >> 11 ) & 0x1f)<<3;
+-	int ng    = (( fgcolor >> 5) & 0x3f)<<2;
+-	int nb    = (( fgcolor ) & 0x1f)<<3;
+-	int alpha = alph;
+-
+-	int oldr  = (( bkcolor >> 11 ) & 0x1f)<<3;
+-	int oldg  = (( bkcolor >> 5 ) & 0x3f)<<2;
+-	int oldb  = (( bkcolor ) & 0x1f)<<3;
+-
+-	nr        = (((nr - oldr)*alpha)>>8) + oldr;
+-	ng        = (((ng - oldg)*alpha)>>8) + oldg;
+-	nb        = (((nb - oldb)*alpha)>>8) + oldb;
+-
+-	return ( nr << 16 ) + ( ng << 8 ) + nb;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Word_Memcpy_Alpha
+- *  Description:  Memory copy word by word 
+- * =====================================================================================
+- */
+-void Graphic::Word_Memcpy_Alpha(unsigned char *des,unsigned char *src,long len)
+-{
+-	short *des_w,*src_w;
+-	len = len >> 1;
+-	des_w = (short *)des;
+-	src_w = (short *)src;
+-	while( len-- )
+-	{
+-		*des_w++ = RGB24_16(Alpha_Color(*src_w++,m_Imple->m_Transpare,*des_w)); 
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Switch_Screen
+- *  Description:  Switch between real screen and shadow screen
+- * =====================================================================================
+- */
+-void Graphic::Switch_Screen()
+-{
+-	unsigned char *temp;
+-	temp = m_Imple->m_Shadow_Scr_Ptr;
+-	m_Imple->m_Shadow_Scr_Ptr = m_Imple->m_Scr_Ptr;
+-	m_Imple->m_Scr_Ptr = temp;
+-
+-	m_Imple->gc->Switch_Screen();
+-	Switch_Surface();
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Init_Color_System
+- *  Description:  Init the system color
+- * =====================================================================================
+- */
+-void Graphic::Init_Color_System(int b)
+-{
+-	if ( b == 8 )
+-	{
+-		for ( int i=0;i<32;i++ )
+-		{
+-			g_Pen[i] = 224+i;
+-		}
+-	}
+-	else if ( b == 16 )
+-	{
+-		for ( int i=0;i<32;i++ )
+-		{
+-			g_Pen[i] = m_Imple->cobj->Get_ColorVP(i)->color16;
+-		}
+-	}
+-
+-	switch ( b )
+-	{
+-		case 16:
+-			/*-----------------------------------------------------------------------------
+-			 *  308 used color system
+-			 *-----------------------------------------------------------------------------*/
+-			g_BATTARY_CO = g_Pen[9];
+-
+-			g_SCBG_CO   = g_Pen[10]; 
+-			g_SCFG_CO   = g_Pen[11]; 
+-			g_SCTX_CO   = g_Pen[12]; 
+-
+-			g_BUTXNO_CO = g_Pen[16]; 
+-			g_BUBGNO_CO = g_Pen[17];
+-			g_BUBGFO_CO = g_Pen[18];
+-			g_BUTXFO_CO = g_Pen[19];
+-
+-			g_LIGHT_CO  = g_Pen[21];
+-			g_SHADOW_CO = g_Pen[20];
+-
+-			g_MAINBG_CO = g_Pen[22];
+-			g_MAINFG_CO = g_Pen[23];
+-			g_BUFFFG_CO = g_Pen[24];
+-
+-			g_MOVBFG_CO = g_Pen[25];
+-			g_MOVBBG_CO = g_Pen[26];
+-			g_MOVBTX_CO = g_Pen[27];
+-
+-			break;
+-		case 8:	
+-			/*-----------------------------------------------------------------------------
+-			 *  308 used color system
+-			 *-----------------------------------------------------------------------------*/
+-			g_BATTARY_CO = g_Pen[9];
+-
+-			g_SCBG_CO   = g_Pen[10]; 
+-			g_SCFG_CO   = g_Pen[11]; 
+-			g_SCTX_CO   = g_Pen[12]; 
+-
+-			g_BUTXNO_CO = g_Pen[16]; 
+-			g_BUTXFO_CO = g_Pen[19];
+-			g_BUBGNO_CO = g_Pen[17];
+-			g_BUBGFO_CO = g_Pen[18];
+-
+-			g_LIGHT_CO  = g_Pen[21];
+-			g_SHADOW_CO = g_Pen[20];
+-
+-			g_MAINBG_CO = g_Pen[22];
+-			g_MAINFG_CO = g_Pen[23];
+-			g_BUFFFG_CO = g_Pen[24];
+-
+-			g_MOVBFG_CO = g_Pen[25];
+-			g_MOVBBG_CO = g_Pen[26];
+-			g_MOVBTX_CO = g_Pen[27];
+-
+-			g_SCBG_CO   = g_Pen[10];
+-			g_SCFG_CO   = g_Pen[11];
+-			g_SCTX_CO   = g_Pen[12];
+-
+-		        break;  
+-		case 1:	
+-			break;
+-	}				/* -----  end switch  ----- */
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Get_Disp_Area_Bytes
+- *  Description:  Get the display area byres number
+- * =====================================================================================
+- */
+-int Graphic::Get_Disp_Area_Bytes(int left,int up,int right,int down) /* on the frame */
+-{
+-	return m_Imple->gc->Get_Disp_Area_Bytes(left,up,right,down);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Load_Disp_Area
+- *  Description:  Load the graphic memory to memory 
+- * =====================================================================================
+- */
+-void Graphic::Load_Disp_Area(int left,int up,int right,int down,unsigned char * mem)
+-{
+-	if ( m_Imple->m_Bpp == 8 )
+-	{
+-		for ( int j=up;j<=down;j++ )
+-		{
+-			for ( int i=left;i<=right;i++ )
+-			{
+-				*mem = *( m_Imple->m_Scr_Ptr + ( i + j * m_Imple->m_MaxW ) ); 
+-				mem ++;
+-			}
+-		}
+-	}
+-	else if ( m_Imple->m_Bpp == 16 )
+-	{
+-		for ( int j=up;j<=down;j++ )
+-		{
+-			for ( int i=left;i<=right;i++ )
+-			{
+-				*(unsigned short *)mem = *(unsigned short *)( m_Imple->m_Scr_Ptr + (( i + j * m_Imple->m_MaxW ) << 1) ); 
+-				mem += 2;
+-			}
+-		}
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Restore_Disp_Area
+- *  Description:  Restore the memory to Graphic memory 
+- * =====================================================================================
+- */
+-void Graphic::Restore_Disp_Area(int left,int up,int right,int down,unsigned char * mem)
+-{
+-	if ( m_Imple->m_Bpp == 8 )                                 /* bpp 16 8 */
+-	{
+-		for ( int j=up;j<=down;j++ )
+-		{
+-			for ( int i=left;i<=right;i++ )
+-			{
+-				*( m_Imple->m_Scr_Ptr + ( i + j * m_Imple->m_MaxW ) ) = *mem; 
+-				mem ++;
+-			}
+-		}
+-	}
+-	else if ( m_Imple->m_Bpp == 16 )
+-	{
+-		for ( int j=up;j<=down;j++ )
+-		{
+-			for ( int i=left;i<=right;i++ )
+-			{
+-				*(unsigned short *)( m_Imple->m_Scr_Ptr + (( i + j * m_Imple->m_MaxW )<<1) ) = *(unsigned short *)mem; 
+-				mem += 2;
+-			}
+-		}
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  HLine_Fast
+- *  Description:  Fast Draw H-Line 
+- *  Note:
+- *                Only used by 8-bits color system
+- *                0           1
+- *                low         high
+- * =====================================================================================
+- */
+-void Graphic::HLine_Fast(int x1,int x2,int y,short color)
+-{
+-	m_Imple->gc->HLine_Fast(x1,x2,y,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Rect_Fast
+- *  Description:  Draw Rectangle as new algorithmic 
+- * =====================================================================================
+- */
+-void Graphic::Rect_Fast(int x1,int y1,int x2,int y2,short color)
+-{
+-	for ( int j=y1;j<=y2;j++ )
+-	{
+-		HLine_Fast(x1,x2,j,color);
+-	}
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  RGB24_16
+- *  Description:  Convert RGB24 to RGB 16 ( RGB:5:6:5 ) 
+- * =====================================================================================
+- */
+-unsigned short Graphic::RGB24_16(unsigned int rgb)
+-{
+-	return SDL_MapRGB(m_Imple->m_pSurface->format,( rgb >> 16 ) & 0xff,( rgb >> 8 ) & 0xff,rgb & 0xff);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  FillBox
+- *  Description:  FillBox with color 
+- * =====================================================================================
+- */
+-void Graphic::FillBox(int x,int y,int w,int h,int r,uint32_t color)
+-{
+-	aacircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
+-	aacircleColor(m_Imple->m_pSurface,x+w-r,y+r,r,color);
+-	aacircleColor(m_Imple->m_pSurface,x+r,y+h-r,r,color);
+-	aacircleColor(m_Imple->m_pSurface,x+w-r,y+h-r,r,color);
+-
+-	filledCircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
+-	filledCircleColor(m_Imple->m_pSurface,x+w-r,y+r,r,color);
+-	filledCircleColor(m_Imple->m_pSurface,x+r,y+h-r,r,color);
+-	filledCircleColor(m_Imple->m_pSurface,x+w-r,y+h-r,r,color);
+-
+-	boxColor(m_Imple->m_pSurface,x+r,y+r,x+w-r,y+h-r,color);
+-	boxColor(m_Imple->m_pSurface,x+r,y,x+w-r,y+r,color);
+-	boxColor(m_Imple->m_pSurface,x+r,y+h-r,x+w-r,y+h,color);
+-	boxColor(m_Imple->m_pSurface,x,y+r,x+r,y+h-r,color);
+-	boxColor(m_Imple->m_pSurface,x+w-r,y+r,x+w,y+h-r,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  HalfFillBox
+- *  Description:  HalfFillBox with color 
+- * =====================================================================================
+- */
+-void Graphic::HalfFillBox(int x,int y,int w,int h,int r,uint32_t color)
+-{
+-	aacircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
+-	aacircleColor(m_Imple->m_pSurface,x+w-r,y+r,r,color);
+-
+-	filledCircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
+-	filledCircleColor(m_Imple->m_pSurface,x+w-r,y+r,r,color);
+-
+-	boxColor(m_Imple->m_pSurface,x,y+r,x+w,y+h-r,color);
+-	boxColor(m_Imple->m_pSurface,x+r,y,x+w-r,y+r,color);
+-	boxColor(m_Imple->m_pSurface,x,y+h-r,x+w,y+h,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  QuatFillBox
+- *  Description:  Quat Fill Box with color 
+- * =====================================================================================
+- */
+-void Graphic::QuatFillBox(int x,int y,int w,int h,int r,uint32_t color)
+-{
+-	aacircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
+-
+-	filledCircleColor(m_Imple->m_pSurface,x+r,y+r,r,color);
+-
+-	boxColor(m_Imple->m_pSurface,x+r,y+r,x+w-r,y+h-r,color);
+-
+-	boxColor(m_Imple->m_pSurface,x,y+r,x+r,y+h-r,color);
+-	boxColor(m_Imple->m_pSurface,x+w-r,y+r,x+w,y+h-r,color);
+-
+-	boxColor(m_Imple->m_pSurface,x+r,y,x+w,y+r,color);
+-	boxColor(m_Imple->m_pSurface,x,y+h-r,x+w,y+h,color);
+-}
+-
+-void Graphic::Switch_Surface()
+-{
+-	SDL_Surface* tmp = m_Imple->m_pShadowSurface;
+-	m_Imple->m_pShadowSurface = m_Imple->m_pSurface;
+-	m_Imple->m_pSurface = tmp; 
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  MapColor
+- *  Description:  Map the color to SDL color system 
+- * =====================================================================================
+- */
+-int  Graphic::MapColor(int r,int g,int b)
+-{
+-	return SDL_MapRGB(m_Imple->m_p32ColorSurface->format,r,g,b);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  FillPolygonColor
+- *  Description:  FilledPolygonColor with specail color
+- * =====================================================================================
+- */
+-void Graphic::FillPolygonColor(int16_t* x,int16_t* y,int n,uint32_t color)
+-{
+-	filledPolygonColor(m_Imple->m_pSurface,x,y,n,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  PolygonColor
+- *  Description:  Just draw the polygon with color 
+- * =====================================================================================
+- */
+-void Graphic::PolygonColor(int16_t* x,int16_t* y,int n,uint32_t color)
+-{
+-	aapolygonColor(m_Imple->m_pSurface,x,y,n,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Ascii
+- *  Description:  Display the ASCII charactor on screen 
+- * =====================================================================================
+- */
+-void Graphic::Ascii(int x,int y,char c,uint32_t color)
+-{
+-	characterColor(m_Imple->m_pSurface,x,y,c,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  SmallString
+- *  Description:  Display String On Screen
+- * =====================================================================================
+- */
+-void Graphic::SmallString(int x,int y,const char* str,uint32_t color)
+-{
+-	stringColor(m_Imple->m_pSurface,x,y,str,color);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Get/Set_Screen_XXX
+- *  Description:  Screen Parameters set or get
+- * =====================================================================================
+- */
+-int Graphic::Get_Screen_Width()
+-{
+-	return m_Imple->m_MaxW;
+-}
+-int Graphic::Get_Screen_Height()
+-{
+-	return m_Imple->m_MaxH;
+-}
+-void Graphic::Set_Screen_Width(int value)
+-{
+-	m_Imple->m_MaxW = value;
+-}
+-void Graphic::Set_Screen_Height(int value)
+-{
+-	m_Imple->m_MaxH = value;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Set_Transparce / Get_Transparce
+- *  Description:  Set the Transparce parameters 
+- * =====================================================================================
+- */
+-void Graphic::Set_Transparce(int v)
+-{
+-	m_Imple->m_Transpare = v;
+-}
+-int Graphic::Get_Transparce()
+-{
+-	return m_Imple->m_Transpare;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Get_bpp
+- *  Description:  Get the Device BPP
+- * =====================================================================================
+- */
+-int Graphic::Get_bpp()
+-{
+-	return m_Imple->m_Bpp;
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Load_BMP_File
+- *  Description:  Load the BMP formate file on screen with SDL_image module 
+- *	   Note:  support picture type:
+- *	   	  gif     only one frame
+- *		  ico
+- *		  bmp
+- *		  jpeg
+- *		  png
+- *
+- *		  SDL_image库的支持
+- * =====================================================================================
+- */
+-void Graphic::Load_Picture_File(int x,int y,const char* path)
+-{
+-	SDL_Surface *surface = IMG_Load(path);
+-	if ( !surface )
+-		printf("IMG_Load %s\n",IMG_GetError());
+-
+-	SDL_Rect offset;
+-	offset.x = x;
+-	offset.y = y;
+-
+-	SDL_BlitSurface(surface,NULL,m_Imple->m_pSurface,&offset);
+-	SDL_UpdateRect(m_Imple->m_pSurface,0,0,639,479);
+-}
+-
+-/* 
+- * ===  FUNCTION  ======================================================================
+- *         Name:  Update_Rect
+- *  Description:  The function only used by x86 platform 
+- * =====================================================================================
+- */
+-void Graphic::Update_Rect(int x,int y,int w,int h)
+-{
+-	SDL_UpdateRect(m_Imple->m_pSurface,x,y,w,h);
+-}
+diff --git a/src/EVA11/base/Graphic.h b/src/EVA11/base/Graphic.h
+deleted file mode 100644
+index 39ec53f..0000000
+--- a/src/EVA11/base/Graphic.h
++++ /dev/null
+@@ -1,157 +0,0 @@
+-/*
+- * =====================================================================================
+- *
+- *       Filename:  Graphic.h
+- *
+- *    Description:  Drawing screen directly and Init key environment variables for 
+- *       	    getchar key return immediately
+- *
+- *        Version:  1.0
+- *        Created:  2009年07月03日 09时25分31秒
+- *       Revision:  none
+- *       Compiler:  gcc-arm
+- *
+- *         Author:  kevin.wang
+- *        Company:  eddysun
+- *
+- * =====================================================================================
+- */
+-#ifndef GRAPHIC_H
+-#define GRAPHIC_H
+-
+-#include 	<stdint.h>
+-#include 	<cstdio>
+-#include 	<cstdlib>
+-#include 	<memory>	
+-#include 	<unistd.h>
+-#include 	<fcntl.h>
+-
+-#include 	<ColorObj.h>
+-
+-#include 	"main.h"
+-
+-class Graphic
+-{
+-	public:
+-		typedef enum 
+-		{                                        	      /* copy mode type for drawing screen */
+-			MODE_SRC,
+-			MODE_SRC_XOR_DST,
+-			InvalidMode
+-		} CopyMode;
+-
+-		static Graphic* Instance();
+-
+-                bool Initgraph();               		      /* Init the graphic screen */
+-		void Closegraph();              		      /* Close the graphic screen */
+-
+-		void Clearscreen();             		      /* reset the screen */
+-		void CleanArea(int,int,int,int);
+-
+-		void Setcolor(short color);     	              /* Set the front color */
+-		int Getcolor(void);     			      /* Get the front color */
+-		void Setpixel(int x,int y,short Color); 	      /* Draw pixel on screen */
+-		short Getpixel(int x,int y);
+-
+-		void Line(int x1,int y1,int x2,int y2);       /* Draw line on screen */
+-		void DoLine(int x1,int y1,int x2,int y2);     /* Draw line on screen */
+-		void Line(int x1,int y1,int x2,int y2,short color); 
+-		                                                      /* Draw line on screen */
+-
+-		void Rectangle(int x1,int y1,int x2,int y2);  /* Draw ractangel on screen */
+-		void DrawRect(int x,int y,int width,int height); 
+-								      /* Draw rectangel on screen with x y width height */
+-		void DrawRect(int x,int y,int width,int height,short color); 
+-								      /* Draw rectangel on screen with x y width height */
+-		void DrawFillRect(int x,int y,int width,int height); 	     
+-								      /* Draw filled rectangle */
+-		void DrawFillRect(int x,int y,int width,int height,short color); 
+-								      /* Draw filled rectangle */
+-		void FillBox(int x,int y,int width,int height,int radius,uint32_t color);
+-		void HalfFillBox(int x,int y,int width,int height,int radius,uint32_t color);
+-		void QuatFillBox(int x,int y,int width,int height,int radius,uint32_t color);
+-		void BresenhamCircle(int xc,int yc,int radius,uint32_t color); 
+-								      /* draw circle on screen 2 edition*/
+-		void FillRect(int x1,int y1,int x2,int y2);   /* Draw filled rectangle */
+-
+-		void SetMode(CopyMode);   		              /* Set the drawing mode  */
+-		CopyMode GetMode(void) const;   		      /* Get the drawing mode  */
+-
+-		void Movemem(int x,int y,int height,int width);       /* Move the screen memory from one address to the other */
+-		void MovememH(int x,int y,int height,int width);      /* Move the screen memory from one address to the other */
+-		unsigned char* Get_Screen_Ptr();   		      /* Get the screen ptr right now  */
+-		void Screen_Copy(int left,int up,int right,int down,bool flag);   /* screen copy flag: false shadow->real true real->shadow */
+-		void Screen_Copy_Alpha(int left,int up,int right,int down,bool flag);   /* screen copy flag: false shadow->real true real->shadow */
+-		void Switch_Screen();                 		      /* switch between real screen and shadow screen  */
+-		void Switch_Surface();
+-
+-		int Get_Disp_Area_Bytes(int left,int up,int right,int down); 
+-								      /* According the bpp calculate the length of display area btes */
+-		void Load_Disp_Area(int left,int up,int right,int down,unsigned char *mem);
+-		void Restore_Disp_Area(int left,int up,int right,int down,unsigned char *mem);
+-
+-		void HLine_Fast(int x1,int x2,int y,short color);
+-		void Rect_Fast(int x1,int y1,int x2,int y2,short color);
+-
+-		int Alpha_Color(int r,int g,int b,int alph,short bkcolor);
+-		int Alpha_Color(short fgcolor,int alpha,short bkcolor);
+-		/*-----------------------------------------------------------------------------
+-		 *  Memory operation
+-		 *-----------------------------------------------------------------------------*/
+-		void Word_Memcpy_Alpha(unsigned char *des,unsigned char *src,long len); 
+-
+-		/*-----------------------------------------------------------------------------
+-		 * Class Parameters get/set 
+-		 *-----------------------------------------------------------------------------*/
+-		void Set_Transparce(int v);			      /* Set transpare parameters */
+-		int  Get_Transparce();       
+-
+-		int Get_Screen_Width();
+-		int Get_Screen_Height();
+-		void Set_Screen_Width(int v);
+-		void Set_Screen_Height(int v);
+-		/*-----------------------------------------------------------------------------
+-		 * Color convert 
+-		 *-----------------------------------------------------------------------------*/
+-		unsigned short RGB24_16(unsigned int rgb);
+-		int  MapColor(int r,int g,int b);
+-
+-		int Get_bpp();
+-
+-		void FillPolygonColor(int16_t* x,int16_t* y,int n,uint32_t color);
+-		void PolygonColor(int16_t* x,int16_t* y,int n,uint32_t color);
+-		void Ascii(int x,int y,char c,uint32_t color);
+-		void SmallString(int x,int y,const char* c,uint32_t color);
+-
+-		/*-----------------------------------------------------------------------------
+-		 *  Picture Load functionns
+-		 *-----------------------------------------------------------------------------*/
+-		void Load_Picture_File(int,int,const char*);
+-
+-		/*-----------------------------------------------------------------------------
+-		 * Only Used by x86 platform 
+-		 *-----------------------------------------------------------------------------*/
+-		void Update_Rect(int,int,int,int);
+-	private:
+-		Graphic ();                     		      /* constructor */
+- 		~Graphic ();					      /* destructor  */
+-		Graphic (const Graphic&);          		      /* constructor */
+-		Graphic& operator = (const Graphic&);    
+-
+-		void Init_Color_System(int bpp);       		      /* Initiate the system color */
+-		/*-----------------------------------------------------------------------------
+-		 *  Init key used variables 
+-		 *-----------------------------------------------------------------------------*/
+-		void Initkey(void);             		      /* Init the stdio attribution for reading key value, return immediately  */
+-		void Restorekey(void);          		      /* restore the current environment to be last save time */
+-	public:
+-	protected:
+-	private:
+-		friend class std::auto_ptr<Graphic>;
+-		static std::auto_ptr<Graphic>			m_Instance;
+-
+-		struct PImpl;
+-		std::auto_ptr<struct PImpl>			m_Imple;
+-
+-}; /* -----  end of class Graphic  ----- */
+-#endif
+diff --git a/src/EVA11/base/Helpwin.cpp b/src/EVA11/base/Helpwin.cpp
+index 1378c3e..ea81861 100644
+--- a/src/EVA11/base/Helpwin.cpp
++++ b/src/EVA11/base/Helpwin.cpp
+@@ -16,13 +16,14 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Label.h"
+ #include 	"Basewin.h"
+ #include 	"Helpwin.h"
+ #include	"JpegOper.h"
+ #include 	"Logic.h"
+-#include 	"Graphic.h"
+ #include	"Language.h"
+ #include 	"Msgbox.h"
+ 
+diff --git a/src/EVA11/base/IView.cpp b/src/EVA11/base/IView.cpp
+index 6159576..15329bf 100644
+--- a/src/EVA11/base/IView.cpp
++++ b/src/EVA11/base/IView.cpp
+@@ -16,10 +16,11 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include	"Global.h"
+ #include 	"Device.h"
+-#include 	"Graphic.h"
+ #include 	"Language.h"
+ #include 	"Algorithm.h"
+ #include 	"Logic.h"
+diff --git a/src/EVA11/base/Iconbutton.cpp b/src/EVA11/base/Iconbutton.cpp
+index e34c151..039371f 100644
+--- a/src/EVA11/base/Iconbutton.cpp
++++ b/src/EVA11/base/Iconbutton.cpp
+@@ -15,9 +15,10 @@
+  *
+  * =====================================================================================
+  */
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Iconbutton.h"
+-#include 	"Graphic.h"
+ #include 	"Label.h"
+ #include 	"Resource.h"
+ 
+diff --git a/src/EVA11/base/Initfacade.cpp b/src/EVA11/base/Initfacade.cpp
+index e2d2e86..aaddee3 100644
+--- a/src/EVA11/base/Initfacade.cpp
++++ b/src/EVA11/base/Initfacade.cpp
+@@ -25,7 +25,7 @@
+ 
+ #include 	"main.h"
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
+ 
+ #include 	"Object.h"
+ #include 	"Basescreen.h"
+diff --git a/src/EVA11/base/Label.cpp b/src/EVA11/base/Label.cpp
+index f116221..2630393 100644
+--- a/src/EVA11/base/Label.cpp
++++ b/src/EVA11/base/Label.cpp
+@@ -16,7 +16,7 @@
+  * =====================================================================================
+  */
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
+ 
+ #include 	"Object.h"
+ #include 	"Label.h"
+diff --git a/src/EVA11/base/LimitManage.cpp b/src/EVA11/base/LimitManage.cpp
+index afafb83..f09664c 100644
+--- a/src/EVA11/base/LimitManage.cpp
++++ b/src/EVA11/base/LimitManage.cpp
+@@ -16,8 +16,9 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+-#include 	"Graphic.h"
+ #include 	"Global.h"
+ #include 	"LimitManage.h"
+ #include 	"Basescreen.h"
+diff --git a/src/EVA11/base/Loadwin.cpp b/src/EVA11/base/Loadwin.cpp
+index db04d6b..4b3089d 100644
+--- a/src/EVA11/base/Loadwin.cpp
++++ b/src/EVA11/base/Loadwin.cpp
+@@ -21,10 +21,11 @@
+ 
+ #include 	<boost/format.hpp>
+ 
++#include 	<Graphic.h>
++
+ #include 	"Basewin.h"
+ #include	"Loadwin.h"
+ #include 	"Object.h"
+-#include 	"Graphic.h"
+ #include 	"Logic.h"
+ #include	"Label.h"
+ #include	"Language.h"
+diff --git a/src/EVA11/base/Logic.cpp b/src/EVA11/base/Logic.cpp
+index 414a127..5ee5ff0 100644
+--- a/src/EVA11/base/Logic.cpp
++++ b/src/EVA11/base/Logic.cpp
+@@ -22,7 +22,8 @@
+ #include	<sys/vfs.h>
+ #include 	<boost/bind.hpp>
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include 	"Logic.h"
+ #include	"Msgbox.h"
+ #include 	"Device.h"
+diff --git a/src/EVA11/base/Mainwin.cpp b/src/EVA11/base/Mainwin.cpp
+index 663ddf6..3208a00 100644
+--- a/src/EVA11/base/Mainwin.cpp
++++ b/src/EVA11/base/Mainwin.cpp
+@@ -17,8 +17,9 @@
+  */
+ #include 	<unistd.h>
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+-#include 	"Graphic.h"
+ #include 	"Basewin.h"
+ #include 	"Mainwin.h"
+ #include 	"Graphic.h"
+diff --git a/src/EVA11/base/Makefile b/src/EVA11/base/Makefile
+index bb51e05..7db4499 100644
+--- a/src/EVA11/base/Makefile
++++ b/src/EVA11/base/Makefile
+@@ -15,6 +15,7 @@
+ include MKlib.mk
+ 
+ SEARCH_INCPATH+=-I./GUI/
++SEARCH_INCPATH+=-I./
+ 
+ SUBDIRS :=$(shell find * -maxdepth 0 -path 'OBJS' -o -path 'DEPS' -prune -o -name '*' -type d -print)
+ 
+diff --git a/src/EVA11/base/Modifywin.cpp b/src/EVA11/base/Modifywin.cpp
+index feea6ab..2ded347 100644
+--- a/src/EVA11/base/Modifywin.cpp
++++ b/src/EVA11/base/Modifywin.cpp
+@@ -16,11 +16,12 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Basewin.h"
+ #include	"Loadwin.h"
+ #include	"Modifywin.h" 
+-#include 	"Graphic.h"
+ #include 	"Logic.h"
+ #include	"Label.h"
+ #include	"Language.h"
+diff --git a/src/EVA11/base/Msgbox.cpp b/src/EVA11/base/Msgbox.cpp
+index eea7111..7dc26c4 100644
+--- a/src/EVA11/base/Msgbox.cpp
++++ b/src/EVA11/base/Msgbox.cpp
+@@ -21,9 +21,10 @@
+ #include 	<unistd.h>
+ #include 	<sys/time.h>
+ 
++#include	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Msgbox.h"
+-#include	"Graphic.h"
+ #include 	"Label.h"
+ #include	"Language.h"
+ #include 	"Algorithm.h"
+diff --git a/src/EVA11/base/OZKPanel.cpp b/src/EVA11/base/OZKPanel.cpp
+index 9a15c8c..a9dbdf2 100644
+--- a/src/EVA11/base/OZKPanel.cpp
++++ b/src/EVA11/base/OZKPanel.cpp
+@@ -15,12 +15,13 @@
+  *
+  * =====================================================================================
+  */
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"IDataProcess.h"
+ #include 	"ConcreteDataProcess.h"
+ 
+ #include 	"Language.h"
+-#include 	"Graphic.h"
+ #include 	"Global.h"
+ 
+ #include 	"DataRepo.h"
+diff --git a/src/EVA11/base/Operationwin.cpp b/src/EVA11/base/Operationwin.cpp
+index d20bddd..b5d63be 100644
+--- a/src/EVA11/base/Operationwin.cpp
++++ b/src/EVA11/base/Operationwin.cpp
+@@ -18,11 +18,12 @@
+ #include 	<sys/stat.h>
+ #include	<fstream>
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Label.h"
+ #include 	"Basewin.h"
+ #include 	"Operationwin.h"
+-#include 	"Graphic.h"
+ #include	"Label.h"
+ #include	"Language.h"
+ #include	"Global.h"
+diff --git a/src/EVA11/base/OtherView.cpp b/src/EVA11/base/OtherView.cpp
+index 78bd2a7..951e69b 100644
+--- a/src/EVA11/base/OtherView.cpp
++++ b/src/EVA11/base/OtherView.cpp
+@@ -16,13 +16,14 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Basescreen.h"
+ #include 	"Sinscreen.h"
+ 
+ #include 	"IView.h"
+ #include 	"OtherView.h"
+-#include 	"Graphic.h"
+ #include 	"Resource.h"
+ #include 	"Language.h"
+ #include 	"Device.h"
+diff --git a/src/EVA11/base/PICwin.cpp b/src/EVA11/base/PICwin.cpp
+index c4e4c63..1ceec2f 100644
+--- a/src/EVA11/base/PICwin.cpp
++++ b/src/EVA11/base/PICwin.cpp
+@@ -18,13 +18,14 @@
+ 
+ #include	<fstream>
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Basewin.h"
+ #include 	"Datawin.h"
+ #include 	"PICwin.h"
+ #include	"JpegOper.h"
+ #include 	"Logic.h"
+-#include 	"Graphic.h"
+ #include	"Language.h"
+ #include 	"Label.h"
+ #include 	"Msgbox.h"
+diff --git a/src/EVA11/base/PanelView.cpp b/src/EVA11/base/PanelView.cpp
+index 31596e8..3b63283 100644
+--- a/src/EVA11/base/PanelView.cpp
++++ b/src/EVA11/base/PanelView.cpp
+@@ -16,7 +16,8 @@
+  * =====================================================================================
+  */
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include 	"Language.h"
+ #include 	"Global.h"
+ #include 	"Language.h"
+diff --git a/src/EVA11/base/ParaView.cpp b/src/EVA11/base/ParaView.cpp
+index bfab372..561d2cc 100644
+--- a/src/EVA11/base/ParaView.cpp
++++ b/src/EVA11/base/ParaView.cpp
+@@ -19,7 +19,8 @@
+ #include 	<cstdlib>
+ #include 	<cstdio>
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include	"Global.h"
+ #include 	"Device.h"
+ #include 	"Language.h"
+diff --git a/src/EVA11/base/Parawin.cpp b/src/EVA11/base/Parawin.cpp
+index fc237a0..3ed03d4 100644
+--- a/src/EVA11/base/Parawin.cpp
++++ b/src/EVA11/base/Parawin.cpp
+@@ -19,10 +19,11 @@
+ #include 	<unistd.h>
+ #include 	<fstream>
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Basewin.h"
+ #include 	"Parawin.h"
+-#include 	"Graphic.h"
+ #include 	"Logic.h"
+ #include	"Label.h"
+ #include	"Language.h"
+diff --git a/src/EVA11/base/Png.cpp b/src/EVA11/base/Png.cpp
+index cf8f7b8..999f757 100644
+--- a/src/EVA11/base/Png.cpp
++++ b/src/EVA11/base/Png.cpp
+@@ -16,8 +16,9 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Png.h"
+-#include 	"Graphic.h"
+ 
+ Png::Png ()
+ {
+diff --git a/src/EVA11/base/Process.cpp b/src/EVA11/base/Process.cpp
+index 9a37b1b..2250373 100644
+--- a/src/EVA11/base/Process.cpp
++++ b/src/EVA11/base/Process.cpp
+@@ -19,7 +19,8 @@
+ #include 	<unistd.h>
+ #include 	<cstdio>
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include 	"Language.h"
+ #include	"Process.h" 
+ #include	"Global.h"
+diff --git a/src/EVA11/base/Resource.cpp b/src/EVA11/base/Resource.cpp
+index 86b6aa4..1d81a4f 100644
+--- a/src/EVA11/base/Resource.cpp
++++ b/src/EVA11/base/Resource.cpp
+@@ -17,7 +17,8 @@
+  */
+ #include 	<fstream>
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include	"Global.h"
+ #include 	"Resource.h"
+ #include	"JpegOper.h"
+diff --git a/src/EVA11/base/Rule.cpp b/src/EVA11/base/Rule.cpp
+index 9696c0c..c317715 100644
+--- a/src/EVA11/base/Rule.cpp
++++ b/src/EVA11/base/Rule.cpp
+@@ -16,7 +16,8 @@
+  * =====================================================================================
+  */
+ #include 	<new>
+-#include 	"Graphic.h"
++
++#include 	<Graphic.h>
+ 
+ #include 	"Object.h"
+ #include 	"Basescreen.h"
+diff --git a/src/EVA11/base/Sinscreen.cpp b/src/EVA11/base/Sinscreen.cpp
+index 7e4758c..99cccd5 100644
+--- a/src/EVA11/base/Sinscreen.cpp
++++ b/src/EVA11/base/Sinscreen.cpp
+@@ -16,7 +16,8 @@
+  * =====================================================================================
+  */
+ 
+-#include 	"Graphic.h"
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Basescreen.h"
+ #include 	"Sinscreen.h"
+diff --git a/src/EVA11/base/Splashscreen.cpp b/src/EVA11/base/Splashscreen.cpp
+index a655736..6513ca9 100644
+--- a/src/EVA11/base/Splashscreen.cpp
++++ b/src/EVA11/base/Splashscreen.cpp
+@@ -16,11 +16,12 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Basescreen.h"
+ #include 	"Splashscreen.h"
+ #include 	"Resource.h"
+-#include 	"Graphic.h"
+ #include 	"FreeType.h"
+ 
+ Splashscreen::Splashscreen (int x,int y,int width,int heigh)
+diff --git a/src/EVA11/base/TCPMainwin.cpp b/src/EVA11/base/TCPMainwin.cpp
+index ab11a87..68fbac6 100644
+--- a/src/EVA11/base/TCPMainwin.cpp
++++ b/src/EVA11/base/TCPMainwin.cpp
+@@ -17,9 +17,9 @@
+  */
+ 
+ #include 	<string.h>
++#include 	<Graphic.h>
+ 
+ #include 	"Object.h"
+-#include 	"Graphic.h"
+ #include 	"Basewin.h"
+ #include 	"TCPMainwin.h"
+ #include	"Language.h"
+diff --git a/src/EVA11/base/VideoPanel.cpp b/src/EVA11/base/VideoPanel.cpp
+index e4c5c85..eb454dc 100644
+--- a/src/EVA11/base/VideoPanel.cpp
++++ b/src/EVA11/base/VideoPanel.cpp
+@@ -16,8 +16,9 @@
+  * =====================================================================================
+  */
+ 
++#include 	<Graphic.h>
++
+ #include 	"Language.h"
+-#include 	"Graphic.h"
+ #include 	"./Video/Video.h"
+ #include 	"Msgbox.h"
+ #include 	"Algorithm.h"
+diff --git a/src/EVA11/base/ZKPanel.cpp b/src/EVA11/base/ZKPanel.cpp
+index a3c0f51..5e8599d 100644
+--- a/src/EVA11/base/ZKPanel.cpp
++++ b/src/EVA11/base/ZKPanel.cpp
+@@ -17,11 +17,12 @@
+  */
+ #include 	<new>
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"IDataProcess.h"
+ #include 	"ConcreteDataProcess.h"
+ #include 	"Language.h"
+-#include 	"Graphic.h"
+ #include 	"Global.h"
+ #include 	"Bufferbar.h"
+ #include 	"Device.h"
+diff --git a/src/EVA11/base/ZScreen.cpp b/src/EVA11/base/ZScreen.cpp
+index 7c3e1c3..e4cedb7 100644
+--- a/src/EVA11/base/ZScreen.cpp
++++ b/src/EVA11/base/ZScreen.cpp
+@@ -18,9 +18,10 @@
+ 
+ #include	<string.h>
+ 
++#include 	<Graphic.h>
++
+ #include 	"Object.h"
+ #include 	"Label.h"
+-#include 	"Graphic.h"
+ #include 	"Global.h"
+ #include 	"DataRepo.h"
+ #include 	"Algorithm.h"
+diff --git a/src/EVA11/base/main.cpp b/src/EVA11/base/main.cpp
+index cdc0690..adb669f 100644
+--- a/src/EVA11/base/main.cpp
++++ b/src/EVA11/base/main.cpp
+@@ -28,6 +28,8 @@
+ 
+ #include 	<gsl/gsl_integration.h>
+ 
++#include 	<Graphic.h>
++
+ #include 	"ShellCommand.h"
+ 
+ #include	"Basewin.h"
+@@ -38,8 +40,6 @@
+ #include 	"TCPMainwin.h"
+ #include 	"Log.h"
+ 
+-#include 	"Graphic.h"
+-
+ #include 	<SDL.h>
+ #include 	<SDL/SDL_gfxPrimitives.h>
+ #include 	<SDL/SDL_gfxBlitFunc.h>
+-- 
+1.8.5.2
+
