@@ -1,0 +1,553 @@
+From f01e35f3a349fb813842977e5f05b000e99bcb4c Mon Sep 17 00:00:00 2001
+From: kevin <kevin.wang2004@hotmail.com>
+Date: Tue, 8 Apr 2014 09:30:55 +0800
+Subject: [PATCH 1/4] =?UTF-8?q?=E5=B0=86=E5=B7=A5=E7=A8=8B=E5=90=8D?=
+ =?UTF-8?q?=E7=A7=B0=E4=BF=AE=E6=94=B9=E4=B8=BASmart2005A,=E5=B9=B6?=
+ =?UTF-8?q?=E8=B0=83=E6=95=B4=E7=BC=96=E8=AF=91=E5=99=A8?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ Makefile                                |  2 +-
+ src/EVA11/base/DZKPanel.cpp             | 44 ++++++++++++++------------
+ src/EVA11/base/DZKPanel.h               |  3 +-
+ src/EVA11/base/Gif.cpp                  |  2 +-
+ src/EVA11/base/Language/Language.cpp    |  8 ++---
+ src/EVA11/base/Language/ProjectGBText.h | 12 ++++---
+ src/EVA11/base/Log.cpp                  |  6 ++--
+ src/EVA11/base/Mainwin.cpp              |  6 ++--
+ src/EVA11/base/Process.cpp              |  2 +-
+ src/EVA11/base/ShellCommand.cpp         |  4 +--
+ src/EVA11/base/Test/BoostTest.cpp       |  2 +-
+ src/EVA11/base/XMLManage.cpp            |  2 +-
+ src/EVA11/base/ZKPanel.cpp              |  1 -
+ src/EVA11/base/main.cpp                 | 55 ++++++++++++++++-----------------
+ src/EVA11/base/main.h                   | 34 ++++++++++----------
+ src/EVA11/libetio/etio.cpp              |  3 +-
+ 16 files changed, 95 insertions(+), 91 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index e646730..3b0eeda 100644
+--- a/Makefile
++++ b/Makefile
+@@ -30,7 +30,7 @@ export CMOD    := dynamic
+ export COMPILE  := arm9
+ 
+ ifeq 	($(COMPILE),arm9)
+-CROSS := /opt/host/arm-wangwei-linux-gnueabi/bin/arm-wangwei-linux-gnueabi-
++CROSS := /opt/host/arm-veer-linux-gnueabi/bin/arm-veer-linux-gnueabi-
+ export DFLAG  := -DARM9
+ else ifeq ($(COMPILE),x86)
+ CROSS ?=
+diff --git a/src/EVA11/base/DZKPanel.cpp b/src/EVA11/base/DZKPanel.cpp
+index 32cbc22..5f9d7d0 100644
+--- a/src/EVA11/base/DZKPanel.cpp
++++ b/src/EVA11/base/DZKPanel.cpp
+@@ -421,7 +421,6 @@ void DZKPanel::Show_Help_System(Graphic& g,int x,int y)
+ 	font->Text(x+30,y+130,pl->GetText(HELPB1F4));
+ 	font->Text(x+30,y+150,pl->GetText(HELPB1F5));
+ 	font->Text(x+30,y+170,pl->GetText(HELPB1F6));
+-	font->Text(x+30,y+190,pl->GetText(HELPB1F7));
+ 	font->Text(x+30,y+210,pl->GetText(HELPB1ESC));
+ 	font->Text(x+30,y+230,pl->GetText(HELPB1ENTER));
+ }
+@@ -648,6 +647,31 @@ int DZKPanel::Key_NR5_Fun(Graphic& g,int sub)
+ 	m_LabFreMsg[1]->Drawme(g,true);
+ 	return 0;
+ }
++int DZKPanel::Key_NL6_Fun(Graphic& g,int sub)
++{
++	if 	( m_gp->ScrSigM[m_gp->ScrSigFocus] < 2 )
++	{
++		Language* m_pl = Language::Instance();
++		Msgbox *ms = new Msgbox(200,170,260,100,m_pl->GetText(CLEANBUF),Msgbox::MSG_OKCANCEL);
++		ms->Set_Color(Msgbox::MSG_COLORTYPE_BG,g_BUBGNO_CO);
++		ms->Set_Color(Msgbox::MSG_COLORTYPE_FG,g_BUTXNO_CO);
++		if ( ms->Showme(g) == false )
++		{
++			delete ms;
++			ms = NULL;
++			return 0;
++		}
++		delete ms;
++		ms = NULL;
++		m_Bufbar->Clean_Buffer_Bar(g);
++	}
++	return 0;
++}
++int DZKPanel::Key_NR6_Fun(Graphic& g,int sub)
++{
++	return Key_NL6_Fun(g,sub);
++}
++
+ int DZKPanel::Key_NL3_Fun(Graphic& g,int sub)         // degree
+ {
+ 	m_gp->bDoubleSrcPause = true;
+@@ -761,24 +785,6 @@ int DZKPanel::Key_F4_Fun(Graphic& g)
+ }
+ int DZKPanel::Key_F6_Fun(Graphic& g)
+ {
+-	Language* m_pl = Language::Instance();
+-	Msgbox *ms = new Msgbox(200,170,260,100,m_pl->GetText(CLEANBUF),Msgbox::MSG_OKCANCEL);
+-	ms->Set_Color(Msgbox::MSG_COLORTYPE_BG,g_BUBGNO_CO);
+-	ms->Set_Color(Msgbox::MSG_COLORTYPE_FG,g_BUTXNO_CO);
+-	if ( ms->Showme(g) == false )
+-	{
+-		delete ms;
+-		ms = NULL;
+-		return 0;
+-	}
+-	delete ms;
+-	ms = NULL;
+-	m_Bufbar->Clean_Buffer_Bar(g);
+-	return 0;
+-}
+-
+-int DZKPanel::Key_F7_Fun(Graphic& g)
+-{
+ 	int callen = 10000;
+ 	if 	( m_gp->bDoubleSrcPause == false )
+ 	{
+diff --git a/src/EVA11/base/DZKPanel.h b/src/EVA11/base/DZKPanel.h
+index 39bdffb..f5b8132 100644
+--- a/src/EVA11/base/DZKPanel.h
++++ b/src/EVA11/base/DZKPanel.h
+@@ -48,12 +48,13 @@ class DZKPanel : public BasePanel
+ 		virtual	int Key_NR4_Fun(Graphic& g,int sub=1);
+ 		virtual int Key_NL5_Fun(Graphic& g,int sub=1);
+ 		virtual int Key_NR5_Fun(Graphic& g,int sub=1);
++		virtual int Key_NL6_Fun(Graphic& g,int sub=1);
++		virtual int Key_NR6_Fun(Graphic& g,int sub=1);
+ 
+ 		virtual int Key_F2_Fun(Graphic& g);
+ 		virtual int Key_F3_Fun(Graphic& g);
+ 		virtual int Key_F4_Fun(Graphic& g);
+ 		virtual int Key_F6_Fun(Graphic& g);
+-		virtual int Key_F7_Fun(Graphic& g);
+ 
+ 		virtual int Key_Enter_Fun(Graphic& g);
+ 
+diff --git a/src/EVA11/base/Gif.cpp b/src/EVA11/base/Gif.cpp
+index b3d21ea..8c72e83 100644
+--- a/src/EVA11/base/Gif.cpp
++++ b/src/EVA11/base/Gif.cpp
+@@ -24,7 +24,7 @@
+ 
+ #include 	"Gif.h"
+ 
+-#define PROGRAM_NAME	"EVA11"
++#define PROGRAM_NAME	"Smart2005A"
+ #define GIF_MESSAGE(Msg) fprintf(stderr, "\n%s: %s\n", PROGRAM_NAME, Msg)
+ #define GIF_EXIT(Msg)    { GIF_MESSAGE(Msg); exit(-3); }
+ 
+diff --git a/src/EVA11/base/Language/Language.cpp b/src/EVA11/base/Language/Language.cpp
+index 81245b6..222daf6 100644
+--- a/src/EVA11/base/Language/Language.cpp
++++ b/src/EVA11/base/Language/Language.cpp
+@@ -170,8 +170,6 @@ char const *Language::Get_EN_Text(int index)
+ 			return HELPB1F4_EN;
+ 		case HELPB1F6:  
+ 			return HELPB1F6_EN;
+-		case HELPB1F7:  
+-			return HELPB1F7_EN;
+ 		case HELPB1ESC:
+ 			return HELPB1ESC_EN;
+ 		case HELPB1ENTER:
+@@ -470,6 +468,8 @@ char const *Language::Get_EN_Text(int index)
+ 			return FUN_NORMAL_EN;
+ 		case NORMAL_CHAN:
+ 			return NORMAL_CHAN_EN;
++		case CLEANBUFFER:
++			return CLEANBUFFER_EN;
+ 		default:
+ 			return NONE_EN;
+ 	}
+@@ -594,8 +594,6 @@ char const *Language::Get_CN_Text(int index)
+ 			return HELPB1F4_CN;
+ 		case HELPB1F6:  
+ 			return HELPB1F6_CN;
+-		case HELPB1F7:  
+-			return HELPB1F7_CN;
+ 		case HELPB1ESC:  
+ 			return HELPB1ESC_CN;
+ 		case HELPB1ENTER:
+@@ -894,6 +892,8 @@ char const *Language::Get_CN_Text(int index)
+ 			return FUN_NORMAL_CN;
+ 		case NORMAL_CHAN:
+ 			return NORMAL_CHAN_CN;
++		case CLEANBUFFER:
++			return CLEANBUFFER_CN;
+ 		default:
+ 			return NONE_CN;
+ 	}
+diff --git a/src/EVA11/base/Language/ProjectGBText.h b/src/EVA11/base/Language/ProjectGBText.h
+index 166232a..7b4e1f7 100644
+--- a/src/EVA11/base/Language/ProjectGBText.h
++++ b/src/EVA11/base/Language/ProjectGBText.h
+@@ -84,8 +84,7 @@
+ #define HELPB1F3_O_CN               "  [  F3    ]      显示方式 点->线->特殊"
+ #define HELPB1F5_CN                 "  [  F5    ]      截取屏幕" 
+ #define HELPB1F4_CN                 "  [  F4    ]      平衡 | 保存底片"
+-#define HELPB1F6_CN                 "  [  F6    ]      清除缓存" 
+-#define HELPB1F7_CN                 "  [  F7    ]      抓取数据/混频计算" 
++#define HELPB1F6_CN                 "  [  F6    ]      抓取数据/混频计算" 
+ #define HELPB1ESC_CN                "  [  ESC   ]      暂停检测，返回调用者" 
+ #define HELPB1ENTER_CN              "  [  ENTER ]      继续检测"
+ 
+@@ -284,6 +283,8 @@
+ 
+ #define NORMAL_CHAN_CN		    "普通信道"
+ 
++#define CLEANBUFFER_CN		    "清除缓冲"
++
+ #define	NONE_CN			    "  "
+ /* ********************************************************************  */
+ 
+@@ -350,8 +351,7 @@
+ #define HELPB1F3_O_EN               "  [  F3    ]      Mode: Point->Lin.->Spe."
+ #define HELPB1F5_EN                 "  [  F5    ]      Save Screen" 
+ #define HELPB1F4_EN                 "  [  F4    ]      Balance | Clean Plate"
+-#define HELPB1F6_EN                 "  [  F6    ]      Clean Buffer" 
+-#define HELPB1F7_EN                 "  [  F7    ]      Mixing Signal" 
++#define HELPB1F6_EN                 "  [  F6    ]      Mixing Signal" 
+ #define HELPB1ESC_EN                "  [  ESC   ]      Pause Detect,Return" 
+ #define HELPB1ENTER_EN              "  [  ENTER ]      Resume to Detect"
+ #define GRAPHICFILE_EN              "PIC file"
+@@ -548,6 +548,7 @@
+ #define FUN_NORMAL_EN               "Normal Mode"
+ 
+ #define NORMAL_CHAN_EN		    "Normal Chan."
++#define CLEANBUFFER_EN		    "Clean Buffer"
+ 
+ #define	NONE_EN			    "  "
+ /* ********************************************************************  */
+@@ -616,7 +617,6 @@
+ #define HELPB1F5                    52
+ #define HELPB1F4                    53
+ #define HELPB1F6                    54
+-#define HELPB1F7                    55
+ #define HELPB1ESC                   56
+ #define HELPB1ENTER                 57
+ #define GRAPHICFILE                 58
+@@ -815,6 +815,8 @@
+ 
+ #define NORMAL_CHAN		    206
+ 
++#define CLEANBUFFER		    207
++
+ #define	NONE			    999
+ 
+ #endif
+diff --git a/src/EVA11/base/Log.cpp b/src/EVA11/base/Log.cpp
+index f5f6f92..fd7d9b0 100644
+--- a/src/EVA11/base/Log.cpp
++++ b/src/EVA11/base/Log.cpp
+@@ -38,7 +38,7 @@ Log::Log() : m_Imple(new struct PImpl)
+ 	log4cplus::BasicConfigurator config;
+ 	config.configure();
+ 
+-	m_Imple->m_log = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("EVA11"));
++	m_Imple->m_log = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT("Smart2005A"));
+ 	m_Imple->m_log.setLogLevel(log4cplus::INFO_LOG_LEVEL);
+ 
+ 	m_Imple->m_Files_Amount = 0;
+@@ -108,9 +108,9 @@ void Log::Create_Log_Directory_File()
+ 	time_t now;
+ 	time(&now);
+ 	timenow = localtime(&now);
+-	sprintf(file,"%s/EVA11-P%03d-%04d-%02d-%02d-%02d-%02d-%02d.log",LOGDIRECTORY,m_Imple->m_Files_Amount+1,timenow->tm_year+1900,timenow->tm_mon+1,timenow->tm_mday,timenow->tm_hour,timenow->tm_min,timenow->tm_sec);
++	sprintf(file,"%s/Smart2005A-P%03d-%04d-%02d-%02d-%02d-%02d-%02d.log",LOGDIRECTORY,m_Imple->m_Files_Amount+1,timenow->tm_year+1900,timenow->tm_mon+1,timenow->tm_mday,timenow->tm_hour,timenow->tm_min,timenow->tm_sec);
+ 	log4cplus::SharedAppenderPtr append(new log4cplus::FileAppender(file));
+-	append->setName("EVA11 log File");
++	append->setName("Smart2005A log File");
+ 	m_Imple->m_log.addAppender(append);
+ 	delete[] file;
+ 	file = NULL;
+diff --git a/src/EVA11/base/Mainwin.cpp b/src/EVA11/base/Mainwin.cpp
+index 09f56d0..bd26661 100644
+--- a/src/EVA11/base/Mainwin.cpp
++++ b/src/EVA11/base/Mainwin.cpp
+@@ -826,7 +826,7 @@ void Mainwin::Refresh_Normal_Label_Content_1_DZKPanel(Graphic& g,int sub)
+ 						case 5:
+ 							if ( m_gp->ScrSigM[m_gp->ScrSigFocus] < 2 )
+ 							{
+-								sprintf(m_Msg,"%s",m_pl->GetText(NONE));
++								sprintf(m_Msg,"%s",m_pl->GetText(EXCUTE));
+ 							}
+ 							else
+ 							{
+@@ -2431,11 +2431,9 @@ const char*Mainwin::Get_Normal_Text_1_DZKPanel(int normal,int sub)
+ 						break;
+ 					case 5:
+ 						if ( m_gp->ScrSigM[m_gp->ScrSigFocus] < 2 )
+-							return m_pl->GetText(NONE);
++							return m_pl->GetText(CLEANBUFFER);
+ 						else
+-						{
+ 							return m_pl->GetText(SECFREQ);
+-						}
+ 						break;
+ 					default:	
+ 						return m_pl->GetText(NONE);
+diff --git a/src/EVA11/base/Process.cpp b/src/EVA11/base/Process.cpp
+index f17ffb8..24a429f 100644
+--- a/src/EVA11/base/Process.cpp
++++ b/src/EVA11/base/Process.cpp
+@@ -663,7 +663,7 @@ void DetectProcess::Do_Event_DZKPanel(Graphic& g,int sub,int nor,RLKEY key)
+ 					{
+ 						if 	( m_gp->ScrSigM[m_gp->ScrSigFocus] < 2 )
+ 						{
+-
++							m_mwin->Refresh_Normal_Label_Text(g);
+ 						}
+ 						else
+ 						{
+diff --git a/src/EVA11/base/ShellCommand.cpp b/src/EVA11/base/ShellCommand.cpp
+index 3bba886..e46d088 100644
+--- a/src/EVA11/base/ShellCommand.cpp
++++ b/src/EVA11/base/ShellCommand.cpp
+@@ -102,11 +102,11 @@ void ShellCommand::Help_Doc()
+ 	printf ( "============================================================\n" );
+ 	printf ( "Compiler:   eabi-gcc %s\n",__VERSION__ );
+ 	printf ( "Build Time: %s %s\n",__DATE__,__TIME__ );
+-	printf ( "Program:    EVA11 with 128 channels eddy current detect intrument\n");
++	printf ( "Program:    Smart2005A with 128 channels eddy current detect intrument\n");
+ 	printf ( "par file save in such path %s\n",PAR_FILE_PATH);
+ 	printf ( "log file save in such path %s\n",LOGDIRECTORY);
+ 	printf ( "\n" );
+-	printf ( "Usage: main_EVA11 [Option]\n" );
++	printf ( "Usage: smart2005a [Option]\n" );
+ 	printf ( "\n" );
+ 	printf ( "Option:\n" );
+ 	printf ( "none option :  Run Program in normal status.\n" );
+diff --git a/src/EVA11/base/Test/BoostTest.cpp b/src/EVA11/base/Test/BoostTest.cpp
+index b3ee7a3..08b0964 100644
+--- a/src/EVA11/base/Test/BoostTest.cpp
++++ b/src/EVA11/base/Test/BoostTest.cpp
+@@ -120,5 +120,5 @@ void Boosttest::filesystem_test()
+ 
+ 	}
+ 
+-	printf ( "%dKb\n",boost::filesystem::file_size("main_EVA11")/1024 );
++	printf ( "%dKb\n",boost::filesystem::file_size("main_Smart2005A")/1024 );
+ }
+diff --git a/src/EVA11/base/XMLManage.cpp b/src/EVA11/base/XMLManage.cpp
+index 4375f83..67f9de6 100644
+--- a/src/EVA11/base/XMLManage.cpp
++++ b/src/EVA11/base/XMLManage.cpp
+@@ -39,7 +39,7 @@ void XMLManage::Test()
+ 	root_node = xmlNewNode(NULL, BAD_CAST "rootnode");
+ 	xmlDocSetRootElement(doc, root_node);
+ //	xmlNewProp(root_node,BAD_CAST "version", BAD_CAST "2.0");
+-//	xmlNewProp(root_node,BAD_CAST "title", BAD_CAST "EVA11 parameters");
++//	xmlNewProp(root_node,BAD_CAST "title", BAD_CAST "Smart2005A parameters");
+ 
+ 	pnode = xmlNewNode(NULL, BAD_CAST "childnode");
+ 	xmlAddChild(root_node,pnode);
+diff --git a/src/EVA11/base/ZKPanel.cpp b/src/EVA11/base/ZKPanel.cpp
+index da3fb44..0614389 100644
+--- a/src/EVA11/base/ZKPanel.cpp
++++ b/src/EVA11/base/ZKPanel.cpp
+@@ -379,7 +379,6 @@ void ZKPanel::Show_Help_System(Graphic& g,int x,int y)
+ 	font->Text(x+30,y+130,pl->GetText(HELPB1F4));
+ 	font->Text(x+30,y+150,pl->GetText(HELPB1F5));
+ 	font->Text(x+30,y+170,pl->GetText(HELPB1F6));
+-	font->Text(x+30,y+190,pl->GetText(HELPB1F7));
+ 	font->Text(x+30,y+210,pl->GetText(HELPB1ESC));
+ 	font->Text(x+30,y+230,pl->GetText(HELPB1ENTER));
+ }
+diff --git a/src/EVA11/base/main.cpp b/src/EVA11/base/main.cpp
+index 24ee3b0..8625f4a 100644
+--- a/src/EVA11/base/main.cpp
++++ b/src/EVA11/base/main.cpp
+@@ -132,7 +132,7 @@ Standard_ET_Fun()
+ 
+ 
+ 	Log *log = Log::Instance();
+-	log->Write_Log("EVA11 System Starting....");
++	log->Write_Log("Smart2005A System Starting....");
+ 
+ 	Initfacade* initfacade = new Initfacade;
+ 	if  	( initfacade->Standard_ET_System_Init() == false )
+@@ -168,7 +168,7 @@ MAINLOOP:
+ 	initfacade->Standard_ET_System_Destroy();
+ 	delete initfacade;
+ 	initfacade = NULL;
+-	log->Write_Log("EVA11 System Exit....");
++	log->Write_Log("Smart2005A System Exit....");
+ }
+ 
+ /* 
+@@ -332,28 +332,28 @@ Standard_SDL_Fun()
+ //
+ //	g->Closegraph();
+ 
+-	int handle = open("/dev/WATCHDOG",O_RDWR);
+-	if ( handle < 0 )
+-	{
+-		printf ( "bad cann't open the file\n" );
+-		return; 
+-	}
+-
+-	short value;
+-
+-	while(1)
+-	{
+-		if ( read(handle,&value,2 ) == 0 )
+-			printf ( "0x%x\n",value);
+-		else
+-			goto BAD;
+-
++//	int handle = open("/dev/WATCHDOG",O_RDWR);
++//	if ( handle < 0 )
++//	{
++//		printf ( "bad cann't open the file\n" );
++//		return; 
++//	}
++//
++//	short value;
++//
++//	while(1)
++//	{
++//		if ( read(handle,&value,2 ) == 0 )
++//			printf ( "0x%x\n",value);
++//		else
++//			goto BAD;
++//
+ //		write(handle,&value,2);
+-		usleep(500000);
+-	}
+-
+-BAD:
+-	close(handle);
++//		usleep(500000);
++//	}
++//
++//BAD:
++//	close(handle);
+ 
+ //	if ( SDL_Init(SDL_INIT_EVERYTHING) == -1 ){
+ //		perror(SDL_GetError());
+@@ -383,7 +383,7 @@ BAD:
+ Standard_TEST_Fun()
+ {
+ 	Log *log = Log::Instance();
+-	log->Write_Log("EVA11 System Starting....");
++	log->Write_Log("Smart2005A System Starting....");
+ 
+ 	Initfacade* initfacade = new Initfacade;
+ 	if  	( initfacade->Standard_ET_System_Init() == false )
+@@ -396,9 +396,6 @@ Standard_TEST_Fun()
+ 
+ 	ColorObj* colorobj = ColorObj::Instance();
+ 
+-
+-
+-
+ #ifdef X86
+ 	g->Update_Rect(0,0,640,480);
+ #endif
+@@ -408,7 +405,7 @@ Standard_TEST_Fun()
+ 	initfacade->Standard_ET_System_Destroy();
+ 	delete initfacade;
+ 	initfacade = NULL;
+-	log->Write_Log("EVA11 System Exit....");
++	log->Write_Log("Smart2005A System Exit....");
+ }
+ 
+ /* 
+@@ -435,7 +432,7 @@ void Signal_Interrupt(int n,siginfo_t *psiginfo,void *myact)
+  */
+ void ExitProcess(void)
+ {
+-	std::cout<<"EVA11 Program Exit Normally!"<<std::endl;
++	std::cout<<"Smart2005A Program Exit Normally!"<<std::endl;
+ }
+ 
+ /*
+diff --git a/src/EVA11/base/main.h b/src/EVA11/base/main.h
+index 17408e0..085fbaf 100644
+--- a/src/EVA11/base/main.h
++++ b/src/EVA11/base/main.h
+@@ -18,7 +18,7 @@
+ #ifndef _MAINHEAD_
+ #define _MAINHEAD_
+ 
+-#define PROVERSION 	"1.01"
++#define PROVERSION 	"1.02"
+ #define PAR_FILE_PATH	"/var/1"
+ 
+ #ifdef ARM9
+@@ -46,7 +46,7 @@
+ #else
+ 
+ #define _KEY_PC_                                      /* Used the PC keyboard */
+-//#define _KEY_308_A_                                   /* EVA11 Array keyboard two board */
++//#define _KEY_308_A_                                   /* Smart2005A Array keyboard two board */
+ //#define _KEY_308_1_                                   /* Smart-308 keyboard just only one board */
+ //#define _KEY_308_2_                                   /* Smart-308 keyboard two board */
+ //#define _KEY_UT_                                        /* Used the PC keyboard */
+@@ -61,12 +61,12 @@
+ /*-----------------------------------------------------------------------------
+  *  The path used by application
+  *-----------------------------------------------------------------------------*/
+-#define HELP_PATH		"/tmp/EVA/HELP/"            /* The path saving the help document */
+-#define DATA_PATH		"/tmp/EVA/DATA/"            /* The path saving the Eddy testing data*/
+-#define PARA_PATH               "/tmp/EVA/PARA/"            /* The path saving the parameters of device */
+-#define PIC_PATH                "/tmp/EVA/PIC/"             /* The path saving the parameters of device */
+-#define LOG_PATH		"/tmp/EVA/LOG/"
+-#define DB_PATH			"/tmp/EVA/DB/"
++#define HELP_PATH		"/tmp/SMART2005A/HELP/"            /* The path saving the help document */
++#define DATA_PATH		"/tmp/SMART2005A/DATA/"            /* The path saving the Eddy testing data*/
++#define PARA_PATH               "/tmp/SMART2005A/PARA/"            /* The path saving the parameters of device */
++#define PIC_PATH                "/tmp/SMART2005A/PIC/"             /* The path saving the parameters of device */
++#define LOG_PATH		"/tmp/SMART2005A/LOG/"
++#define DB_PATH			"/tmp/SMART2005A/DB/"
+ 
+ #ifdef  ARM9
+ #define RUN_PATH                "/jffs2/ET/"                /* The application running envirenment */
+@@ -75,17 +75,17 @@
+ #endif
+ 
+ #define MAIN_PATH               "/jffs2/"                   /* The Main program */
+-#define PBM_PATH		"/tmp/EVA/"                 /* Save the PBM picture temprary used by print */
+-#define APP_READY_PATH          "/tmp/EVA/"                 /* When update the application,cp the program to this */
++#define PBM_PATH		"/tmp/SMART2005A/"                 /* Save the PBM picture temprary used by print */
++#define APP_READY_PATH          "/tmp/SMART2005A/"                 /* When update the application,cp the program to this */
+ 
+-#define HELP_PATH_RU            "/mnt/eva/help/"            /* The usb help directory */
+-#define DATA_PATH_RU            "/mnt/eva/data/"	
+-#define PARA_PATH_RU            "/mnt/eva/para/"
+-#define PIC_PATH_RU             "/mnt/eva/pic/"
+-#define LOG_PATH_RU		"/tmp/eva/log/"
+-#define DB_PATH_RU		"/tmp/eva/db/"
++#define HELP_PATH_RU            "/mnt/smart2005a/help/"            /* The usb help directory */
++#define DATA_PATH_RU            "/mnt/smart2005a/data/"	
++#define PARA_PATH_RU            "/mnt/smart2005a/para/"
++#define PIC_PATH_RU             "/mnt/smart2005a/pic/"
++#define LOG_PATH_RU		"/tmp/smart2005a/log/"
++#define DB_PATH_RU		"/tmp/smart2005a/db/"
+ 
+-#define RUN_PATH_RU             "/mnt/eva/"                 /* The usb remote directory */
++#define RUN_PATH_RU             "/mnt/smart2005a/"                 /* The usb remote directory */
+ 
+ #define	LOGDIRECTORY            LOG_PATH
+ /*-----------------------------------------------------------------------------
+diff --git a/src/EVA11/libetio/etio.cpp b/src/EVA11/libetio/etio.cpp
+index 002c453..d91a68c 100644
+--- a/src/EVA11/libetio/etio.cpp
++++ b/src/EVA11/libetio/etio.cpp
+@@ -166,7 +166,8 @@ Etio* Etio::Instance()
+ 	{
+ 		m_Instance.reset( new Etio() );
+ 	}
+-	std::cout<<"Etio Ver."<<m_Instance.get()->m_Imple->m_Version<<std::endl;
++	float t = m_Instance.get()->m_Imple->m_Version / static_cast<float>(100);
++	std::cout<<"Etio Ver:"<<t<<std::endl;
+ 	return m_Instance.get();
+ }
+ 
+-- 
+1.8.5.1
+
